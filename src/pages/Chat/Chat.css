@@ -29,7 +29,7 @@
 .chat-input {
   height: 40px;
 }
-::-webkit-scrollbar {
+#chatList::-webkit-scrollbar {
   display: none;
 }
 
@@ -168,12 +168,40 @@ body {
   border: none;
 }
 .upload-section {
-  padding: 5px;
-  border: 2px dashed #ddd;
+  padding: 10px 2px 2px 2px;
+  border: 1px dashed #ddd;
   margin: 10px 5px;
+  cursor: pointer;
+  background: #333;
 }
 .footer-nav {
   position: fixed;
   bottom: 0;
   text-align: center;
+}
+/* For all pages */
+.all-page-container {
+  height: 100%;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.right-sidebar{
+  text-align: left;
+  margin-top: 30px;
+  padding: 0;
+}
+.right-sidebar-list{
+  padding: 0;
+}
+.right-sidebar-list-item{
+  list-style: none;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.right-sidebar-list-item.active{
+  color: #1873f3;
+}
+.right-sidebar-list-item span{
+  padding-left: 10px;
 }
