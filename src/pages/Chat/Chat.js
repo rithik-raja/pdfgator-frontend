@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Chat.css";
-import uploadIcon from "../../images/upload.svg";
 import Dropzone, { useDropzone } from "react-dropzone";
 import * as Icon from "react-feather";
-import Pdf1 from "../../components/Pdf1/Pdf1";
 import Pdf2 from "../../components/Pdf2";
+import { useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Chat = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = useParams();
   const [messageText, setmessageText] = useState(null);
   const [groupMessage, setgroupMessage] = useState([
     { isQues: false, msg: "Welcome to Chat GPT" },
@@ -19,12 +22,73 @@ const Chat = () => {
       "application/pdf": [".pdf"],
     },
   });
+  const [pdfLists, setpdfLists] = useState([]);
   const fileInputOnChange = (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
-      setuploadedUrl(URL.createObjectURL(acceptedFiles[0]));
-      setuploadedFile(acceptedFiles[0]);
+      const newuploadedFile = acceptedFiles[0];
+      setuploadedUrl(URL.createObjectURL(newuploadedFile));
+      setuploadedFile(newuploadedFile);
+      const name = newuploadedFile.name;
+      const lastDot = name.lastIndexOf(".");
+
+      const newurl = name.substring(0, lastDot);
+      const newpdflist = [
+        ...pdfLists,
+        {
+          name: newurl,
+          url: newurl,
+          isActive: "true",
+        },
+      ];
+      setpdfLists(newpdflist);
+      navigate("/chat/" + newurl);
+      setActivepdfList(newurl, newpdflist);
     }
+  };
+
+  const { pdfname } = params;
+
+  const getPdfLists = () => {
+    let newlist = [
+      { name: "pdf1", url: "pdf1" },
+      { name: "pdf2", url: "pdf2" },
+      { name: "pdf3", url: "pdf3" },
+    ];
+    const index = newlist.findIndex((object) => {
+      return object.url === pdfname;
+    });
+    if (index > -1) {
+      newlist[index].isActive = "true";
+    } else {
+      newlist = [...newlist, { name: pdfname, url: pdfname, isActive: "true" }];
+    }
+    setpdfLists(newlist);
+  };
+  const setActivepdfList = (urlName, allpdflists) => {
+    const currentUrl = urlName ?? pdfname;
+    if (currentUrl.length) {
+      const index = allpdflists.findIndex((object) => {
+        return object.url === currentUrl;
+      });
+      if (index > -1) {
+        let pdflists = allpdflists.map((e) => ({ ...e, isActive: "false" }));
+        pdflists[index].isActive = "true";
+        setpdfLists(pdflists);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      getPdfLists();
+    }, 100);
+  }, []);
+
+  const handlePdfLinkClick = (index) => {
+    let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
+    pdflists[index].isActive = "true";
+    setpdfLists(pdflists);
   };
 
   const scrollToBottom = () => {
@@ -54,6 +118,7 @@ const Chat = () => {
       top: 16.6616,
     },
   ];
+
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!messageText) return;
@@ -93,24 +158,23 @@ const Chat = () => {
                   )}
                 </Dropzone>
               </div>
-              <li className="nav-item">
-                <Link
-                  className="nav-link active"
-                  aria-current="true"
-                  to="/chat"
-                >
-                  pdf1
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  className="nav-link text-white"
-                  aria-current="true"
-                  to="/chat"
-                >
-                  pdf2
-                </Link>
-              </li>
+
+              {pdfLists.map((list, index) => (
+                <li className="nav-item" key={index}>
+                  <Link
+                    className={
+                      "nav-link " +
+                      (list.isActive === "true" ? "active" : "text-white")
+                    }
+                    onClick={(event) => handlePdfLinkClick(index)}
+                    aria-current="true"
+                    to={"/chat/" + list.url}
+                  >
+                    {list.name}
+                  </Link>
+                </li>
+              ))}
+
               <li className="nav-item ">
                 <div className="alert alert-light footer-nav" role="alert">
                   <Link className="alert-link" to="/">
@@ -160,19 +224,19 @@ const Chat = () => {
             <div className="col-md-2 right-sidebar">
               <div>
                 <ul className="right-sidebar-list">
-                  <li class="right-sidebar-list-item active">
+                  <li className="right-sidebar-list-item active">
                     <Icon.ArrowUpCircle />
                     <span>Next result</span>
                   </li>
-                  <li class="right-sidebar-list-item">
+                  <li className="right-sidebar-list-item">
                     <Icon.ArrowDownCircle />
                     <span> Prev result</span>
                   </li>
-                  <li class="right-sidebar-list-item">
+                  <li className="right-sidebar-list-item">
                     <Icon.ZoomIn />
                     <span> Narrow search</span>
                   </li>
-                  <li class="right-sidebar-list-item">
+                  <li className="right-sidebar-list-item">
                     <Icon.Book />
                     <span>Generate citation</span>
                   </li>

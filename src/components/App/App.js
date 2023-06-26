@@ -12,7 +12,9 @@ function App() {
         <header className="App-header">
           <Routes>
             <Route exact path="/" element={<Home />}></Route>
-            <Route exact path="/chat" element={<Chat />}></Route>
+            <Route path="/chat/*">
+              <Route path=":pdfname" element={<Chat />}></Route>
+            </Route>
           </Routes>
         </header>
       </div>
