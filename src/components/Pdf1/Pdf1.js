@@ -11,6 +11,7 @@ import {
   FlagKeyword,
   NextIcon,
   PreviousIcon,
+  SearchIcon,
   searchPlugin,
 } from "@react-pdf-viewer/search";
 
@@ -60,14 +61,13 @@ const Pdf1 = ({ fileUrl }) => {
               padding: "0 2px",
             }}
           >
-            <input
+            <textarea
               style={{
                 border: "none",
                 padding: "8px",
                 width: "200px",
               }}
               placeholder="Enter to search"
-              type="text"
               value={currentKeyword.keyword}
               onChange={(e) => {
                 setCurrentKeyword({
@@ -76,12 +76,13 @@ const Pdf1 = ({ fileUrl }) => {
                   wholeWords: currentKeyword.wholeWords,
                 });
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && currentKeyword.keyword) {
-                  highlight(currentKeyword);
-                }
-              }}
+              // onKeyDown={(e) => {
+              //   if (e.key === "Enter" && currentKeyword.keyword) {
+              //     highlight(currentKeyword);
+              //   }
+              // }}
             />
+
             <Tooltip
               position={Position.BottomCenter}
               target={
@@ -150,11 +151,24 @@ const Pdf1 = ({ fileUrl }) => {
               offset={{ left: 0, top: 8 }}
             />
           </div>
+
           <div style={{ padding: "0 2px" }}>
             <Tooltip
               position={Position.BottomCenter}
               target={
-                <MinimalButton onClick={jumpToPreviousMatch}>
+                <MinimalButton onClick={() => highlight(currentKeyword)}>
+                  <SearchIcon />
+                </MinimalButton>
+              }
+              content={() => "search match"}
+              offset={{ left: 0, top: 8 }}
+            />
+          </div>
+          <div style={{ padding: "0 2px" }}>
+            <Tooltip
+              position={Position.BottomCenter}
+              target={
+                <MinimalButton onClick={highlight}>
                   <PreviousIcon />
                 </MinimalButton>
               }

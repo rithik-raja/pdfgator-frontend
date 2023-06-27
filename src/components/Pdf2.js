@@ -1,7 +1,8 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 // import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
+import * as Icon from "react-feather";
 
 // import type {
 //   HighlightArea,
@@ -19,6 +20,7 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 const Pdf2 = ({ areas, fileUrl }) => {
   //   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
+  const [currentIndex, setcurrentIndex] = useState(-1);
   const renderHighlights = (props) => (
     <div
       className="rpv-core__viewer"
@@ -62,33 +64,68 @@ const Pdf2 = ({ areas, fileUrl }) => {
     trigger: Trigger.None,
   });
   const { jumpToHighlightArea } = highlightPluginInstance;
+  const moveResult = (isNext) => {
+    if (areas.length > 0) {
+      let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
+      if (currentVal > -1 && currentVal < areas.length) {
+        jumpToHighlightArea(areas[currentVal]);
+        setcurrentIndex(currentVal);
+      }
+    }
+  };
 
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
-        <ul
-          style={{
-            listStyleType: "none",
-            marginBottom: "20px",
-          }}
-        >
-          {areas.map((area, index) => (
-            <li
-              style={{
-                padding: "8px",
-                margin: "3px",
-                cursor: "pointer",
-                background: "#fde",
-              }}
-              key={index}
-            >
-              <div onClick={() => jumpToHighlightArea(area)}>
-                Page : {area.pageIndex}{" "}
+        <div className="pdf-viewer-container">
+          <div className="row">
+            <div className="col-md-10">
+              <div className="all-page-container">
+                {fileUrl ? (
+                  <>
+                    <Viewer
+                      fileUrl={fileUrl}
+                      plugins={[highlightPluginInstance]}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div style={{ paddingTop: "30px" }}>Upload File</div>
+                  </>
+                )}
               </div>
-            </li>
-          ))}
-        </ul>
-        <Viewer fileUrl={fileUrl} plugins={[highlightPluginInstance]} />
+            </div>
+
+            <div className="col-md-2 right-sidebar">
+              <div>
+                <ul className="right-sidebar-list">
+                  <li
+                    className="right-sidebar-list-item active"
+                    onClick={() => moveResult(true)}
+                  >
+                    <Icon.ArrowUpCircle />
+                    <span>Next result</span>
+                  </li>
+                  <li
+                    className="right-sidebar-list-item"
+                    onClick={() => moveResult(false)}
+                  >
+                    <Icon.ArrowDownCircle />
+                    <span> Prev result</span>
+                  </li>
+                  <li className="right-sidebar-list-item">
+                    <Icon.ZoomIn />
+                    <span> Narrow search</span>
+                  </li>
+                  <li className="right-sidebar-list-item">
+                    <Icon.Book />
+                    <span>Generate citation</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </Worker>
     </>
   );

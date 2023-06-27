@@ -6,6 +6,7 @@ import * as Icon from "react-feather";
 import Pdf2 from "../../components/Pdf2";
 import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
+import Pdf1 from "../../components/Pdf1/Pdf1";
 
 const Chat = () => {
   const location = useLocation();
@@ -89,6 +90,7 @@ const Chat = () => {
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
     setpdfLists(pdflists);
+    setuploadedUrl(null);
   };
 
   const scrollToBottom = () => {
@@ -208,43 +210,8 @@ const Chat = () => {
       </header>
 
       <main>
-        <div className="pdf-viewer-container">
-          <div className="row">
-            <div className="col-md-10">
-              {uploadedUrl ? (
-                <div className="all-page-container">
-                  {/* <Pdf1 fileUrl={uploadedUrl} /> */}
-                  <Pdf2 fileUrl={uploadedUrl} areas={areas} />
-                  {/* <PdfViewer url={uploadedFile} /> */}
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div className="col-md-2 right-sidebar">
-              <div>
-                <ul className="right-sidebar-list">
-                  <li className="right-sidebar-list-item active">
-                    <Icon.ArrowUpCircle />
-                    <span>Next result</span>
-                  </li>
-                  <li className="right-sidebar-list-item">
-                    <Icon.ArrowDownCircle />
-                    <span> Prev result</span>
-                  </li>
-                  <li className="right-sidebar-list-item">
-                    <Icon.ZoomIn />
-                    <span> Narrow search</span>
-                  </li>
-                  <li className="right-sidebar-list-item">
-                    <Icon.Book />
-                    <span>Generate citation</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Pdf2 fileUrl={uploadedUrl} areas={areas} />
+
         <h1 className="page-tittle pt-4 px-4">Chat GPT</h1>
         <div className="chatInputWrapper">
           <form onSubmit={handleSubmit}>
