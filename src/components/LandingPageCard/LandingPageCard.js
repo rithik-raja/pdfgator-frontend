@@ -3,16 +3,13 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './LandingPageCard.css'
 
-const LandingPageCard = ({ heading, bulletPoints }) => {
+const LandingPageCard = ({ heading, text, icon }) => {
   return (
     <div className="card">
+      <img className="card-img-top" src={"/images/" + icon + ".svg"} alt="Card image cap" />
       <div className="card-body">
-        <h5 className="card-title">{heading}</h5>
-        <ul className="card-text">
-          {bulletPoints.map((bulletPoint, index) => (
-            <li key={index}>{bulletPoint}</li>
-          ))}
-        </ul>
+        <h4 className="card-title">{heading}</h4>
+        <p className="card-text">{text}</p>
       </div>
     </div>
   );

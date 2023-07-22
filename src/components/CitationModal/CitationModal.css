@@ -1,0 +1,16 @@
+.source-container{
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px dotted #ccc;
+    padding: 5px;
+}
+.citation-result{
+    padding: 5px;
+    border: 1px solid #ccc;
+    height: 60px;
+}
+.references-result{
+    padding: 5px;
+    border: 1px solid #ccc;
+    height: 150px;
+}

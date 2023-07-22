@@ -3,19 +3,19 @@ import { Link } from "react-router-dom";
 import "./Chat.css";
 import Dropzone, { useDropzone } from "react-dropzone";
 import * as Icon from "react-feather";
-import Pdf2 from "../../components/Pdf2";
+import PdfView from "../../components/PdfView/PdfView";
 import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
-import Pdf1 from "../../components/Pdf1/Pdf1";
+import { GET_FILES, SET_FILES } from "../../constants/apiConstants";
+import { get, post } from "../../components/Api/api";
+import { uploadFileToApi } from "../../services/fileUploadService";
+import { getSessionId } from "../../services/sessionService";
 
 const Chat = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
-  const [messageText, setmessageText] = useState(null);
-  const [groupMessage, setgroupMessage] = useState([
-    { isQues: false, msg: "Welcome to Chat GPT" },
-  ]);
+
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [uploadedFile, setuploadedFile] = useState(null);
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -24,80 +24,7 @@ const Chat = () => {
     },
   });
   const [pdfLists, setpdfLists] = useState([]);
-  const fileInputOnChange = (acceptedFiles) => {
-    // const acceptedFiles = e.target.files;
-    if (acceptedFiles.length > 0) {
-      const newuploadedFile = acceptedFiles[0];
-      setuploadedUrl(URL.createObjectURL(newuploadedFile));
-      setuploadedFile(newuploadedFile);
-      const name = newuploadedFile.name;
-      const lastDot = name.lastIndexOf(".");
-
-      const newurl = name.substring(0, lastDot);
-      const newpdflist = [
-        ...pdfLists,
-        {
-          name: newurl,
-          url: newurl,
-          isActive: "true",
-        },
-      ];
-      setpdfLists(newpdflist);
-      navigate("/chat/" + newurl);
-      setActivepdfList(newurl, newpdflist);
-    }
-  };
-
-  const { pdfname } = params;
-
-  const getPdfLists = () => {
-    let newlist = [
-      { name: "pdf1", url: "pdf1" },
-      { name: "pdf2", url: "pdf2" },
-      { name: "pdf3", url: "pdf3" },
-    ];
-    const index = newlist.findIndex((object) => {
-      return object.url === pdfname;
-    });
-    if (index > -1) {
-      newlist[index].isActive = "true";
-    } else {
-      newlist = [...newlist, { name: pdfname, url: pdfname, isActive: "true" }];
-    }
-    setpdfLists(newlist);
-  };
-  const setActivepdfList = (urlName, allpdflists) => {
-    const currentUrl = urlName ?? pdfname;
-    if (currentUrl.length) {
-      const index = allpdflists.findIndex((object) => {
-        return object.url === currentUrl;
-      });
-      if (index > -1) {
-        let pdflists = allpdflists.map((e) => ({ ...e, isActive: "false" }));
-        pdflists[index].isActive = "true";
-        setpdfLists(pdflists);
-      }
-    }
-  };
-
-  useEffect(() => {
-    setTimeout(() => {
-      getPdfLists();
-    }, 100);
-  }, []);
-
-  const handlePdfLinkClick = (index) => {
-    let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
-    pdflists[index].isActive = "true";
-    setpdfLists(pdflists);
-    setuploadedUrl(null);
-  };
-
-  const scrollToBottom = () => {
-    const chat = document.getElementById("chatList");
-    chat.scrollTop = chat.scrollHeight;
-  };
-  const areas = [
+  const [areas, setareas] = useState([
     {
       pageIndex: 3,
       height: 1.55401,
@@ -119,21 +46,98 @@ const Chat = () => {
       left: 16.3638,
       top: 16.6616,
     },
-  ];
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!messageText) return;
-    // this.sendMessage();
-    console.log("submit");
-    console.log(messageText);
-    setgroupMessage([...groupMessage, { isQues: true, msg: messageText }]);
-    event.target.reset();
-    setmessageText("");
-    scrollToBottom();
+  ]);
+  const fileInputOnChange = async (acceptedFiles) => {
+    // const acceptedFiles = e.target.files;
+    if (acceptedFiles.length > 0) {
+      const newuploadedFile = acceptedFiles[0];
+      setuploadedUrl(URL.createObjectURL(newuploadedFile));
+      setuploadedFile(newuploadedFile);
+      const response = await uploadFileToApi(newuploadedFile);
+      if (response && response.data && response.data.id) {
+        console.log(response);
+        const name = response.data.file_path.split("/").pop() ?? "undefined";
+        const newurl = String(response.data.id);
+        const newpdflist = [
+          ...pdfLists,
+          {
+            ...response.data,
+            name: name,
+            url: newurl,
+            isActive: "true",
+          },
+        ];
+        setpdfLists(newpdflist);
+        setActivepdfList(newurl, newpdflist);
+        navigate("/chat/" + String(response.data.id));
+      }
+    }
   };
-  const handleChange = (event) => {
-    setmessageText(event.target.value);
+
+
+  const { pdfid } = params;
+
+  const getPdfLists = async () => {
+    const response1 = await get(GET_FILES);
+    console.log(response1.data);
+
+    if (response1 && response1.data && response1.data.length) {
+      const session_id = getSessionId();
+      const response = response1.data.filter((obj) => {
+        return obj.session_id === session_id;
+      });
+      let newlist = response;
+      newlist = newlist.map((d, i) => ({
+        ...d,
+        name: d.file_path.split("/").pop() ?? "undefined",
+        url: String(d.id),
+      }));
+
+      console.log(newlist);
+      const index = newlist.findIndex((object) => {
+        return object.url === pdfid;
+      });
+      if (index > -1) {
+        newlist[index].isActive = "true";
+        setuploadedUrl(newlist[index].file_path);
+      }
+      // else {
+      //   newlist = [
+      //     ...newlist,
+      //     { name: pdfid, url: pdfid, isActive: "true" },
+      //   ];
+      // }
+      setpdfLists(newlist);
+    }
+  };
+  const setActivepdfList = (urlName, allpdflists) => {
+    const currentUrl = urlName ?? pdfid;
+    if (currentUrl.length) {
+      const index = allpdflists.findIndex((object) => {
+        return object.url === currentUrl;
+      });
+      if (index > -1) {
+        let pdflists = allpdflists.map((e) => ({ ...e, isActive: "false" }));
+        pdflists[index].isActive = "true";
+        setpdfLists(pdflists);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!pdfLists.length) getPdfLists();
+  }, []);
+
+  const handlePdfLinkClick = (index) => {
+    let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
+    pdflists[index].isActive = "true";
+    setpdfLists(pdflists);
+    setuploadedUrl(pdflists[index].file_path);
+  };
+
+  const scrollToBottom = () => {
+    const chat = document.getElementById("chatList");
+    chat.scrollTop = chat.scrollHeight;
   };
 
   return (
@@ -144,23 +148,22 @@ const Chat = () => {
           className="collapse d-lg-block sidebar collapse bg-dark"
         >
           <div className="position-sticky">
+            <div className="upload-section text-white">
+              <Dropzone
+                onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
+              >
+                {({ getRootProps, getInputProps }) => (
+                  <section>
+                    <div {...getRootProps()}>
+                      <span className="fs-5">New File</span>
+                      <input {...getInputProps()} />
+                      <p className="d-none d-sm-block small">Drop PDF </p>
+                    </div>
+                  </section>
+                )}
+              </Dropzone>
+            </div>
             <ul className="nav nav-pills flex-column mb-auto">
-              <div className="upload-section text-white">
-                <Dropzone
-                  onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
-                >
-                  {({ getRootProps, getInputProps }) => (
-                    <section>
-                      <div {...getRootProps()}>
-                        <span className="fs-5">New File</span>
-                        <input {...getInputProps()} />
-                        <p className="d-none d-sm-block small">Drop PDF </p>
-                      </div>
-                    </section>
-                  )}
-                </Dropzone>
-              </div>
-
               {pdfLists.map((list, index) => (
                 <li className="nav-item" key={index}>
                   <Link
@@ -172,11 +175,12 @@ const Chat = () => {
                     aria-current="true"
                     to={"/chat/" + list.url}
                   >
+                    <Icon.FileText />
                     {list.name}
                   </Link>
                 </li>
               ))}
-
+              <div style={{ height: "50px" }}></div>
               <li className="nav-item ">
                 <div className="alert alert-light footer-nav" role="alert">
                   <Link className="alert-link" to="/">
@@ -210,50 +214,7 @@ const Chat = () => {
       </header>
 
       <main>
-        <Pdf2 fileUrl={uploadedUrl} areas={areas} />
-
-        <h1 className="page-tittle pt-4 px-4">Chat GPT</h1>
-        <div className="chatInputWrapper">
-          <form onSubmit={handleSubmit}>
-            <div className="input-group chat-input">
-              <input
-                type="text"
-                className="form-control textarea input"
-                placeholder="Enter your question..."
-                onChange={handleChange}
-              />
-
-              <button className="btn btn-primary" type="submit">
-                Send
-              </button>
-            </div>
-          </form>
-        </div>
-        <div className="container-fluid pt-4 chatWindowContainer">
-          <div className="chatWindow">
-            <ul className="chat" id="chatList">
-              {groupMessage.map((data) => (
-                <div key={data.id}>
-                  {data.isQues ? (
-                    <li className="self">
-                      <div className="msg">
-                        <p>{data.isQues}</p>
-                        <div className="message"> {data.msg}</div>
-                      </div>
-                    </li>
-                  ) : (
-                    <li className="other">
-                      <div className="msg">
-                        <p>{data.isQues}</p>
-                        <div className="message"> {data.msg} </div>
-                      </div>
-                    </li>
-                  )}
-                </div>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <PdfView fileUrl={uploadedUrl} areas={areas} />
       </main>
     </>
   );
