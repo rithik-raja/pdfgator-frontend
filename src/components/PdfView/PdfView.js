@@ -38,7 +38,7 @@ const Pdf2 = ({ areas, fileUrl }) => {
         }}
       >
         <div>
-          {areas
+          {areas.bboxes
             .filter((area) => area.pageIndex === props.pageIndex)
             .map((area, idx) => (
               <div
@@ -65,10 +65,10 @@ const Pdf2 = ({ areas, fileUrl }) => {
   });
   const { jumpToHighlightArea } = highlightPluginInstance;
   const moveResult = (isNext) => {
-    if (areas.length > 0) {
+    if (areas.indices.length > 0) {
       let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
-      if (currentVal > -1 && currentVal < areas.length) {
-        jumpToHighlightArea(areas[currentVal]);
+      if (currentVal >= 0 && currentVal < areas.indices.length) {
+        jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
         setcurrentIndex(currentVal);
       }
     }

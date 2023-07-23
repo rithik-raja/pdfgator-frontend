@@ -139,6 +139,8 @@ body {
   box-shadow: 0 2px 5px 0 rgb(0 0 0 / 5%), 0 2px 10px 0 rgb(0 0 0 / 5%);
   width: 240px;
   z-index: 600;
+  overflow: hidden;
+  overflow-y: scroll;
 }
 
 @media (max-width: 991.98px) {
@@ -167,6 +169,21 @@ body {
   box-shadow: none;
   border: none;
 }
+.nav-item {
+  text-align: left;
+}
+.nav-item svg{
+  color:white;
+  margin-right:7px;
+  height:  18px;
+}
+.nav-link {
+  width: 230px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .upload-section {
   padding: 10px 2px 2px 2px;
   border: 1px dashed #ddd;
@@ -181,8 +198,7 @@ body {
 }
 /* For all pages */
 .all-page-container {
-  height: 100%;
-  max-height: 500px;
+  height: 100vh;
   overflow: auto;
 }
 
