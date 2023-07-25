@@ -4,6 +4,8 @@ import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
 import * as Icon from "react-feather";
 
+import CitationModal from "../CitationModal/CitationModal";
+
 // import type {
 //   HighlightArea,
 //   RenderHighlightsProps,
@@ -21,6 +23,8 @@ const Pdf2 = ({ areas, fileUrl }) => {
   //   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const [currentIndex, setcurrentIndex] = useState(-1);
+
+  const [modalShow, setModalShow] = React.useState(false);
   const renderHighlights = (props) => (
     <div
       className="rpv-core__viewer"
@@ -77,7 +81,7 @@ const Pdf2 = ({ areas, fileUrl }) => {
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
-        <div className="pdf-viewer-container">
+        <div className="pdf-viewer-container container-lg">
           <div className="row">
             <div className="col-md-10">
               <div className="all-page-container">
@@ -117,10 +121,17 @@ const Pdf2 = ({ areas, fileUrl }) => {
                     <Icon.ZoomIn />
                     <span> Narrow search</span>
                   </li>
-                  <li className="right-sidebar-list-item">
+                  <li
+                    className="right-sidebar-list-item"
+                    onClick={() => setModalShow(true)}
+                  >
                     <Icon.Book />
                     <span>Generate citation</span>
                   </li>
+                  <CitationModal
+                    show={modalShow}
+                    onHide={() => setModalShow(false)}
+                  />
                 </ul>
               </div>
             </div>

@@ -11,16 +11,14 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header className="App-header">
-          <Routes>
-            <Route exact path="/" element={<Home />}></Route>
-            <Route path="/chat/*">
-              <Route path=":pdfid" element={<Chat />}></Route>
-            </Route>
+        <Routes>
+          <Route exact path="/" element={<Home />}></Route>
+          <Route path="/chat/*">
+            <Route path=":pdfid" element={<Chat />}></Route>
+          </Route>
 
-            <Route exact path="/success" element={<Success />}></Route>
-          </Routes>
-        </header>
+          <Route exact path="/success" element={<Success />}></Route>
+        </Routes>
       </div>
     </Router>
   );

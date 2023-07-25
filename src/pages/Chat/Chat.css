@@ -146,6 +146,10 @@ body {
 @media (max-width: 991.98px) {
   .sidebar {
     width: 100%;
+    margin-top: 40px;
+  }
+  main,.pdf-viewer-container{
+    margin-top:40px;
   }
 }
 .sidebar .active {
@@ -183,6 +187,13 @@ body {
   white-space: nowrap;
   overflow: hidden;
 }
+
+.collapsing {
+  -webkit-transition: none;
+  transition: none;
+  display: none;
+}
+
 
 .upload-section {
   padding: 10px 2px 2px 2px;
