@@ -19,7 +19,7 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 //     fileUrl: string;
 // }
 
-const Pdf2 = ({ areas, fileUrl }) => {
+const Pdf2 = ({ areas, fileUrl, pdfLists }) => {
   //   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const [currentIndex, setcurrentIndex] = useState(-1);
@@ -129,6 +129,7 @@ const Pdf2 = ({ areas, fileUrl }) => {
                     <span>Generate citation</span>
                   </li>
                   <CitationModal
+                    pdflists={pdfLists}
                     show={modalShow}
                     onHide={() => setModalShow(false)}
                   />

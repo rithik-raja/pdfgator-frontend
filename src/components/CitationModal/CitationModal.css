@@ -8,9 +8,11 @@
     padding: 5px;
     border: 1px solid #ccc;
     height: 60px;
+    word-wrap: break-word;
 }
 .references-result{
     padding: 5px;
     border: 1px solid #ccc;
-    height: 150px;
+    height: 150px;    
+    word-wrap: break-word;
 }

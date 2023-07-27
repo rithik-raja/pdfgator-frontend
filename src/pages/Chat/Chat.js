@@ -743,7 +743,7 @@ const Chat = () => {
       </header>
 
       <main>
-        <PdfView fileUrl={uploadedUrl} areas={areas} />
+        <PdfView fileUrl={uploadedUrl} areas={areas} pdfLists={pdfLists} />
       </main>
     </>
   );
