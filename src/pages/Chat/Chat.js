@@ -707,7 +707,7 @@ const Chat = () => {
               ))}
               <div style={{ height: "50px" }}></div>
               <li className="nav-item footer-nav">
-                <div className="alert alert-light mt-auto" role="alert">
+                <div className="alert alert-light" role="alert">
                   <Link className="alert-link" to="/">
                     Sign in
                   </Link>{" "}
