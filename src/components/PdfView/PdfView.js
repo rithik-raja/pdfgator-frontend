@@ -81,9 +81,9 @@ const Pdf2 = ({ areas, fileUrl, pdfLists }) => {
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
-        <div className="pdf-viewer-container container-lg">
+        <div className="pdf-viewer-container">
           <div className="row">
-            <div className="col-md-10">
+            <div className="col col-lg-9">
               <div className="all-page-container">
                 {fileUrl ? (
                   <>
@@ -100,7 +100,7 @@ const Pdf2 = ({ areas, fileUrl, pdfLists }) => {
               </div>
             </div>
 
-            <div className="col-md-2 right-sidebar">
+            <div className="d-none d-lg-block col-lg-3 right-sidebar">
               <div>
                 <ul className="right-sidebar-list">
                   <li

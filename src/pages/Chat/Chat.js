@@ -723,9 +723,9 @@ const Chat = () => {
           id="main-navbar"
           className="navbar navbar-expand-lg navbar-light fixed-top p-0"
         >
-          <div className="container-fluid">
+          <div className="d-flex d-lg-none container-fluid navbar-toggler-container py-2">
             <button
-              className="navbar-toggler navbar-icon"
+              className="navbar-toggler bg-light"
               type="button"
               data-bs-toggle="collapse"
               data-bs-target="#sidebarMenu"
