@@ -4,7 +4,10 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import "./CitationModal.css";
 import Cite from "citation-js";
+// import { Cite, plugins } from "@citation-js/core";
 import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
+import axios from "axios";
+
 require("@citation-js/plugin-isbn");
 
 export default function CitationModal(props) {
@@ -17,21 +20,57 @@ export default function CitationModal(props) {
   const [bibliographyResult, setbibliographyResult] = useState();
 
   const generateCitation = () => {
-    console.log(checkedState);
-    let cite = new Cite("9780133909777");
-    let citation = cite.format("citation", {
-      template: templateFormat,
-      format: "text",
-      lang: "en-US",
-    });
-    setcitationResult(citation);
-    console.log(citation);
-    let bibliography = cite.format("bibliography", {
-      template: templateFormat,
-      format: "text",
-    });
-    setbibliographyResult(bibliography);
-    console.log(bibliography);
+    var result = CITATION_TEMPLATE_FORMATS.find(
+      (item) => item.value === templateFormat
+    );
+
+    if (result.is_default === "true") {
+      console.log(checkedState);
+      let cite = new Cite("9780133909777");
+      console.log(cite);
+      let bibliography = cite.format("bibliography", {
+        template: templateFormat,
+        format: "text",
+      });
+      setbibliographyResult(bibliography);
+      console.log(bibliography);
+      let citation = cite.format("citation", {
+        template: templateFormat,
+        format: "text",
+        lang: "en-US",
+      });
+      setcitationResult(citation);
+      console.log(citation);
+    } else {
+      console.log(checkedState);
+      let data;
+      axios
+        .get("/csl-files/american-anthropological-association.csl")
+        .then((res) => {
+          console.log(res.data);
+          data = res.data;
+          let templateName = result.value;
+
+          let config = Cite.plugins.config.get("@csl");
+          config.templates.add(templateName, data);
+          let cite = new Cite("9780133909777");
+          console.log(cite);
+          let bibliography = cite.format("bibliography", {
+            template: templateName,
+            format: "text",
+          });
+          setbibliographyResult(bibliography);
+          console.log(bibliography);
+          let citation = cite.format("citation", {
+            template: templateName,
+            format: "text",
+            lang: "en-US",
+          });
+          setcitationResult(citation);
+          console.log(citation);
+        })
+        .catch((err) => console.log(err));
+    }
   };
   const onTemplateFormatChange = (e) => {
     console.log(e.target.value);
@@ -106,13 +145,6 @@ export default function CitationModal(props) {
                   })}
                 </div>
               </div>
-              <Form.Check
-                id="457"
-                type="checkbox"
-                label="bcgvbcvbcvbv"
-                value="jkiuk"
-                defaultChecked={false}
-              />
             </Form>
             <button
               type="button"
