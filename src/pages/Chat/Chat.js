@@ -671,7 +671,6 @@ const Chat = () => {
     <>
       <header>
         <nav id="sidebarMenu" className="collapse d-lg-block sidebar bg-dark">
-          <div className="position-sticky">
             <div className="upload-section text-white">
               <Dropzone
                 onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
@@ -687,7 +686,7 @@ const Chat = () => {
                 )}
               </Dropzone>
             </div>
-            <ul className="nav nav-pills flex-column mb-auto">
+            <ul className="nav nav-pills flex-column mb-auto align-items-center">
               {pdfLists.map((list, index) => (
                 <li className="nav-item" key={index}>
                   <Link
@@ -707,25 +706,24 @@ const Chat = () => {
                 </li>
               ))}
               <div style={{ height: "50px" }}></div>
-              <li className="nav-item ">
-                <div className="alert alert-light footer-nav" role="alert">
+              <li className="nav-item footer-nav">
+                <div className="alert alert-light" role="alert">
                   <Link className="alert-link" to="/">
-                    Signin
+                    Sign in
                   </Link>{" "}
-                  to save chat history
+                  to save your files
                 </div>
               </li>
             </ul>
             <hr />
-          </div>
         </nav>
         <nav
           id="main-navbar"
           className="navbar navbar-expand-lg navbar-light fixed-top p-0"
         >
-          <div className="container-fluid">
+          <div className="d-flex d-lg-none container-fluid navbar-toggler-container py-2">
             <button
-              className="navbar-toggler navbar-icon"
+              className="navbar-toggler bg-light"
               type="button"
               data-bs-toggle="collapse"
               data-bs-target="#sidebarMenu"
