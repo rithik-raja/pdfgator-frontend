@@ -20,6 +20,8 @@ export default function CitationModal(props) {
   const [bibliographyResult, setbibliographyResult] = useState();
 
   const generateCitation = () => {
+    setcitationResult("");
+    setbibliographyResult("");
     var result = CITATION_TEMPLATE_FORMATS.find(
       (item) => item.value === templateFormat
     );
