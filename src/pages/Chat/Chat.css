@@ -1,25 +1,13 @@
-
-
-/** sidebar start*/
 body {
   background-color: #cdcdcd;
 }
-@media (min-width: 991.98px) {
-  main {
-    padding-left: 240px;
-  }
+
+main {
+  height: 100vh;
 }
 
 .rpv-core__inner-page-container > div:first-child {
   background-color: rgba(255, 255, 255, 0.3);
-}
-
-.main {
-  background-color: rgb(255, 255, 255);
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  max-width: 100%;
 }
 
 .sidebar {
@@ -44,18 +32,27 @@ body {
 .navbar-toggler-icon:focus {
   box-shadow: none;
 }
+
 .navbar-toggler-container {
   z-index: 1000;
-  background-color: rgb(248,249,250);
+  background-color: rgb(33,37,41);
 }
+
+.navbar-toggler-container.iscollapsed {
+  z-index: 1000;
+  background-color: rgba(205, 205, 205, 0.5);
+}
+
 .nav-item {
   text-align: left;
 }
+
 .nav-item svg{
   color:white;
   margin-right:7px;
   height:  18px;
 }
+
 .nav-link {
   width: 230px;
   text-overflow: ellipsis;
@@ -72,40 +69,56 @@ body {
 .upload-section {
   padding: 10px 2px 2px 2px;
   border: 1px dashed #ddd;
-  margin: 10px 5px;
+  border-radius: 5px;
   cursor: pointer;
   background: #333;
 }
+
 .footer-nav {
   position: fixed;
   bottom: 0;
   text-align: center;
 }
-/* For all pages */
-.all-page-container {
+
+.pdf-viewer-container {
   height: 100vh;
   overflow: auto;
 }
 
 .right-sidebar{
   text-align: left;
-  margin-top: 30px;
-  padding: 0;
+  padding-left: 0;
+  height: 100vh;
+  overflow: auto;
 }
-.right-sidebar-list{
-  padding: 0;
+
+.right-sidebar-button:hover {
+  opacity: 1;
 }
-.right-sidebar-list-item{
-  list-style: none;
-  margin-top: 10px;
-  font-size: 14px;
+
+.right-sidebar-button:hover {
   cursor: pointer;
+  opacity: 0.8;
 }
-.right-sidebar-list-item:hover{
-  color: #1873f3;
+
+.searchbar-container {
+  bottom: 120px;
 }
-.right-sidebar-list-item span{
-  padding-left: 10px;
+
+.searchbar-container-inner {
+  background-color: rgba(205, 205, 205, 0.8);
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchbar-buttons-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 991.98px) {
@@ -113,7 +126,13 @@ body {
     width: 100%;
     margin-top: 55px;
   }
-  .nav-link {
+  .nav-link, .nav-signin-prompt {
     width: calc(100vw - 10px);
+  }
+}
+
+@media (min-width: 991.98px) {
+  main {
+    padding-left: 240px;
   }
 }

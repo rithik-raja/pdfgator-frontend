@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 // import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
+import { ListGroup, Container, Col, Row, Form, Button } from "react-bootstrap";
 import * as Icon from "react-feather";
-
 import CitationModal from "../CitationModal/CitationModal";
 
 // import type {
@@ -77,31 +77,35 @@ const Pdf2 = ({ areas, fileUrl, pdfLists }) => {
       }
     }
   };
+  const jumpResult = (ind) => {
+    if (ind >= 0 && ind < areas.indices.length) {
+      jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
+      setcurrentIndex(ind);
+    }
+  };
 
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
-        <div className="container-fluid pdf-viewer-container">
-          <div className="row">
-            <div className="col col-lg-9">
-              <div className="all-page-container">
-                {fileUrl ? (
-                  <>
-                    <Viewer
-                      fileUrl={fileUrl}
-                      plugins={[highlightPluginInstance]}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div style={{ paddingTop: "30px" }}>Upload File</div>
-                  </>
-                )}
-              </div>
-            </div>
+        <Container fluid>
+          <Row>
+            <Col className="col-lg-9 pdf-viewer-container">
+              {fileUrl ? (
+                <>
+                  <Viewer
+                    fileUrl={fileUrl}
+                    plugins={[highlightPluginInstance]}
+                  />
+                </>
+              ) : (
+                <>
+                  <div style={{ paddingTop: "30px" }}>Upload File</div>
+                </>
+              )}
+            </Col>
 
-            <div className="d-none d-lg-block col-lg-3 right-sidebar">
-              <div>
+            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar">
+              {/* <div>
                 <ul className="right-sidebar-list">
                   <li
                     className="right-sidebar-list-item active"
@@ -134,10 +138,51 @@ const Pdf2 = ({ areas, fileUrl, pdfLists }) => {
                     onHide={() => setModalShow(false)}
                   />
                 </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+              </div> */}
+              <ListGroup as="ol" numbered>
+                {
+                  areas.previews.map(
+                    (preview, ind) =>
+                      <ListGroup.Item onClick={() => jumpResult(ind)} as="li" key={ind} className="right-sidebar-button mx-2 my-1">{preview}</ListGroup.Item>
+                  )
+                }
+              </ListGroup>
+            </Col>
+          </Row>
+        </Container>
+        <Container fluid className="searchbar-container position-relative">
+          <Row>
+            <Col className="col-lg-9 px-4">
+              <Container fluid className="searchbar-container-inner">
+                <div className="d-flex" style={{width: "100%"}}>
+                  <div style={{marginRight: "auto"}}>
+                    <Button>
+                      <Icon.Book />
+                    </Button>
+                  </div>
+                  <Button>
+                    <Icon.ArrowLeft />
+                  </Button>
+                  <Button>
+                    <Icon.ArrowRight />
+                  </Button>
+                </div>
+                <Form className="d-flex w-100">
+                  <Form.Control
+                    type="search"
+                    placeholder="Ask any question..."
+                    className="me-2"
+                    aria-label="Search"
+                  />
+                  <Button>
+                    Search
+                  </Button>
+                </Form>
+              </Container>
+            </Col>
+            <Col className="d-none d-lg-block col-lg-3" />
+          </Row>
+        </Container>
       </Worker>
     </>
   );

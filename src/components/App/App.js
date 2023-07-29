@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
 import Home from "../../pages/Home/Home";
-// import Chat from "../Pdf1/Pdf1";
 import Chat from "../../pages/Chat/Chat";
 import Success from "../../pages/Stripe/Success";
 
