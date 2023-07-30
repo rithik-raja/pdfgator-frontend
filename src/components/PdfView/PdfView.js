@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
@@ -159,7 +159,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                     <span id="total-pages-span">of</span>
                   </div>
                   <div style={{marginRight: "0.5rem"}}>
-                    <SearchBarButton text="Citations & References" IconComponent={Icon.Book} onClickFunc={() => {}}/>
+                    <SearchBarButton text="Citations & References" IconComponent={Icon.Book} onClickFunc={() => setModalShow(true)}/>
                   </div>
                   <div style={{marginRight: "0.5rem"}}>
                     <SearchBarButton text="Previous Result" IconComponent={Icon.ArrowLeft} onClickFunc={() => moveResult(false)}/>
@@ -193,6 +193,12 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
             }
           }
         </CurrentPageLabel>
+
+        <CitationModal
+          pdflists={pdfLists}
+          show={modalShow}
+          onHide={() => setModalShow(false)}
+        />
 
       </Worker>
     </>
