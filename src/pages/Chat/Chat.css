@@ -102,7 +102,7 @@ main {
 }
 
 .searchbar-container {
-  bottom: 120px;
+  bottom: 110px;
 }
 
 .searchbar-container-inner {
@@ -112,6 +112,7 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
 }
 
 .searchbar-buttons-container {
@@ -119,6 +120,13 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.plain-input {
+  all: unset;
+  border: 1px solid black;
+  border-radius: 5px;
+  width: 50px;
 }
 
 @media (max-width: 991.98px) {
