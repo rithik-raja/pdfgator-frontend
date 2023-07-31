@@ -3,8 +3,6 @@ import Dropzone, { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./FileUpload.css";
 import uploadIcon from "../../images/upload.svg";
-import { get, post } from "../Api/api";
-import { GET_FILES, SET_FILES } from "../../constants/apiConstants";
 
 import { useNavigate } from "react-router-dom";
 import { getUserLoggedIn } from "../../services/userServices";
@@ -20,16 +18,6 @@ const FileUpload = () => {
 
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [uploadedFile, setuploadedFile] = useState(null);
-
-  useEffect(() => {
-    async function getdata() {
-      const res = await get(GET_FILES);
-      console.log(res);
-
-      console.log("cookie: " + document.cookie);
-    }
-    getdata();
-  }, []);
 
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;

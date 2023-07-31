@@ -1,10 +1,9 @@
 import React from "react";
-
 import { Link } from "react-router-dom";
-
 import FileUpload from "../../components/FileUpload/FileUpload";
 import LandingPageCard from "../../components/LandingPageCard/LandingPageCard";
 import Footer from "../../components/Footer/Footer";
+import Login from "../../components/Login/Login";
 
 const Home = () => {
   return (
@@ -41,6 +40,9 @@ const Home = () => {
         </header>
         <div className="row mb-4"></div>
         <FileUpload />
+
+        <Login />
+
         <div className="row mt-4">
           <div className="col-lg-4">
             <LandingPageCard
