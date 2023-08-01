@@ -17,7 +17,8 @@ export const get = async (url) => {
     const response = await api.get(url, {
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Authorization": "Token " + localStorage.getItem("authtok")
+        //"Access-Control-Allow-Origin": "*",
         // withCredentials: "true",
       },
     });

@@ -13,6 +13,7 @@ const Login = () => {
       const config = { headers: { "Content-Type": "multipart/form-data" } };
       const response = await post(GOOGLE_OAUTH, data, config);
       console.log(response);
+      localStorage.setItem("authtok", response.data.token);
     },
     onError: () => {
       console.log("Login Failed");
