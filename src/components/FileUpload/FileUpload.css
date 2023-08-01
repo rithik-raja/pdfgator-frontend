@@ -16,7 +16,7 @@
 }
 
 .file-upload-box {
-    border: 2px dashed #ccc;
+    border: 2px dashed rgba(13, 110, 253, 0.5);
     border-radius: 4px;
     padding: 20px;
     text-align: center;
@@ -26,11 +26,7 @@
 }
 
 .file-upload-box:hover {
-    border-color: rgba(13, 110, 253, 0.5);
-}
-
-.file-upload-box:focus {
-    outline: dashed 1px gray;
+    border-color: #0066ff;
 }
 
 .file-upload-box p {
