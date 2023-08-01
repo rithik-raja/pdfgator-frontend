@@ -28,9 +28,15 @@ export const get = async (url) => {
     throw error;
   }
 };
-export const post = async (url, data, config) => {
+export const post = async (url, data, config=null) => {
   try {
-    const response = await api.post(url, data, config);
+    let response
+    if (config && config.headers) {
+      config.headers = Object.assign({}, config.headers, {"Authorization": "Token " + localStorage.getItem("authtok")})
+    } else {
+      config = {headers: {"Authorization": "Token " + localStorage.getItem("authtok")}}
+    }
+    response = await api.post(url, data, config);
     return response;
   } catch (error) {
     console.error(error);

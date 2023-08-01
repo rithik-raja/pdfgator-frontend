@@ -56,8 +56,9 @@ const Chat = () => {
   const { pdfid } = params;
 
   const getPdfLists = async () => {
-    const response1 = await get(GET_FILES);
+    let response1 = await get(GET_FILES);
     console.log(response1.data);
+    response1 = response1.data
 
     if (response1 && response1.data && response1.data.length) {
       const session_id = getSessionId();
