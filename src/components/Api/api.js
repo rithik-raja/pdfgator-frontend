@@ -57,7 +57,11 @@ export const post = async (url, data, config = null) => {
     } else {
       config = {};
     }
-    data = {...data, session_id: getSessionId()}
+    if (data instanceof FormData) {
+      data.append("session_id", getSessionId())
+    } else {
+      data = {...data, session_id: getSessionId()}
+    }
     const response = await api.post(url, data, config);
     return response;
   } catch (error) {
