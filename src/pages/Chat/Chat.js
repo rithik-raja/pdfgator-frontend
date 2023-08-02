@@ -12,7 +12,13 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import { getSessionId } from "../../services/sessionService";
 import { Container } from "react-bootstrap";
 
-const Chat = () => {
+import useLogin from "../../components/Login/Login";
+import Cookies from "js-cookie";
+
+const Chat = (props) => {
+
+  const login = useLogin()
+
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
@@ -32,7 +38,7 @@ const Chat = () => {
       const newuploadedFile = acceptedFiles[0];
       setuploadedUrl(URL.createObjectURL(newuploadedFile));
       setuploadedFile(newuploadedFile);
-      const response = await uploadFileToApi(newuploadedFile);
+      const response = await uploadFileToApi(newuploadedFile, props);
       if (response && response.data && response.data.id) {
         console.log(response);
         const name = response.data.file_path.split("/").pop() ?? "undefined";
@@ -57,22 +63,21 @@ const Chat = () => {
 
   const getPdfLists = async () => {
     let response1 = await get(GET_FILES);
+    if (response1 === null) {
+      return
+    }
     console.log(response1.data);
     response1 = response1.data
 
     if (response1 && response1.data && response1.data.length) {
-      const session_id = getSessionId();
-      const response = response1.data.filter((obj) => {
-        return obj.session_id === session_id;
-      });
-      let newlist = response;
+
+      let newlist = response1.data;
       newlist = newlist.map((d, i) => ({
         ...d,
         name: d.file_path.split("/").pop() ?? "undefined",
         url: String(d.id),
       }));
 
-      console.log(newlist);
       const index = newlist.findIndex((object) => {
         return object.url === pdfid;
       });
@@ -154,12 +159,26 @@ const Chat = () => {
               ))}
               <div style={{ height: "50px" }}></div>
               <li className="nav-item footer-nav">
-                <div className="alert alert-light nav-signin-prompt" role="alert">
-                  <Link className="alert-link" to="/">
-                    Sign in
-                  </Link>{" "}
-                  to save your files
-                </div>
+                {
+                  props.email ? (
+                    <div className="alert alert-light nav-signin-prompt" role="alert">
+                      <span>{`${props.email} |`}</span><span>{" "}</span>
+                      <span className="alert-link" onClick={() => {
+                        Cookies.remove("authtok")
+                        window.location.reload()
+                      }}>Log Out</span>
+                    </div>
+                  ) : (
+                    <div className="alert alert-light nav-signin-prompt" role="alert">
+                      <span className="alert-link" onClick={() => {
+                        login()
+                      }}>
+                        Sign in
+                      </span>{" "}
+                      to save your files
+                    </div>
+                  )
+                }
               </li>
             </ul>
             <hr />
