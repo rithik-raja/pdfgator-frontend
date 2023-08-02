@@ -11,9 +11,7 @@ import Cookies from "js-cookie";
 import { getAuthToken } from "../../services/userServices";
 
 function App() {
-  const [props, setProps] = useState({
-    onMessage: (data) => setProps(data),
-  });
+  const [props, setProps] = useState({});
   useEffect(() => {
     const getUserDetails = async () => {
       let res;
@@ -22,6 +20,8 @@ function App() {
       }
       if (res) {
         setProps(res?.data);
+      } else {
+        setProps({});
       }
     };
     const handleUpdateUser = () => {

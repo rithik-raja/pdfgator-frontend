@@ -2,7 +2,7 @@ import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
 import { GOOGLE_OAUTH } from "../../constants/apiConstants";
 import { post } from "../../components/Api/api";
 import updateUser from "../../utils/updateUser";
-import { setUserID, setAuthToken } from "../../services/userServices";
+import { setAuthToken } from "../../services/userServices";
 
 const useLogin = () =>
   useGoogleLogin({
@@ -13,8 +13,7 @@ const useLogin = () =>
       const config = { headers: { "Content-Type": "application/json" } };
       const response = await post(GOOGLE_OAUTH, data, config);
       console.log(response);
-      setAuthToken(response.data?.data?.token);
-      setUserID(response.data?.data?.id);
+      setAuthToken(response.data?.token);
       updateUser();
     },
     onError: () => {

@@ -12,7 +12,8 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
-import { logOut } from "../../services/userServices";
+import { getAuthToken, logOut } from "../../services/userServices";
+import { getSessionId } from "../../services/sessionService";
 
 const Chat = (props) => {
   const login = useLogin();
@@ -618,7 +619,14 @@ const Chat = (props) => {
   const { pdfid } = params;
 
   const getPdfLists = async () => {
-    let response1 = await get(GET_FILES);
+    console.log(getAuthToken())
+    const sessionid = getSessionId()
+    let response1;
+    if (props.email) {
+      response1 = await get(GET_FILES);
+    } else {
+      response1 = await get(GET_FILES + sessionid + "/");
+    }
     if (response1 === null) {
       return;
     }
@@ -647,6 +655,8 @@ const Chat = (props) => {
       //   ];
       // }
       setpdfLists(newlist);
+    } else {
+      setpdfLists([])
     }
   };
   const setActivepdfList = (urlName, allpdflists) => {
@@ -664,8 +674,9 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
-    if (!pdfLists.length) getPdfLists();
-  }, []);
+    console.log("test")
+    getPdfLists();
+  }, [props]);
 
   const handlePdfLinkClick = (index) => {
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
@@ -739,6 +750,7 @@ const Chat = (props) => {
                     className="alert-link"
                     onClick={() => {
                       login();
+                      navigate("/chat")
                     }}
                   >
                     Sign in

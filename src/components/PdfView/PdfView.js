@@ -144,7 +144,9 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                 </>
               ) : (
                 <>
-                  <div style={{ paddingTop: "30px" }}>Upload File</div>
+                  <div style={{ paddingTop: "30px" }}>
+                    Select or Upload a File
+                  </div>
                 </>
               )}
             </Col>

@@ -5,8 +5,6 @@ import "./FileUpload.css";
 import uploadIcon from "../../images/upload.svg";
 
 import { useNavigate } from "react-router-dom";
-import { getUserLoggedIn } from "../../services/userServices";
-import { getSessionId } from "../../services/sessionService";
 import { uploadFileToApi } from "../../services/fileUploadService";
 
 const FileUpload = () => {
