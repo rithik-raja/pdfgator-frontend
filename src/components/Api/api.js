@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../../constants/apiConstants";
 import Cookies from "js-cookie";
+import { getAuthToken } from "../../services/userServices";
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 5000,
@@ -15,17 +16,17 @@ export const get1 = async (url) => {
 };
 export const get = async (url) => {
   try {
-    const authtok = Cookies.get("authtok")
-    let headers
+    const authtok = getAuthToken();
+    let headers;
     if (authtok) {
       headers = {
         "Content-Type": "application/json",
-        "Authorization": "Token " + authtok
-      }
+        Authorization: "Token " + authtok,
+      };
     } else {
       headers = {
         "Content-Type": "application/json",
-      }
+      };
     }
     const response = await api.get(url, {
       headers: headers,
@@ -36,17 +37,19 @@ export const get = async (url) => {
     return null;
   }
 };
-export const post = async (url, data, config=null) => {
+export const post = async (url, data, config = null) => {
   try {
-    const authtok = Cookies.get("authtok")
+    const authtok = getAuthToken();
     if (config && config.headers) {
       if (authtok) {
-        config.headers = Object.assign({}, config.headers, {"Authorization": "Token " + authtok})
+        config.headers = Object.assign({}, config.headers, {
+          Authorization: "Token " + authtok,
+        });
       }
     } else if (authtok) {
-      config = {headers: {"Authorization": "Token " + authtok}}
+      config = { headers: { Authorization: "Token " + authtok } };
     } else {
-      config = {}
+      config = {};
     }
     const response = await api.post(url, data, config);
     return response;

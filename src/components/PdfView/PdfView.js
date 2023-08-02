@@ -4,7 +4,6 @@ import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import jumpToPagePlugin from "../../utils/jumpToPagePlugin";
-
 import {
   ListGroup,
   Container,
@@ -16,15 +15,15 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import * as Icon from "react-feather";
-
 import CitationModal from "../CitationModal/CitationModal";
+import { useNavigate, useParams } from "react-router-dom";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 const PdfView = ({ areas, fileUrl, pdfLists }) => {
+  const navigate = useNavigate();
   let totalPages;
-
   const [currentIndex, setcurrentIndex] = useState(-1);
   const [modalShow, setModalShow] = useState(false);
 
@@ -121,6 +120,11 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
     );
   };
 
+  const deleteCurrentFile = () => {
+    console.log("delete");
+    navigate("/chat/");
+  };
+
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
@@ -180,7 +184,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                     <SearchBarButton
                       text="Delete File"
                       IconComponent={Icon.Trash}
-                      onClickFunc={() => {}}
+                      onClickFunc={() => deleteCurrentFile()}
                     />
                   </div>
                   <div
