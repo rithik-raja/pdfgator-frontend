@@ -15,5 +15,6 @@ export const uploadFileToApi = async (newuploadedFile, props) => {
   formData.append("size", newuploadedFile.size);
   formData.append("session_id", session_id);
   const response = await post(SET_FILES, formData, config);
+  console.log(response)
   return response;
 };

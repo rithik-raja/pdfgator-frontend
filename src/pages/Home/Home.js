@@ -43,56 +43,30 @@ const Home = () => {
         <div className="row mt-4">
           <div className="col-lg-4">
             <LandingPageCard
-              icon="zap"
+              icon="Zap"
               heading="Accelerate Your Research"
               text="Never spend hours flipping through 100-page documents again. With a simple search, Pdfgator finds evidence for you and automatically generates citations in the format of your choice."
             />
           </div>
           <div className="col-lg-4">
             <LandingPageCard
-              icon="filter"
+              icon="Filter"
               heading="Filter Out the Fluff"
               text="Pdfgator detects multiple lines of information and ranks them by relevance, giving you the most succint yet complete answer possible to your question."
             />
           </div>
           <div className="col-lg-4">
             <LandingPageCard
-              icon="activity"
+              icon="Activity"
               heading="Boost Your Productivity"
               text="Get the information you need, when you need it. Pdfgator is perfect for academic research, cramming for exams, answering open-book quizzes, or simply perusing documents in general."
             />
           </div>
         </div>
         <Footer />
-        {/* <div className="chat-container mt-3">
-          <Link to="/chat/pdf1" className="text-decoration-none">
-            <span className="">Chat Screen</span>
-          </Link>
-        </div> */}
       </div>
     </>
   );
 };
 
 export default Home;
-
-// {/* <div className="col-lg-6">
-//   <LandingPageCard
-//     heading="It's like Ctrl+F, but better"
-//     bulletPoints={[
-//       "Upload a PDF file",
-//       "Ask it anything",
-//       "Get the most relevant paragraph",
-//     ]}
-//   />
-// </div>
-// <div className="col-lg-6">
-//   <LandingPageCard
-//     heading="Features"
-//     bulletPoints={[
-//       "Sort through snippets by relevance",
-//       "Narrow down search to the most relevant sentence",
-//       "Generate instant citations",
-//     ]}
-//   />
-// </div> */}

@@ -13,7 +13,6 @@ import {
   Button,
   OverlayTrigger,
   Tooltip,
-  Spinner
 } from "react-bootstrap";
 import * as Icon from "react-feather";
 import CitationModal from "../CitationModal/CitationModal";
@@ -24,8 +23,9 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 import { SEARCH_QUERY } from "../../constants/apiConstants";
 import { get } from "../Api/api";
+import Spinner_ from "../Spinner/spinner";
 
-const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
+const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
@@ -123,24 +123,29 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
     console.log(query)
     console.log(currentActiveURL)
     document.body.style.pointerEvents = "none";
-    const searchInputElement = document.getElementById("search-bar-text-entry");
-    const searchSubmitElement = document.getElementById("search-bar-submit-button");
-    if (query && currentActiveURL) {
-      setIsQueryLoading(true);
-      setAreas({});
-      searchInputElement.disabled = true;
-      searchSubmitElement.disabled = true;
-      res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/");
+    try {
+      const searchInputElement = document.getElementById("search-bar-text-entry");
+      const searchSubmitElement = document.getElementById("search-bar-submit-button");
+      if (query?.trim() && currentActiveURL) {
+        setIsQueryLoading(true);
+        setAreas({});
+        searchInputElement.disabled = true;
+        searchSubmitElement.disabled = true;
+        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/");
+      }
+      const data = res?.data?.data
+      if (data) {
+        console.log(data);
+        setAreas(data);
+      }
+      searchInputElement.disabled = false;
+      searchSubmitElement.disabled = false;
+      document.body.style.pointerEvents = "auto";
+      setIsQueryLoading(false);
+    } catch (e) {
+      console.error(e);
+      document.body.style.pointerEvents = "auto";
     }
-    const data = res?.data?.data
-    if (data) {
-      console.log(data);
-      setAreas(data);
-    }
-    searchInputElement.disabled = false;
-    searchSubmitElement.disabled = false;
-    document.body.style.pointerEvents = "auto";
-    setIsQueryLoading(false);
   }
 
   const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
@@ -169,23 +174,24 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
         <Container fluid>
           <Row>
             <Col className="col-lg-9 pdf-viewer-container">
-              {fileUrl ? (
-                <>
-                  <Viewer
-                    fileUrl={fileUrl}
-                    plugins={[
-                      highlightPluginInstance,
-                      pageNavigationPluginInstance,
-                      jumpToPagePluginInstance,
-                    ]}
-                  />
-                </>
+              {isProcessingDocument ? (
+                <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
+                  <Spinner_ />
+                  <span className="mt-2">Processing Document...</span>
+                </div>
+              ) : fileUrl ? (
+                <Viewer
+                  fileUrl={fileUrl}
+                  plugins={[
+                    highlightPluginInstance,
+                    pageNavigationPluginInstance,
+                    jumpToPagePluginInstance,
+                  ]}
+                />
               ) : (
-                <>
-                  <div style={{ paddingTop: "30px" }}>
-                    Select or Upload a File
-                  </div>
-                </>
+                <div style={{ paddingTop: "30px" }}>
+                  Select or Upload a File
+                </div>
               )}
             </Col>
 
@@ -211,9 +217,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
                 </ListGroup>
               ) : isQueryLoading ? (
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
-                  <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </Spinner>
+                  <Spinner_ />
                 </div>
               ) : (
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2" style={{color: "rgb(108,117,124)"}}>

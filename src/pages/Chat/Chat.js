@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { GET_FILES, SET_FILES } from "../../constants/apiConstants";
 import { get, post } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
-import { Container } from "react-bootstrap";
+import { Container, Spinner } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
 import { getAuthToken, logOut } from "../../services/userServices";
@@ -32,6 +32,7 @@ const Chat = (props) => {
     },
   });
   const [pdfLists, setpdfLists] = useState([]);
+  const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
@@ -39,24 +40,33 @@ const Chat = (props) => {
       const newuploadedFile = acceptedFiles[0];
       setuploadedUrl(URL.createObjectURL(newuploadedFile));
       setuploadedFile(newuploadedFile);
-      const response = await uploadFileToApi(newuploadedFile, props);
-      if (response && response.data && response.data.id) {
-        console.log(response);
-        const name = response.data.file_path.split("/").pop() ?? "undefined";
-        const newurl = String(response.data.id);
-        const newpdflist = [
-          ...pdfLists,
-          {
-            ...response.data,
-            name: name,
-            url: newurl,
-            isActive: "true",
-          },
-        ];
-        currentActiveURL = newurl;
-        setpdfLists(newpdflist);
-        setActivepdfList(newurl, newpdflist);
-        navigate("/chat/" + newurl);
+      document.body.style.pointerEvents = "none";
+      try {
+        setIsProcessingDocument(true);
+        const response = await uploadFileToApi(newuploadedFile, props);
+        if (response && response.data && response.data.id) {
+          console.log(response);
+          const name = response.data.file_name.split("/").pop() ?? "undefined";
+          const newurl = String(response.data.id);
+          const newpdflist = [
+            ...pdfLists,
+            {
+              ...response.data,
+              name: name,
+              url: newurl,
+              isActive: "true",
+            },
+          ];
+          currentActiveURL = newurl;
+          setpdfLists(newpdflist);
+          setActivepdfList(newurl, newpdflist);
+          setIsProcessingDocument(false);
+          document.body.style.pointerEvents = "auto";
+          navigate("/chat/" + newurl);
+        }
+      } catch (e) {
+        console.error(e);
+        document.body.style.pointerEvents = "auto";
       }
     }
   };
@@ -83,7 +93,7 @@ const Chat = (props) => {
       let newlist = response1.data;
       newlist = newlist.map((d, i) => ({
         ...d,
-        name: d.file_path.split("/").pop() ?? "undefined",
+        name: d.file_name.split("/").pop() ?? "undefined",
         url: String(d.id),
       }));
 
@@ -241,7 +251,13 @@ const Chat = (props) => {
       </header>
 
       <main>
-        <PdfView fileUrl={uploadedUrl} areas={areas} pdfLists={pdfLists} currentActiveURL={currentActiveURL} setAreas={setAreas} />
+        <PdfView
+          fileUrl={uploadedUrl}
+          areas={areas} pdfLists={pdfLists}
+          currentActiveURL={currentActiveURL}
+          setAreas={setAreas}
+          isProcessingDocument={isProcessingDocument}
+        />
       </main>
     </>
   );
