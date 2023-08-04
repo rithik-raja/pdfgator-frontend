@@ -21,7 +21,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
-const PdfView = ({ areas, fileUrl, pdfLists }) => {
+import { SEARCH_QUERY } from "../../constants/apiConstants";
+import { get } from "../Api/api";
+
+const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
@@ -104,6 +107,21 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
       }
     }
   };
+
+  const handleSearchQuery = async (event) => {
+    event.preventDefault();
+    const query = document.getElementById("search-bar-text-entry").value
+    let res
+    console.log(query)
+    console.log(currentActiveURL)
+    if (query && currentActiveURL) {
+      res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/")
+    }
+    const data = res?.data?.data
+    if (data) {
+      setAreas(data)
+    }
+  }
 
   const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
     const renderPopover = (props) => (
@@ -225,15 +243,16 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                     onClickFunc={() => moveResult(true)}
                   />
                 </div>
-                <Form className="d-flex w-100">
+                <Form className="d-flex w-100" onSubmit={handleSearchQuery}>
                   <Form.Control
+                    id="search-bar-text-entry"
                     type="search"
                     placeholder="Ask any question..."
                     className="me-2"
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
                   />
-                  <Button>Search</Button>
+                  <Button type="submit">Search</Button>
                 </Form>
               </Container>
             </Col>

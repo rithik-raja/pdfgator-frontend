@@ -6,7 +6,7 @@ import updateUser from "../../utils/updateUser";
 import { getSessionId } from "../../services/sessionService";
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 5000,
+  //timeout: 5000,
   // withCredentials: "true",
 });
 

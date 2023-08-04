@@ -16,6 +16,8 @@ import { getAuthToken, logOut } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 
 const Chat = (props) => {
+  let currentActiveURL;
+
   const login = useLogin();
 
   const location = useLocation();
@@ -30,7 +32,7 @@ const Chat = (props) => {
     },
   });
   const [pdfLists, setpdfLists] = useState([]);
-  const [areas, setareas] = useState({
+  const [areas, setAreas] = useState({
     bboxes: [
       {
         pageIndex: 78,
@@ -609,14 +611,16 @@ const Chat = (props) => {
             isActive: "true",
           },
         ];
+        currentActiveURL = newurl;
         setpdfLists(newpdflist);
         setActivepdfList(newurl, newpdflist);
-        navigate("/chat/" + String(response.data.id));
+        navigate("/chat/" + newurl);
       }
     }
   };
 
   const { pdfid } = params;
+  currentActiveURL = pdfid;
 
   const getPdfLists = async () => {
     console.log(getAuthToken())
@@ -679,6 +683,7 @@ const Chat = (props) => {
   }, [props]);
 
   const handlePdfLinkClick = (index) => {
+    currentActiveURL = index;
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
     setpdfLists(pdflists);
@@ -792,7 +797,7 @@ const Chat = (props) => {
       </header>
 
       <main>
-        <PdfView fileUrl={uploadedUrl} areas={areas} pdfLists={pdfLists} />
+        <PdfView fileUrl={uploadedUrl} areas={areas} pdfLists={pdfLists} currentActiveURL={currentActiveURL} setAreas={setAreas} />
       </main>
     </>
   );
