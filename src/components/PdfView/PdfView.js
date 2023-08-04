@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
@@ -13,6 +13,7 @@ import {
   Button,
   OverlayTrigger,
   Tooltip,
+  Spinner
 } from "react-bootstrap";
 import * as Icon from "react-feather";
 import CitationModal from "../CitationModal/CitationModal";
@@ -29,6 +30,13 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
   const [modalShow, setModalShow] = useState(false);
+  const [isQueryLoading, setIsQueryLoading] = useState(false);
+
+  useEffect(() => {
+    if (areas?.bboxes?.length) {
+      jumpResult(0);
+    }
+  }, [areas])
 
   const renderHighlights = (props) => (
     <div
@@ -47,8 +55,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
         }}
       >
         <div>
-          {areas.bboxes
-            .filter((area) => area.pageIndex === props.pageIndex)
+          {areas.bboxes?.filter((area) => area.pageIndex === props.pageIndex)
             .map((area, idx) => (
               <div
                 key={idx}
@@ -81,7 +88,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
   const { jumpToPage } = jumpToPagePluginInstance;
 
   const moveResult = (isNext) => {
-    if (areas.indices.length > 0) {
+    if (areas?.indices?.length > 0) {
       let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
       if (currentVal >= 0 && currentVal < areas.indices.length) {
         jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
@@ -91,6 +98,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
   };
 
   const jumpResult = (ind) => {
+    console.log(areas);
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
       setcurrentIndex(ind);
@@ -110,17 +118,29 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
 
   const handleSearchQuery = async (event) => {
     event.preventDefault();
-    const query = document.getElementById("search-bar-text-entry").value
+    const query = document.getElementById("search-bar-text-entry").value;
     let res
     console.log(query)
     console.log(currentActiveURL)
+    document.body.style.pointerEvents = "none";
+    const searchInputElement = document.getElementById("search-bar-text-entry");
+    const searchSubmitElement = document.getElementById("search-bar-submit-button");
     if (query && currentActiveURL) {
-      res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/")
+      setIsQueryLoading(true);
+      setAreas({});
+      searchInputElement.disabled = true;
+      searchSubmitElement.disabled = true;
+      res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/");
     }
     const data = res?.data?.data
     if (data) {
-      setAreas(data)
+      console.log(data);
+      setAreas(data);
     }
+    searchInputElement.disabled = false;
+    searchSubmitElement.disabled = false;
+    document.body.style.pointerEvents = "auto";
+    setIsQueryLoading(false);
   }
 
   const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
@@ -170,24 +190,37 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
             </Col>
 
             <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar">
-              <ListGroup as="ol" numbered>
-                {areas?.previews?.map((preview, ind) => (
-                  <ListGroup.Item
-                    onClick={() => jumpResult(ind)}
-                    style={{
-                      boxShadow:
-                        ind === currentIndex
-                          ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                          : "none",
-                    }}
-                    as="li"
-                    key={ind}
-                    className="right-sidebar-button mx-2 my-1"
-                  >
-                    {preview}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
+              {(areas?.bboxes?.length) ? (
+                <ListGroup as="ol" numbered>
+                  {areas?.previews?.map((preview, ind) => (
+                    <ListGroup.Item
+                      onClick={() => jumpResult(ind)}
+                      style={{
+                        boxShadow:
+                          ind === currentIndex
+                            ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                            : "none",
+                      }}
+                      as="li"
+                      key={ind}
+                      className="right-sidebar-button mx-2 my-1"
+                    >
+                      {preview}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              ) : isQueryLoading ? (
+                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                </div>
+              ) : (
+                <div className="d-flex flex-column align-items-center justify-content-center mt-2" style={{color: "rgb(108,117,124)"}}>
+                  <Icon.Inbox size={"40px"} />
+                  <span>No Results</span>
+                </div>
+              )}
             </Col>
           </Row>
         </Container>
@@ -252,7 +285,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas }) => {
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
                   />
-                  <Button type="submit">Search</Button>
+                  <Button id="search-bar-submit-button" type="submit">Search</Button>
                 </Form>
               </Container>
             </Col>
