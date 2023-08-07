@@ -1,6 +1,5 @@
 import axios from "axios";
 import { BASE_URL } from "../../constants/apiConstants";
-import Cookies from "js-cookie";
 import { getAuthToken, removeAuthToken } from "../../services/userServices";
 import updateUser from "../../utils/updateUser";
 import { getSessionId } from "../../services/sessionService";
@@ -16,7 +15,7 @@ export const get1 = async (url) => {
   });
   return response;
 };
-export const get = async (url) => {
+export const get = async (url, setToastError = null) => {
   try {
     const authtok = getAuthToken();
     let headers;
@@ -40,10 +39,13 @@ export const get = async (url) => {
       updateUser();
     }
     console.error(error);
+    if (setToastError) {
+      setToastError(error.message)
+    }
     return null;
   }
 };
-export const post = async (url, data, config = null) => {
+export const post = async (url, data, config = null, setToastError = null) => {
   try {
     const authtok = getAuthToken();
     if (config && config.headers) {
@@ -70,6 +72,9 @@ export const post = async (url, data, config = null) => {
       updateUser();
     }
     console.error(error);
+    if (setToastError) {
+      setToastError(error.message)
+    }
     return null;
   }
 };

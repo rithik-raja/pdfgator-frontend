@@ -16,16 +16,16 @@ import {
 } from "react-bootstrap";
 import * as Icon from "react-feather";
 import CitationModal from "../CitationModal/CitationModal";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 import { SEARCH_QUERY } from "../../constants/apiConstants";
 import { get } from "../Api/api";
-import Spinner_ from "../Spinner/spinner";
+import CustomSpinner from "../Spinner/spinner";
 
-const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument }) => {
+const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
@@ -36,6 +36,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
     if (areas?.bboxes?.length) {
       jumpResult(0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [areas])
 
   const renderHighlights = (props) => (
@@ -136,7 +137,11 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
       const data = res?.data?.data
       if (data) {
         console.log(data);
-        setAreas(data);
+        if (data.exception) {
+          setErrorToastMessage("An internal server error occured. Please contact us if this problem persists.")
+        } else {
+          setAreas(data);
+        }
       }
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
@@ -176,7 +181,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
             <Col className="col-lg-9 pdf-viewer-container">
               {isProcessingDocument ? (
                 <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
-                  <Spinner_ />
+                  <CustomSpinner />
                   <span className="mt-2">Processing Document...</span>
                 </div>
               ) : fileUrl ? (
@@ -195,7 +200,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
               )}
             </Col>
 
-            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar">
+            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar" style={{boxShadow: !fileUrl ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)" : "none"}}>
               {(areas?.bboxes?.length) ? (
                 <ListGroup as="ol" numbered>
                   {areas?.previews?.map((preview, ind) => (
@@ -217,7 +222,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
                 </ListGroup>
               ) : isQueryLoading ? (
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
-                  <Spinner_ />
+                  <CustomSpinner />
                 </div>
               ) : (
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2" style={{color: "rgb(108,117,124)"}}>

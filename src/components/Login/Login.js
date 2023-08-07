@@ -1,10 +1,10 @@
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import { GOOGLE_OAUTH } from "../../constants/apiConstants";
 import { post } from "../../components/Api/api";
 import updateUser from "../../utils/updateUser";
 import { setAuthToken } from "../../services/userServices";
 
-const useLogin = () =>
+const useLogin = (setError) =>
   useGoogleLogin({
     onSuccess: async (codeResponse) => {
       console.log(codeResponse);
@@ -12,9 +12,12 @@ const useLogin = () =>
       let data = { access_token: loginResponse.access_token };
       const config = { headers: { "Content-Type": "application/json" } };
       const response = await post(GOOGLE_OAUTH, data, config);
-      console.log(response);
-      setAuthToken(response.data?.token);
-      updateUser();
+      if (response) {
+        setAuthToken(response.data?.token);
+        updateUser();
+      } else {
+        setError("Failed to log in")
+      }
     },
     onError: () => {
       console.log("Login Failed");

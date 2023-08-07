@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Chat.css";
-import Dropzone, { useDropzone } from "react-dropzone";
+import Dropzone from "react-dropzone";
 import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
-import { useLocation } from "react-router-dom";
+import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import { useNavigate, useParams } from "react-router-dom";
-import { GET_FILES, SET_FILES } from "../../constants/apiConstants";
-import { get, post } from "../../components/Api/api";
+import { GET_FILES } from "../../constants/apiConstants";
+import { get } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
-import { Container, Spinner } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
 import { getAuthToken, logOut } from "../../services/userServices";
@@ -18,28 +18,22 @@ import { getSessionId } from "../../services/sessionService";
 const Chat = (props) => {
   let currentActiveURL;
 
-  const login = useLogin();
-
-  const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
 
   const [uploadedUrl, setuploadedUrl] = useState("");
-  const [uploadedFile, setuploadedFile] = useState(null);
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "application/pdf": [".pdf"],
-    },
-  });
+  const [errorToastMessage, setErrorToastMessage] = useState(null)
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
+
+  const login = useLogin(setErrorToastMessage);
+
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
       const newuploadedFile = acceptedFiles[0];
       setuploadedUrl(URL.createObjectURL(newuploadedFile));
-      setuploadedFile(newuploadedFile);
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
@@ -63,6 +57,10 @@ const Chat = (props) => {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           navigate("/chat/" + newurl);
+        } else {
+          document.body.style.pointerEvents = "auto";
+          setErrorToastMessage("Failed to upload to server");
+          setIsProcessingDocument(false);
         }
       } catch (e) {
         console.error(e);
@@ -79,9 +77,9 @@ const Chat = (props) => {
     const sessionid = getSessionId()
     let response1;
     if (props.email) {
-      response1 = await get(GET_FILES);
+      response1 = await get(GET_FILES, setErrorToastMessage);
     } else {
-      response1 = await get(GET_FILES + sessionid + "/");
+      response1 = await get(GET_FILES + sessionid + "/", setErrorToastMessage);
     }
     if (response1 === null) {
       return;
@@ -104,12 +102,6 @@ const Chat = (props) => {
         newlist[index].isActive = "true";
         setuploadedUrl(newlist[index].file_path);
       }
-      // else {
-      //   newlist = [
-      //     ...newlist,
-      //     { name: pdfid, url: pdfid, isActive: "true" },
-      //   ];
-      // }
       setpdfLists(newlist);
     } else {
       setpdfLists([])
@@ -130,8 +122,8 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
-    console.log("test")
     getPdfLists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 
   const handlePdfLinkClick = (index) => {
@@ -194,6 +186,7 @@ const Chat = (props) => {
                     style={{cursor: "pointer"}}
                     onClick={() => {
                       logOut();
+                      navigate("/chat");
                     }}
                   >
                     Log Out
@@ -209,7 +202,7 @@ const Chat = (props) => {
                     style={{cursor: "pointer"}}
                     onClick={() => {
                       login();
-                      navigate("/chat")
+                      navigate("/chat");
                     }}
                   >
                     Sign in
@@ -257,8 +250,11 @@ const Chat = (props) => {
           currentActiveURL={currentActiveURL}
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
+          setErrorToastMessage={setErrorToastMessage}
         />
       </main>
+
+      <ErrorToast message={errorToastMessage} setMessage={setErrorToastMessage}/>
     </>
   );
 };

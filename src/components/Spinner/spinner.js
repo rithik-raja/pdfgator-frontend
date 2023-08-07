@@ -1,9 +1,9 @@
 import { Spinner } from "react-bootstrap"
 
-const Spinner_ = () => (
+const CustomSpinner = () => (
     <Spinner animation="border" role="status">
         <span className="visually-hidden">Loading...</span>
     </Spinner>
 )
 
-export default Spinner_
+export default CustomSpinner
