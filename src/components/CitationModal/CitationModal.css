@@ -4,15 +4,20 @@
     border: 1px dotted #ccc;
     padding: 5px;
 }
+.source-container .form-check{
+    margin-right: 10px;
+}
 .citation-result{
     padding: 5px;
     border: 1px solid #ccc;
     height: 60px;
-    word-wrap: break-word;
+    word-wrap: break-word;    
+    overflow-y: auto;
 }
 .references-result{
     padding: 5px;
     border: 1px solid #ccc;
     height: 150px;    
     word-wrap: break-word;
+    overflow-y: auto;
 }

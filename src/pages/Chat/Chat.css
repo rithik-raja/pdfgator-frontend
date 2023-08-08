@@ -59,6 +59,9 @@ main {
   white-space: nowrap;
   overflow: hidden;
 }
+.nav-signin-prompt{
+  margin-bottom: 0.5rem;
+}
 
 .collapsing {
   -webkit-transition: none;
@@ -143,4 +146,19 @@ main {
   main {
     padding-left: 240px;
   }
+}
+
+.sidebar-footer{
+  margin: 5px;
+  font-size: 14px;
+}
+.sidebar-footer a{
+  text-decoration: none;
+  outline: none;
+  cursor: pointer;  
+  color:#cdcdcd;
+  margin-right: 10px;
+}
+.sidebar-footer a:hover{
+  color: #0d6efd;
 }

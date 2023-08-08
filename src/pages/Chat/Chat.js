@@ -14,6 +14,7 @@ import { Container, Spinner } from "react-bootstrap";
 import useLogin from "../../components/Login/Login";
 import { getAuthToken, logOut } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
+import AccountModal from "../../components/AccountModal/AccountModal";
 
 const Chat = (props) => {
   let currentActiveURL;
@@ -24,6 +25,7 @@ const Chat = (props) => {
   const navigate = useNavigate();
   const params = useParams();
 
+  const [accountModalShow, setaccountModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [uploadedFile, setuploadedFile] = useState(null);
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -75,8 +77,8 @@ const Chat = (props) => {
   currentActiveURL = pdfid;
 
   const getPdfLists = async () => {
-    console.log(getAuthToken())
-    const sessionid = getSessionId()
+    console.log(getAuthToken());
+    const sessionid = getSessionId();
     let response1;
     if (props.email) {
       response1 = await get(GET_FILES);
@@ -112,7 +114,7 @@ const Chat = (props) => {
       // }
       setpdfLists(newlist);
     } else {
-      setpdfLists([])
+      setpdfLists([]);
     }
   };
   const setActivepdfList = (urlName, allpdflists) => {
@@ -130,7 +132,7 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
-    console.log("test")
+    console.log("test");
     getPdfLists();
   }, [props]);
 
@@ -140,6 +142,16 @@ const Chat = (props) => {
     pdflists[index].isActive = "true";
     setpdfLists(pdflists);
     setuploadedUrl(pdflists[index].file_path);
+  };
+  const accountLinkClickFunction = () => {
+    // setaccountModalShow(true);
+    // return;
+    if (props.email) {
+      setaccountModalShow(true);
+    } else {
+      login();
+      navigate("/chat");
+    }
   };
 
   return (
@@ -180,43 +192,51 @@ const Chat = (props) => {
                 </Link>
               </li>
             ))}
-            <div style={{ height: "50px" }}></div>
+            <div style={{ height: props.email ? "0px" : "50px" }}></div>
             <li className="nav-item footer-nav">
-              {props.email ? (
-                <div
-                  className="alert alert-light nav-signin-prompt"
-                  role="alert"
-                >
-                  <span>{`${props.email} |`}</span>
-                  <span> </span>
-                  <span
-                    className="alert-link"
-                    style={{cursor: "pointer"}}
-                    onClick={() => {
-                      logOut();
-                    }}
+              <>
+                {props.email ? (
+                  <></>
+                ) : (
+                  // <div
+                  //   className="alert alert-light nav-signin-prompt"
+                  //   role="alert"
+                  // >
+                  //   <span>{`${props.email} |`}</span>
+                  //   <span> </span>
+                  //   <span
+                  //     className="alert-link"
+                  //     style={{ cursor: "pointer" }}
+                  //     onClick={() => {
+                  //       logOut();
+                  //     }}
+                  //   >
+                  //     Log Out
+                  //   </span>
+                  // </div>
+                  <div
+                    className="alert alert-light nav-signin-prompt"
+                    role="alert"
                   >
-                    Log Out
-                  </span>
+                    <span
+                      className="alert-link"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        login();
+                        navigate("/chat");
+                      }}
+                    >
+                      Sign in
+                    </span>{" "}
+                    to save your files
+                  </div>
+                )}
+                <div class="sidebar-footer">
+                  <Link to="/">Home</Link>
+                  <Link onClick={accountLinkClickFunction}>Account</Link>
+                  {/* <Link onClick={accountLinkClickFunction}>Pricing</Link> */}
                 </div>
-              ) : (
-                <div
-                  className="alert alert-light nav-signin-prompt"
-                  role="alert"
-                >
-                  <span
-                    className="alert-link"
-                    style={{cursor: "pointer"}}
-                    onClick={() => {
-                      login();
-                      navigate("/chat")
-                    }}
-                  >
-                    Sign in
-                  </span>{" "}
-                  to save your files
-                </div>
-              )}
+              </>
             </li>
           </ul>
           <hr />
@@ -253,12 +273,18 @@ const Chat = (props) => {
       <main>
         <PdfView
           fileUrl={uploadedUrl}
-          areas={areas} pdfLists={pdfLists}
+          areas={areas}
+          pdfLists={pdfLists}
           currentActiveURL={currentActiveURL}
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
         />
       </main>
+      <AccountModal
+        show={accountModalShow}
+        onHide={() => setaccountModalShow(false)}
+        email={props.email}
+      />
     </>
   );
 };
