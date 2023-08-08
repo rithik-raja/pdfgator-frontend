@@ -1,8 +1,11 @@
 import axios from "axios";
 import { BASE_URL } from "../../constants/apiConstants";
+import { getAuthToken, removeAuthToken } from "../../services/userServices";
+import updateUser from "../../utils/updateUser";
+import { getSessionId } from "../../services/sessionService";
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 5000,
+  //timeout: 5000,
   // withCredentials: "true",
 });
 
@@ -12,34 +15,66 @@ export const get1 = async (url) => {
   });
   return response;
 };
-export const get = async (url) => {
+export const get = async (url, setToastError = null) => {
   try {
-    const response = await api.get(url, {
-      headers: {
+    const authtok = getAuthToken();
+    let headers;
+    if (authtok) {
+      headers = {
         "Content-Type": "application/json",
-        "Authorization": "Token " + localStorage.getItem("authtok")
-        //"Access-Control-Allow-Origin": "*",
-        // withCredentials: "true",
-      },
+        Authorization: "Token " + authtok,
+      };
+    } else {
+      headers = {
+        "Content-Type": "application/json",
+      };
+    }
+    const response = await api.get(url, {
+      headers: headers,
     });
     return response;
   } catch (error) {
+    if (error?.response?.data?.detail === "Invalid token.") {
+      removeAuthToken();
+      updateUser();
+    }
     console.error(error);
-    throw error;
+    if (setToastError) {
+      setToastError(error.message)
+    }
+    return null;
   }
 };
-export const post = async (url, data, config=null) => {
+export const post = async (url, data, config = null, setToastError = null) => {
   try {
-    let response
+    const authtok = getAuthToken();
     if (config && config.headers) {
-      config.headers = Object.assign({}, config.headers, {"Authorization": "Token " + localStorage.getItem("authtok")})
+      if (authtok) {
+        config.headers = Object.assign({}, config.headers, {
+          Authorization: "Token " + authtok,
+        });
+      }
+    } else if (authtok) {
+      config = { headers: { Authorization: "Token " + authtok } };
     } else {
-      config = {headers: {"Authorization": "Token " + localStorage.getItem("authtok")}}
+      config = {};
     }
-    response = await api.post(url, data, config);
+    if (data instanceof FormData) {
+      data.append("session_id", getSessionId())
+    } else {
+      data = {...data, session_id: getSessionId()}
+    }
+    const response = await api.post(url, data, config);
     return response;
   } catch (error) {
+    if (error?.response?.data?.detail === "Invalid token.") {
+      removeAuthToken();
+      updateUser();
+    }
     console.error(error);
-    throw error;
+    if (setToastError) {
+      setToastError(error.message)
+    }
+    return null;
   }
 };

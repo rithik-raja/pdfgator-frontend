@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import jumpToPagePlugin from "../../utils/jumpToPagePlugin";
-
 import {
   ListGroup,
   Container,
@@ -16,17 +15,29 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import * as Icon from "react-feather";
-
 import CitationModal from "../CitationModal/CitationModal";
+import { useNavigate } from "react-router-dom";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
-const PdfView = ({ areas, fileUrl, pdfLists }) => {
-  let totalPages;
+import { SEARCH_QUERY } from "../../constants/apiConstants";
+import { get } from "../Api/api";
+import CustomSpinner from "../Spinner/spinner";
 
+const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage }) => {
+  const navigate = useNavigate();
+  let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
   const [modalShow, setModalShow] = useState(false);
+  const [isQueryLoading, setIsQueryLoading] = useState(false);
+
+  useEffect(() => {
+    if (areas?.bboxes?.length) {
+      jumpResult(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areas])
 
   const renderHighlights = (props) => (
     <div
@@ -45,8 +56,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
         }}
       >
         <div>
-          {areas.bboxes
-            .filter((area) => area.pageIndex === props.pageIndex)
+          {areas.bboxes?.filter((area) => area.pageIndex === props.pageIndex)
             .map((area, idx) => (
               <div
                 key={idx}
@@ -79,7 +89,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
   const { jumpToPage } = jumpToPagePluginInstance;
 
   const moveResult = (isNext) => {
-    if (areas.indices.length > 0) {
+    if (areas?.indices?.length > 0) {
       let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
       if (currentVal >= 0 && currentVal < areas.indices.length) {
         jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
@@ -89,6 +99,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
   };
 
   const jumpResult = (ind) => {
+    console.log(areas);
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
       setcurrentIndex(ind);
@@ -106,6 +117,42 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
     }
   };
 
+  const handleSearchQuery = async (event) => {
+    event.preventDefault();
+    const query = document.getElementById("search-bar-text-entry").value;
+    let res
+    console.log(query)
+    console.log(currentActiveURL)
+    document.body.style.pointerEvents = "none";
+    try {
+      const searchInputElement = document.getElementById("search-bar-text-entry");
+      const searchSubmitElement = document.getElementById("search-bar-submit-button");
+      if (query?.trim() && currentActiveURL) {
+        setIsQueryLoading(true);
+        setAreas({});
+        searchInputElement.disabled = true;
+        searchSubmitElement.disabled = true;
+        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/");
+      }
+      const data = res?.data?.data
+      if (data) {
+        console.log(data);
+        if (data.exception) {
+          setErrorToastMessage("An internal server error occured. Please contact us if this problem persists.")
+        } else {
+          setAreas(data);
+        }
+      }
+      searchInputElement.disabled = false;
+      searchSubmitElement.disabled = false;
+      document.body.style.pointerEvents = "auto";
+      setIsQueryLoading(false);
+    } catch (e) {
+      console.error(e);
+      document.body.style.pointerEvents = "auto";
+    }
+  }
+
   const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
     const renderPopover = (props) => (
       <Tooltip id="button-tooltip" {...props}>
@@ -121,49 +168,68 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
     );
   };
 
+  const deleteCurrentFile = () => {
+    console.log("delete");
+    navigate("/chat/");
+  };
+
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
         <Container fluid>
           <Row>
             <Col className="col-lg-9 pdf-viewer-container">
-              {fileUrl ? (
-                <>
-                  <Viewer
-                    fileUrl={fileUrl}
-                    plugins={[
-                      highlightPluginInstance,
-                      pageNavigationPluginInstance,
-                      jumpToPagePluginInstance,
-                    ]}
-                  />
-                </>
+              {isProcessingDocument ? (
+                <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
+                  <CustomSpinner />
+                  <span className="mt-2">Processing Document...</span>
+                </div>
+              ) : fileUrl ? (
+                <Viewer
+                  fileUrl={fileUrl}
+                  plugins={[
+                    highlightPluginInstance,
+                    pageNavigationPluginInstance,
+                    jumpToPagePluginInstance,
+                  ]}
+                />
               ) : (
-                <>
-                  <div style={{ paddingTop: "30px" }}>Upload File</div>
-                </>
+                <div style={{ paddingTop: "30px" }}>
+                  Select or Upload a File
+                </div>
               )}
             </Col>
 
-            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar">
-              <ListGroup as="ol" numbered>
-                {areas?.previews?.map((preview, ind) => (
-                  <ListGroup.Item
-                    onClick={() => jumpResult(ind)}
-                    style={{
-                      boxShadow:
-                        ind === currentIndex
-                          ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                          : "none",
-                    }}
-                    as="li"
-                    key={ind}
-                    className="right-sidebar-button mx-2 my-1"
-                  >
-                    {preview}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
+            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar" style={{boxShadow: !fileUrl ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)" : "none"}}>
+              {(areas?.bboxes?.length) ? (
+                <ListGroup as="ol" numbered>
+                  {areas?.previews?.map((preview, ind) => (
+                    <ListGroup.Item
+                      onClick={() => jumpResult(ind)}
+                      style={{
+                        boxShadow:
+                          ind === currentIndex
+                            ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                            : "none",
+                      }}
+                      as="li"
+                      key={ind}
+                      className="right-sidebar-button mx-2 my-1"
+                    >
+                      {preview}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              ) : isQueryLoading ? (
+                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
+                  <CustomSpinner />
+                </div>
+              ) : (
+                <div className="d-flex flex-column align-items-center justify-content-center mt-2" style={{color: "rgb(108,117,124)"}}>
+                  <Icon.Inbox size={"40px"} />
+                  <span>No Results</span>
+                </div>
+              )}
             </Col>
           </Row>
         </Container>
@@ -180,7 +246,7 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                     <SearchBarButton
                       text="Delete File"
                       IconComponent={Icon.Trash}
-                      onClickFunc={() => {}}
+                      onClickFunc={() => deleteCurrentFile()}
                     />
                   </div>
                   <div
@@ -219,15 +285,16 @@ const PdfView = ({ areas, fileUrl, pdfLists }) => {
                     onClickFunc={() => moveResult(true)}
                   />
                 </div>
-                <Form className="d-flex w-100">
+                <Form className="d-flex w-100" onSubmit={handleSearchQuery}>
                   <Form.Control
+                    id="search-bar-text-entry"
                     type="search"
                     placeholder="Ask any question..."
                     className="me-2"
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
                   />
-                  <Button>Search</Button>
+                  <Button id="search-bar-submit-button" type="submit">Search</Button>
                 </Form>
               </Container>
             </Col>

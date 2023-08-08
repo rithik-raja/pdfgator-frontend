@@ -28,7 +28,12 @@ export default function CitationModal(props) {
 
     if (result.is_default === "true") {
       console.log(checkedState);
-      let cite = new Cite("9780133909777");
+      let cite = new Cite([
+        "9780133909777",
+        "1575860104",
+        "9781933624471",
+        "9781933624327",
+      ]);
       console.log(cite);
       let bibliography = cite.format("bibliography", {
         template: templateFormat,
@@ -55,7 +60,12 @@ export default function CitationModal(props) {
 
           let config = Cite.plugins.config.get("@csl");
           config.templates.add(templateName, data);
-          let cite = new Cite("9780133909777");
+          let cite = new Cite([
+            "9780133909777",
+            "1575860104",
+            "9781933624471",
+            "9781933624327",
+          ]);
           console.log(cite);
           let bibliography = cite.format("bibliography", {
             template: templateName,
