@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { GET_USER } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -7,7 +8,6 @@ import "./App.css";
 import Home from "../../pages/Home/Home";
 import Chat from "../../pages/Chat/Chat";
 import Success from "../../pages/Stripe/Success";
-import Cookies from "js-cookie";
 import { getAuthToken } from "../../services/userServices";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
     const getUserDetails = async () => {
       let res;
       if (getAuthToken()) {
-        res = await get("api/getuser/");
+        res = await get(GET_USER);
       }
       if (res) {
         setProps(res?.data);

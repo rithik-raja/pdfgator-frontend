@@ -21,9 +21,10 @@ import { useNavigate } from "react-router-dom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
-import { SEARCH_QUERY } from "../../constants/apiConstants";
-import { get } from "../Api/api";
+import { DELETE_FILES, SEARCH_QUERY } from "../../constants/apiConstants";
+import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
+import { getSessionId } from "../../services/sessionService";
 
 const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage }) => {
   const navigate = useNavigate();
@@ -132,7 +133,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/");
+        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/" + getSessionId() + "/");
       }
       const data = res?.data?.data
       if (data) {
@@ -168,9 +169,15 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
     );
   };
 
-  const deleteCurrentFile = () => {
-    console.log("delete");
-    navigate("/chat/");
+  const deleteCurrentFile = async () => {
+    if (currentActiveURL) {
+      const res = await post(DELETE_FILES, {target: currentActiveURL})
+      if (res) {
+        navigate("/chat/");
+      } else {
+        setErrorToastMessage("Failed to delete file")
+      }
+    }
   };
 
   return (
