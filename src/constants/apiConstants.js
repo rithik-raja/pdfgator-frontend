@@ -5,3 +5,4 @@ export const GOOGLE_OAUTH = "api/register-by-access-token/social/google-oauth2/"
 export const SEARCH_QUERY = "api/data/searchquery/"
 export const GET_USER = "api/getuser/"
 export const DELETE_FILES = "api/data/deletefiles/";
+export const PROCESS_CITATION = "api/data/processcitation/";

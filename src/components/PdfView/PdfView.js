@@ -26,7 +26,7 @@ import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 
-const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage }) => {
+const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage, allCitationData }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
@@ -324,6 +324,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
           pdflists={pdfLists}
           show={modalShow}
           onHide={() => setModalShow(false)}
+          citationdata={allCitationData}
         />
       </Worker>
     </>
