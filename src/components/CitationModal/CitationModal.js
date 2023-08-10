@@ -20,40 +20,33 @@ export default function CitationModal(props) {
   const [bibliographyResult, setbibliographyResult] = useState();
 
   const generateCitation = () => {
-
-    const citationList = []
+    const citationList = [];
     const today = new Date();
     const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
     checkedState.forEach((isChecked, idx) => {
       if (isChecked) {
         citationList.push(
-          !props.pdflists[idx].isbn ? {
-            type: null,
-            title: props.pdflists[idx].title,
-            author: JSON.parse(props.pdflists[idx].author_names),
-            publisher: props.pdflists[idx].publisher,
-            issued: {
-              "date-parts": [
-                [props.pdflists[idx].publication_year]
-              ]
-            },
-            accessed: {
-              "date-parts": [
-                [
-                  yyyy,
-                  mm,
-                  dd
-                ]
-              ]
-            },
-            "container-title": null, // journal name for article
-            URL: null,
-          } : props.pdflists[idx].isbn
-        )
+          !props.pdflists[idx].isbn
+            ? {
+                type: null,
+                title: props.pdflists[idx].title,
+                author: JSON.parse(props.pdflists[idx].author_names),
+                publisher: props.pdflists[idx].publisher,
+                issued: {
+                  "date-parts": [[props.pdflists[idx].publication_year]],
+                },
+                accessed: {
+                  "date-parts": [[yyyy, mm, dd]],
+                },
+                "container-title": null, // journal name for article
+                URL: null,
+              }
+            : props.pdflists[idx].isbn
+        );
       }
-    })
+    });
 
     setcitationResult("");
     setbibliographyResult("");
@@ -64,6 +57,7 @@ export default function CitationModal(props) {
     if (result.is_default === "true") {
       console.log(checkedState);
       let cite = new Cite(citationList);
+
       console.log(cite);
       let bibliography = cite.format("bibliography", {
         template: templateFormat,
@@ -81,8 +75,11 @@ export default function CitationModal(props) {
     } else {
       console.log(checkedState);
       let data;
+      let cslPath = result?.file_path
+        ? result.file_path
+        : "american-anthropological-association";
       axios
-        .get("/csl-files/american-anthropological-association.csl")
+        .get("/csl-files/" + cslPath + ".csl")
         .then((res) => {
           console.log(res.data);
           data = res.data;
@@ -183,10 +180,7 @@ export default function CitationModal(props) {
                 </div>
               </div>
             </Form>
-            <Button
-              className="mt-4"
-              onClick={generateCitation}
-            >
+            <Button className="mt-4" onClick={generateCitation}>
               Generate
             </Button>
           </div>
