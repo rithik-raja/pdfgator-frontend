@@ -4,7 +4,7 @@ import FileUpload from "../../components/FileUpload/FileUpload";
 import LandingPageCard from "../../components/LandingPageCard/LandingPageCard";
 import Footer from "../../components/Footer/Footer";
 
-const Home = () => {
+const Home = (props) => {
   return (
     <>
       <style>
@@ -63,7 +63,7 @@ const Home = () => {
             />
           </div>
         </div>
-        <Footer />
+        <Footer {...props} />
       </div>
     </>
   );
