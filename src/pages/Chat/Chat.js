@@ -5,9 +5,9 @@ import Dropzone from "react-dropzone";
 import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { GET_FILES } from "../../constants/apiConstants";
-import { get } from "../../components/Api/api";
+import { get, post } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
 
@@ -28,6 +28,7 @@ const Chat = (props) => {
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
+  const [allCitationData, setAllCitationData] = useState({})
 
   const login = useLogin(setErrorToastMessage);
 
@@ -223,7 +224,7 @@ const Chat = (props) => {
                     to save your files
                   </div>
                 )}
-                <div class="sidebar-footer">
+                <div className="sidebar-footer">
                   <Link to="/">Home</Link>
                   <Link onClick={accountLinkClickFunction}>Account</Link>
                   {/* <Link onClick={accountLinkClickFunction}>Pricing</Link> */}
@@ -271,6 +272,7 @@ const Chat = (props) => {
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
           setErrorToastMessage={setErrorToastMessage}
+          allCitationData={allCitationData}
         />
       </main>
       <AccountModal
