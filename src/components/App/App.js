@@ -9,6 +9,7 @@ import Home from "../../pages/Home/Home";
 import Chat from "../../pages/Chat/Chat";
 import Success from "../../pages/Stripe/Success";
 import { getAuthToken } from "../../services/userServices";
+import PrivacyPolicy from "../../pages/PrivacyPolicy/PrivacyPolicy";
 
 function App() {
   const [props, setProps] = useState({});
@@ -46,6 +47,12 @@ function App() {
           </Route>
 
           <Route exact path="/success" element={<Success />}></Route>
+
+          <Route
+            exact
+            path="/privacy-policy"
+            element={<PrivacyPolicy />}
+          ></Route>
         </Routes>
       </div>
     </Router>
