@@ -112,12 +112,13 @@ export default function CitationModal(props) {
   };
   const onSourceChange = (position) => {
     let newCheckstate = checkedState;
-    if (!checkedState.length) {
+    if (checkedState.length !== props.pdflists.length) {
       newCheckstate = new Array(props.pdflists.length).fill(false);
     }
     const updatedCheckedState = newCheckstate.map((item, index) =>
       index === position ? !item : item
     );
+    console.log(updatedCheckedState)
     setCheckedState(updatedCheckedState);
   };
 
