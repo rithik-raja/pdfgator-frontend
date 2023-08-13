@@ -133,7 +133,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/" + getSessionId() + "/");
+        res = await get(SEARCH_QUERY + currentActiveURL + "/" + encodeURIComponent(query).replace("%2F", "<|escapeslash|>") + "/" + getSessionId() + "/");
       }
       const data = res?.data?.data
       if (data) {
