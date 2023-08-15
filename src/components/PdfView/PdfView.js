@@ -25,12 +25,23 @@ import { DELETE_FILES, SEARCH_QUERY } from "../../constants/apiConstants";
 import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
+import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 
-const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProcessingDocument, setErrorToastMessage, allCitationData }) => {
+const PdfView = ({
+  areas,
+  fileUrl,
+  pdfLists,
+  currentActiveURL,
+  setAreas,
+  isProcessingDocument,
+  setErrorToastMessage,
+  allCitationData,
+}) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
-  const [modalShow, setModalShow] = useState(false);
+  const [citationModalShow, setCitationModalShow] = useState(false);
+  const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
 
   useEffect(() => {
@@ -38,7 +49,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
       jumpResult(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areas])
+  }, [areas]);
 
   const renderHighlights = (props) => (
     <div
@@ -57,7 +68,8 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
         }}
       >
         <div>
-          {areas.bboxes?.filter((area) => area.pageIndex === props.pageIndex)
+          {areas.bboxes
+            ?.filter((area) => area.pageIndex === props.pageIndex)
             .map((area, idx) => (
               <div
                 key={idx}
@@ -121,25 +133,39 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
   const handleSearchQuery = async (event) => {
     event.preventDefault();
     const query = document.getElementById("search-bar-text-entry").value;
-    let res
-    console.log(query)
-    console.log(currentActiveURL)
+    let res;
+    console.log(query);
+    console.log(currentActiveURL);
     document.body.style.pointerEvents = "none";
     try {
-      const searchInputElement = document.getElementById("search-bar-text-entry");
-      const searchSubmitElement = document.getElementById("search-bar-submit-button");
+      const searchInputElement = document.getElementById(
+        "search-bar-text-entry"
+      );
+      const searchSubmitElement = document.getElementById(
+        "search-bar-submit-button"
+      );
       if (query?.trim() && currentActiveURL) {
         setIsQueryLoading(true);
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        res = await get(SEARCH_QUERY + currentActiveURL + "/" + query + "/" + getSessionId() + "/");
+        res = await get(
+          SEARCH_QUERY +
+            currentActiveURL +
+            "/" +
+            query +
+            "/" +
+            getSessionId() +
+            "/"
+        );
       }
-      const data = res?.data?.data
+      const data = res?.data?.data;
       if (data) {
         console.log(data);
         if (data.exception) {
-          setErrorToastMessage("An internal server error occured. Please contact us if this problem persists.")
+          setErrorToastMessage(
+            "An internal server error occured. Please contact us if this problem persists."
+          );
         } else {
           setAreas(data);
         }
@@ -152,7 +178,7 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
       console.error(e);
       document.body.style.pointerEvents = "auto";
     }
-  }
+  };
 
   const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
     const renderPopover = (props) => (
@@ -171,11 +197,11 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
 
   const deleteCurrentFile = async () => {
     if (currentActiveURL) {
-      const res = await post(DELETE_FILES, {target: currentActiveURL})
+      const res = await post(DELETE_FILES, { target: currentActiveURL });
       if (res) {
         navigate("/chat/");
       } else {
-        setErrorToastMessage("Failed to delete file")
+        setErrorToastMessage("Failed to delete file");
       }
     }
   };
@@ -207,8 +233,15 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
               )}
             </Col>
 
-            <Col className="d-none d-lg-block col-lg-3 py-2 right-sidebar" style={{boxShadow: !fileUrl ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)" : "none"}}>
-              {(areas?.bboxes?.length) ? (
+            <Col
+              className="d-none d-lg-block col-lg-3 py-2 right-sidebar"
+              style={{
+                boxShadow: !fileUrl
+                  ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
+                  : "none",
+              }}
+            >
+              {areas?.bboxes?.length ? (
                 <ListGroup as="ol" numbered>
                   {areas?.previews?.map((preview, ind) => (
                     <ListGroup.Item
@@ -232,7 +265,10 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
                   <CustomSpinner />
                 </div>
               ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center mt-2" style={{color: "rgb(108,117,124)"}}>
+                <div
+                  className="d-flex flex-column align-items-center justify-content-center mt-2"
+                  style={{ color: "rgb(108,117,124)" }}
+                >
                   <Icon.Inbox size={"40px"} />
                   <span>No Results</span>
                 </div>
@@ -274,9 +310,16 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
                     <SearchBarButton
+                      text="Document Info"
+                      IconComponent={Icon.Info}
+                      onClickFunc={() => setInfoModalShow(true)}
+                    />
+                  </div>
+                  <div style={{ marginRight: "0.5rem" }}>
+                    <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}
-                      onClickFunc={() => setModalShow(true)}
+                      onClickFunc={() => setCitationModalShow(true)}
                     />
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
@@ -301,7 +344,9 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
                   />
-                  <Button id="search-bar-submit-button" type="submit">Search</Button>
+                  <Button id="search-bar-submit-button" type="submit">
+                    Search
+                  </Button>
                 </Form>
               </Container>
             </Col>
@@ -322,8 +367,14 @@ const PdfView = ({ areas, fileUrl, pdfLists, currentActiveURL, setAreas, isProce
 
         <CitationModal
           pdflists={pdfLists}
-          show={modalShow}
-          onHide={() => setModalShow(false)}
+          show={citationModalShow}
+          onHide={() => setCitationModalShow(false)}
+          citationdata={allCitationData}
+        />
+        <DocumentInfoModal
+          pdflists={pdfLists}
+          show={infoModalShow}
+          onHide={() => setInfoModalShow(false)}
           citationdata={allCitationData}
         />
       </Worker>
