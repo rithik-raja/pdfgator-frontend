@@ -153,7 +153,7 @@ const PdfView = ({
           SEARCH_QUERY +
             currentActiveURL +
             "/" +
-            query +
+            encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
             "/" +
             getSessionId() +
             "/"
