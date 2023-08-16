@@ -151,11 +151,11 @@ export default function CitationModal(props) {
       onHide={handleClose}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Generate Citation</Modal.Title>
+        <Modal.Title>Citations and References</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="row">
-          <div className="col-md-6">
+          <div className="d-flex flex-column col-md-6">
             <Form>
               <div className="">
                 <label>Choose Format</label>
@@ -175,7 +175,7 @@ export default function CitationModal(props) {
               </div>
               <div className="mt-2">
                 <label>Select Your Sources</label>
-                <div className="mt-2 source-container">
+                <div className="source-container mb-2">
                   {props.pdflists.map((pdflist, index) => {
                     return (
                       <Form.Check
@@ -192,12 +192,14 @@ export default function CitationModal(props) {
                 </div>
               </div>
             </Form>
+            <div className="mt-auto">
             <Button className="mt-2" onClick={generateCitation}>
               Generate
             </Button>
+            </div>
           </div>
           {citationResult && bibliographyResult && citationResult !== "[NO_PRINTED_FORM]" &&
-            <div className="col-md-6">
+            <div className="col-md-6" style={{minHeight: "320px"}}>
               <div className="d-flex flex-column" style={{height: "25%"}}>
                 <div>Citation</div>
                 <OverlayTrigger overlay={renderPopover} placement="right">
@@ -213,7 +215,7 @@ export default function CitationModal(props) {
               <div className="d-flex flex-column" style={{height: "75%"}}>
                 <div>References</div>
                 <OverlayTrigger overlay={renderPopover} placement="right">
-                  <div className="references-result mb-2" onClick={() => {
+                  <div className="references-result" onClick={() => {
                       navigator.clipboard.writeText(copyToClipboard.bibliography);
                       props.setCopiedToClipboard();
                     }}>

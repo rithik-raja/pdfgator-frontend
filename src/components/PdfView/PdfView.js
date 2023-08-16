@@ -27,6 +27,8 @@ import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 
+let jumpToPageFlag = 0;
+
 const PdfView = ({
   areas,
   fileUrl,
@@ -35,7 +37,7 @@ const PdfView = ({
   setAreas,
   isProcessingDocument,
   setErrorToastMessage,
-  allCitationData,
+  handlePdfLinkClick
 }) => {
   const navigate = useNavigate();
   let totalPages;
@@ -45,8 +47,9 @@ const PdfView = ({
   const [isQueryLoading, setIsQueryLoading] = useState(false);
 
   useEffect(() => {
-    if (areas?.bboxes?.length) {
+    if (areas?.bboxes?.length && jumpToPageFlag) {
       jumpResult(0);
+      jumpToPageFlag = 0;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [areas]);
@@ -167,6 +170,7 @@ const PdfView = ({
             "An internal server error occured. Please contact us if this problem persists."
           );
         } else {
+          jumpToPageFlag = 1;
           setAreas(data);
         }
       }
@@ -196,10 +200,15 @@ const PdfView = ({
   };
 
   const deleteCurrentFile = async () => {
-    if (currentActiveURL) {
+    if (fileUrl) {
       const res = await post(DELETE_FILES, { target: currentActiveURL });
       if (res) {
-        navigate("/chat/");
+        if (pdfLists && pdfLists?.length !== 1) {
+          const idx = pdfLists.findIndex((obj) => obj.id == currentActiveURL); // obj.id int and currentActiveUrl string, don't use ===
+          navigate(`/chat/${pdfLists[idx === pdfLists.length - 1 ? idx - 1 : idx + 1].id}/`);
+        } else {
+          navigate("/chat/");
+        }
       } else {
         setErrorToastMessage("Failed to delete file");
       }
@@ -225,6 +234,12 @@ const PdfView = ({
                     pageNavigationPluginInstance,
                     jumpToPagePluginInstance,
                   ]}
+                  onDocumentLoad={() => {
+                    if (areas?.bboxes?.length) {
+                      jumpResult(0);
+                    }
+                    console.log("loaded")
+                  }}
                 />
               ) : (
                 <div style={{ paddingTop: "30px" }}>
@@ -239,6 +254,7 @@ const PdfView = ({
                 boxShadow: !fileUrl
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none",
+                zIndex: 1000
               }}
             >
               {areas?.bboxes?.length ? (
@@ -312,14 +328,14 @@ const PdfView = ({
                     <SearchBarButton
                       text="Document Info"
                       IconComponent={Icon.Info}
-                      onClickFunc={() => setInfoModalShow(true)}
+                      onClickFunc={() => fileUrl && setInfoModalShow(true)}
                     />
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
                     <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}
-                      onClickFunc={() => setCitationModalShow(true)}
+                      onClickFunc={() => pdfLists?.length && setCitationModalShow(true)}
                     />
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
@@ -369,14 +385,12 @@ const PdfView = ({
           pdflists={pdfLists}
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}
-          citationdata={allCitationData}
           setCopiedToClipboard={() => {setErrorToastMessage("Copied to Clipboard", "primary")}}
         />
         <DocumentInfoModal
           pdflists={pdfLists}
           show={infoModalShow}
           onHide={() => setInfoModalShow(false)}
-          citationdata={allCitationData}
         />
       </Worker>
     </>
