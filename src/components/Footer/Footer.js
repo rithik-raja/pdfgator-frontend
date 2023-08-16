@@ -6,20 +6,26 @@ import { Link } from "react-router-dom";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import "./Footer.css";
+import PricingModal from "../PricingModal/PricingModal";
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
+  const [pricingModalShow, setpricingModalShow] = useState(false);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const login = useLogin(setErrorToastMessage);
+
   const accountLinkClickFunction = () => {
-    // setaccountModalShow(true);
-    // return;
     if (props.email) {
       setaccountModalShow(true);
     } else {
       login();
     }
   };
+
+  const pricingLinkClickFunction = () => {
+    setpricingModalShow(true);
+  };
+
   async function handleCheckout() {
     const stripe = await getStripe();
     const { error } = await stripe.redirectToCheckout({
@@ -44,7 +50,7 @@ const Footer = (props) => {
           My Account
         </button>
 
-        <button className="footer-element" onClick={handleCheckout}>
+        <button className="footer-element" onClick={pricingLinkClickFunction}>
           Pricing
         </button>
         <Link className="footer-element" to="/privacy-policy" target="_blank">
@@ -58,6 +64,11 @@ const Footer = (props) => {
         <ErrorToast
           message={errorToastMessage}
           setMessage={setErrorToastMessage}
+        />
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setpricingModalShow(false)}
+          email={props.email}
         />
       </div>
     </>

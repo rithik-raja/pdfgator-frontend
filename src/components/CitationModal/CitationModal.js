@@ -61,13 +61,13 @@ export default function CitationModal(props) {
       console.log(cite);
       let bibliography = cite.format("bibliography", {
         template: templateFormat,
-        format: "text",
+        format: "html",
       });
       setbibliographyResult(bibliography);
       console.log(bibliography);
       let citation = cite.format("citation", {
         template: templateFormat,
-        format: "text",
+        format: "html",
         lang: "en-US",
       });
       setcitationResult(citation);
@@ -189,15 +189,15 @@ export default function CitationModal(props) {
             <div>
               <div>Citation</div>
               <div className="citation-result">
-                {/* <p dangerouslySetInnerHTML={{ __html: citationResult }} /> */}
-                <p>{citationResult}</p>
+                <p dangerouslySetInnerHTML={{ __html: citationResult }} />
+                {/* <p>{citationResult}</p> */}
               </div>
             </div>
             <div>
               <div>References</div>
               <div className="references-result mb-2">
-                {/* <p dangerouslySetInnerHTML={{ __html: bibliographyResult }} /> */}
-                <p>{bibliographyResult}</p>
+                <p dangerouslySetInnerHTML={{ __html: bibliographyResult }} />
+                {/* <p>{bibliographyResult}</p> */}
               </div>
             </div>
           </div>
