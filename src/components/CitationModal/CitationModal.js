@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
+import { Button, Modal, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import "./CitationModal.css";
 import Cite from "citation-js";
 import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
@@ -10,7 +8,49 @@ import axios from "axios";
 require("@citation-js/plugin-isbn");
 require("@citation-js/plugin-doi");
 
+let copyToClipboard = {
+  citation: "",
+  bibliography: ""
+}
+
 export default function CitationModal(props) {
+
+  const renderPopover = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      Click to Copy
+    </Tooltip>
+  );
+
+  const setFromCitationList = (list) => {
+    let cite = new Cite(list);
+    console.log(cite);
+    let bibliography = cite.format("bibliography", {
+      template: templateFormat,
+      format: "html",
+    });
+    copyToClipboard.bibliography = cite.format("bibliography", {
+      template: templateFormat,
+      format: "text",
+    });
+    if (bibliography.includes("csl-left-margin")&& !bibliography.includes("csl-block")) {
+      bibliography = bibliography.replaceAll(`class="csl-entry"`, `class="csl-entry-with-margin"`)
+    }
+    setbibliographyResult(bibliography);
+    console.log(bibliography);
+    let citation = cite.format("citation", {
+      template: templateFormat,
+      format: "html",
+      lang: "en-US",
+    });
+    copyToClipboard.citation = cite.format("citation", {
+      template: templateFormat,
+      format: "text",
+      lang: "en-US",
+    });
+    setcitationResult(citation);
+    console.log(citation);
+  }
+
   const [templateFormat, settemplateFormat] = useState("apa");
   const [sourceId, setsourceId] = useState([]);
   const [checkedState, setCheckedState] = useState(
@@ -56,22 +96,7 @@ export default function CitationModal(props) {
 
     if (result.is_default === "true") {
       console.log(checkedState);
-      let cite = new Cite(citationList);
-
-      console.log(cite);
-      let bibliography = cite.format("bibliography", {
-        template: templateFormat,
-        format: "html",
-      });
-      setbibliographyResult(bibliography);
-      console.log(bibliography);
-      let citation = cite.format("citation", {
-        template: templateFormat,
-        format: "html",
-        lang: "en-US",
-      });
-      setcitationResult(citation);
-      console.log(citation);
+      setFromCitationList(citationList);
     } else {
       console.log(checkedState);
       let data;
@@ -87,21 +112,7 @@ export default function CitationModal(props) {
 
           let config = Cite.plugins.config.get("@csl");
           config.templates.add(templateName, data);
-          let cite = new Cite(citationList);
-          console.log(cite);
-          let bibliography = cite.format("bibliography", {
-            template: templateName,
-            format: "text",
-          });
-          setbibliographyResult(bibliography);
-          console.log(bibliography);
-          let citation = cite.format("citation", {
-            template: templateName,
-            format: "text",
-            lang: "en-US",
-          });
-          setcitationResult(citation);
-          console.log(citation);
+          setFromCitationList(citationList);
         })
         .catch((err) => console.log(err));
     }
@@ -146,7 +157,7 @@ export default function CitationModal(props) {
         <div className="row">
           <div className="col-md-6">
             <Form>
-              <div className="mt-2">
+              <div className="">
                 <label>Choose Format</label>
                 <Form.Select
                   aria-label="Default select example"
@@ -163,7 +174,7 @@ export default function CitationModal(props) {
                 </Form.Select>
               </div>
               <div className="mt-2">
-                <label>Select your sources</label>
+                <label>Select Your Sources</label>
                 <div className="mt-2 source-container">
                   {props.pdflists.map((pdflist, index) => {
                     return (
@@ -181,26 +192,38 @@ export default function CitationModal(props) {
                 </div>
               </div>
             </Form>
-            <Button className="mt-4" onClick={generateCitation}>
+            <Button className="mt-2" onClick={generateCitation}>
               Generate
             </Button>
           </div>
-          <div className="col-md-6">
-            <div>
-              <div>Citation</div>
-              <div className="citation-result">
-                <p dangerouslySetInnerHTML={{ __html: citationResult }} />
-                {/* <p>{citationResult}</p> */}
+          {citationResult && bibliographyResult && citationResult !== "[NO_PRINTED_FORM]" &&
+            <div className="col-md-6">
+              <div className="d-flex flex-column" style={{height: "25%"}}>
+                <div>Citation</div>
+                <OverlayTrigger overlay={renderPopover} placement="right">
+                  <div className="citation-result" onClick={() => {
+                      navigator.clipboard.writeText(copyToClipboard.citation);
+                      props.setCopiedToClipboard();
+                    }}>
+                    <p dangerouslySetInnerHTML={{ __html: citationResult }} />
+                    {/* <p>{citationResult}</p> */}
+                  </div>
+                </OverlayTrigger>
+              </div>
+              <div className="d-flex flex-column" style={{height: "75%"}}>
+                <div>References</div>
+                <OverlayTrigger overlay={renderPopover} placement="right">
+                  <div className="references-result mb-2" onClick={() => {
+                      navigator.clipboard.writeText(copyToClipboard.bibliography);
+                      props.setCopiedToClipboard();
+                    }}>
+                    <p dangerouslySetInnerHTML={{ __html: bibliographyResult }} />
+                    {/* <p>{bibliographyResult}</p> */}
+                  </div>
+                </OverlayTrigger>
               </div>
             </div>
-            <div>
-              <div>References</div>
-              <div className="references-result mb-2">
-                <p dangerouslySetInnerHTML={{ __html: bibliographyResult }} />
-                {/* <p>{bibliographyResult}</p> */}
-              </div>
-            </div>
-          </div>
+          }
         </div>
       </Modal.Body>
     </Modal>
