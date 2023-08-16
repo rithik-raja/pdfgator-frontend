@@ -34,9 +34,21 @@ const Chat = (props) => {
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
-  const [allCitationData, setAllCitationData] = useState({})
+  const [searchMemory, setSearchMemory] = useState({});
 
   const login = useLogin(setErrorToastMessage);
+
+  const preserveOldSearch = () => {
+    if (Object.keys(areas).length) {
+      setSearchMemory({
+        ...searchMemory,
+        [currentActiveURL]: {
+          query: document.getElementById("search-bar-text-entry").value,
+          areas: areas
+        }
+      });
+    }
+  }
 
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
@@ -60,7 +72,10 @@ const Chat = (props) => {
               isActive: "true",
             },
           ];
+          preserveOldSearch();
           currentActiveURL = newurl;
+          setAreas({});
+          document.getElementById("search-bar-text-entry").value = "";
           setpdfLists(newpdflist);
           setActivepdfList(newurl, newpdflist);
           setIsProcessingDocument(false);
@@ -135,10 +150,22 @@ const Chat = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 
+  useEffect(() => {
+    getPdfLists();
+    setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+    document.getElementById("search-bar-text-entry").value = searchMemory[currentActiveURL]?.query ?? "";
+  }, [currentActiveURL])
+
   const handlePdfLinkClick = (index) => {
-    currentActiveURL = index;
+    if (currentActiveURL === pdfLists[index].id) {
+      return
+    }
+    preserveOldSearch();
+    currentActiveURL = pdfLists[index].id;
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
+    setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+    document.getElementById("search-bar-text-entry").value = searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
     setuploadedUrl(pdflists[index].file_path);
   };
@@ -278,7 +305,7 @@ const Chat = (props) => {
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
           setErrorToastMessage={setErrorToastMessage}
-          allCitationData={allCitationData}
+          handlePdfLinkClick={handlePdfLinkClick}
         />
       </main>
       <AccountModal
