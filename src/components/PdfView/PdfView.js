@@ -370,6 +370,7 @@ const PdfView = ({
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}
           citationdata={allCitationData}
+          setCopiedToClipboard={() => {setErrorToastMessage("Copied to Clipboard", "primary")}}
         />
         <DocumentInfoModal
           pdflists={pdfLists}

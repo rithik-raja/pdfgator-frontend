@@ -16,15 +16,21 @@ import { getAuthToken, logOut } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
 
+let currentActiveURL;
+
 const Chat = (props) => {
-  let currentActiveURL;
 
   const navigate = useNavigate();
   const params = useParams();
 
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
-  const [errorToastMessage, setErrorToastMessage] = useState(null);
+  const [errorToastMessage, setErrorToastMessage_] = useState(null);
+  const [errorToastColor, setErrorToastColor] = useState("danger")
+  const setErrorToastMessage = (msg, color="danger") => {
+    setErrorToastMessage_(msg);
+    setErrorToastColor(color);
+  }
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
@@ -284,6 +290,7 @@ const Chat = (props) => {
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}
+        color={errorToastColor}
       />
     </>
   );

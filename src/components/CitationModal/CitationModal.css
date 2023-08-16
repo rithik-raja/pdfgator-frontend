@@ -1,6 +1,6 @@
 .source-container{
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     border: 1px dotted #ccc;
     padding: 5px;
 }
@@ -9,15 +9,35 @@
 }
 .citation-result{
     padding: 5px;
-    border: 1px solid #ccc;
-    height: 60px;
+    border: 1px dotted #ccc;
+    height: 100%;
     word-wrap: break-word;    
     overflow-y: auto;
+    cursor: pointer;
 }
 .references-result{
     padding: 5px;
-    border: 1px solid #ccc;
-    height: 150px;    
+    border: 1px dotted #ccc;
+    height: 100%;    
     word-wrap: break-word;
     overflow-y: auto;
+    cursor: pointer;
 }
+
+.csl-bib-body > div {
+    margin-bottom: 1rem;
+}
+
+.csl-entry-with-margin {
+    display: flex;
+}
+
+.csl-entry-with-margin > .csl-left-margin {
+    width: 8%;
+}
+
+.csl-entry-with-margin > .csl-right-inline {
+    width: 92%;
+}
+
+
