@@ -14,33 +14,11 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 
 import getStripe from "../../lib/getStripe";
+import { get } from "../Api/api";
+import { GET_PRODUCTS } from "../../constants/apiConstants";
 export default function PricingModal(props) {
-  let pricingDetails = [
-    {
-      plan_name: "Free",
-      currency_code: "$",
-      price: "0",
-      no_pages: "120",
-      file_size: "10",
-      files_per_day: "3",
-      no_of_questions: "50",
-      is_active: "true",
-      is_delete: "false",
-    },
-    {
-      plan_name: "Plus",
-      currency_code: "$",
-      price: "5",
-      no_pages: "2000",
-      file_size: "32",
-      files_per_day: "50",
-      no_of_questions: "1000",
-      is_active: "false",
-      is_delete: "true",
-    },
-  ];
-
   const [errorToastMessage, setErrorToastMessage] = useState(null);
+  const [pricingDetails, setPricingDetails] = useState([]);
   const login = useLogin(setErrorToastMessage);
 
   function FooterButton({ is_active }) {
@@ -48,11 +26,11 @@ export default function PricingModal(props) {
       <>
         <Button
           className="float-end m-1"
-          variant={is_active === "true" ? "light" : "primary"}
+          variant={is_active === true ? "light" : "primary"}
           size="sm"
           onClick={props.email ? handleCheckout : getPlusFunction}
         >
-          {is_active === "true" ? "Cancel" : "Get Plus"}
+          {is_active === true ? "Cancel" : "Get Plus"}
         </Button>
       </>
     );
@@ -76,6 +54,17 @@ export default function PricingModal(props) {
     });
     console.warn(error.message);
   }
+  const getProducts = async () => {
+    let res = await get(GET_PRODUCTS);
+    console.log(res);
+    if (res?.data && res?.data?.data && res?.data?.data.length) {
+      setPricingDetails(res?.data?.data);
+    }
+  };
+  useEffect(() => {
+    getProducts();
+  }, []);
+
   return (
     <Modal
       {...props}
@@ -93,8 +82,10 @@ export default function PricingModal(props) {
               <Col>
                 <Card className="pricing">
                   <Card.Header>
-                    <span className="fw-bold">{pricingDetail.plan_name}</span>
-                    {pricingDetail.is_active === "true" ? (
+                    <span className="fw-bold">
+                      {pricingDetail.product_name}
+                    </span>
+                    {pricingDetail.is_active === true ? (
                       <span className="float-end text-muted">current</span>
                     ) : (
                       <></>
@@ -103,8 +94,7 @@ export default function PricingModal(props) {
                   <Card.Body>
                     <div className="p-3">
                       <span className="fw-bold fs-4">
-                        {pricingDetail.currency_code}
-                        {pricingDetail.price}
+                        ${pricingDetail.price}
                       </span>
 
                       <span className="text-muted">/month</span>
@@ -144,7 +134,7 @@ export default function PricingModal(props) {
                       </li>
                     </ul>
                   </Card.Body>
-                  {pricingDetail.is_delete === "true" ? (
+                  {pricingDetail.is_delete === true ? (
                     <Card.Footer className="text-muted">
                       <FooterButton is_active={pricingDetail.is_active} />
                     </Card.Footer>
