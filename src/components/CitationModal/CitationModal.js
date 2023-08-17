@@ -52,7 +52,6 @@ export default function CitationModal(props) {
   }
 
   const [templateFormat, settemplateFormat] = useState("apa");
-  const [sourceId, setsourceId] = useState([]);
   const [checkedState, setCheckedState] = useState(
     new Array(props.pdflists.length).fill(false)
   );
@@ -135,7 +134,6 @@ export default function CitationModal(props) {
 
   const handleClose = () => {
     settemplateFormat("apa");
-    setsourceId([]);
     setcitationResult("");
     setbibliographyResult("");
     setCheckedState(new Array(props.pdflists.length).fill(false));
@@ -155,7 +153,7 @@ export default function CitationModal(props) {
       </Modal.Header>
       <Modal.Body>
         <div className="row">
-          <div className="d-flex flex-column col-md-6">
+          <div className="modal-left-container d-flex flex-column col-md-6">
             <Form>
               <div className="">
                 <label>Choose Format</label>
