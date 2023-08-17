@@ -26,6 +26,17 @@
     cursor: pointer;
 }
 
+@media (min-width: 991.98px) {
+    .modal-left-container {
+        min-height: 320px;
+    }
+}
+@media (max-width: 991.98px) {
+    .modal-left-container {
+        margin-bottom: 1rem;
+    }
+}
+
 .csl-bib-body > div {
     margin-bottom: 1rem;
 }
