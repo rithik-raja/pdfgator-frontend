@@ -14,12 +14,14 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 
 import getStripe from "../../lib/getStripe";
-import { get } from "../Api/api";
-import { GET_PRODUCTS } from "../../constants/apiConstants";
+import { get, post } from "../Api/api";
+import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
 export default function PricingModal(props) {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
-  const login = useLogin(setErrorToastMessage);
+  const [currentProduct, setcurrentProduct] = useState({});
+
+  const login = useLogin(setErrorToastMessage, loginCallBack);
 
   function FooterButton({ is_active }) {
     return (
@@ -35,10 +37,29 @@ export default function PricingModal(props) {
       </>
     );
   }
+  function loginCallBack(islogin) {
+    console.log(islogin);
+    if (islogin) {
+      handleCheckout();
+    }
+  }
   function getPlusFunction() {
     login();
   }
+
   async function handleCheckout() {
+    let data = {
+      id: 4,
+      price: "5.0",
+      product_name: "plus",
+      currency_code: "usd",
+    };
+    const config = { headers: { "Content-Type": "application/json" } };
+    const response = await post(CHECKOUT, data, config);
+    console.log(response);
+  }
+
+  async function handleCheckout1() {
     const stripe = await getStripe();
     const { error } = await stripe.redirectToCheckout({
       lineItems: [
@@ -134,9 +155,10 @@ export default function PricingModal(props) {
                       </li>
                     </ul>
                   </Card.Body>
-                  {pricingDetail.is_delete === true ? (
+                  {/* TODO:: Conditionally render this footer button need backend data */}
+                  {pricingDetail.price > 0 ? (
                     <Card.Footer className="text-muted">
-                      <FooterButton is_active={pricingDetail.is_active} />
+                      <FooterButton is_active={false} />
                     </Card.Footer>
                   ) : (
                     <></>

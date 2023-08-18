@@ -10,6 +10,7 @@ import Chat from "../../pages/Chat/Chat";
 import Success from "../../pages/Stripe/Success";
 import { getAuthToken } from "../../services/userServices";
 import PrivacyPolicy from "../../pages/PrivacyPolicy/PrivacyPolicy";
+import Failed from "../../pages/Stripe/Failed";
 
 function App() {
   const [props, setProps] = useState({});
@@ -45,9 +46,16 @@ function App() {
           <Route path="/chat/*">
             <Route path=":pdfid" element={<Chat {...props} />}></Route>
           </Route>
-
-          <Route exact path="/success" element={<Success />}></Route>
-
+          <Route
+            exact
+            path="/checkout/success"
+            element={<Success {...props} />}
+          ></Route>
+          <Route
+            exact
+            path="/checkout/failed"
+            element={<Failed {...props} />}
+          ></Route>
           <Route
             exact
             path="/privacy-policy"

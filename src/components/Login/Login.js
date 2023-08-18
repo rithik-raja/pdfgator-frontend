@@ -4,7 +4,7 @@ import { post } from "../../components/Api/api";
 import updateUser from "../../utils/updateUser";
 import { setAuthToken } from "../../services/userServices";
 
-const useLogin = (setError) =>
+const useLogin = (setError, loginCallBack = () => {}) =>
   useGoogleLogin({
     onSuccess: async (codeResponse) => {
       console.log(codeResponse);
@@ -15,12 +15,16 @@ const useLogin = (setError) =>
       if (response) {
         setAuthToken(response.data?.token);
         updateUser();
+        loginCallBack(true);
       } else {
-        setError("Failed to log in")
+        setError("Failed to log in");
+        loginCallBack(false);
       }
     },
     onError: () => {
       console.log("Login Failed");
+
+      loginCallBack(false);
     },
   });
 

@@ -8,3 +8,4 @@ export const GET_USER = "api/getuser/";
 export const DELETE_FILES = "api/data/deletefiles/";
 export const PROCESS_CITATION = "api/data/processcitation/";
 export const GET_PRODUCTS = "api/product/getproducts/";
+export const CHECKOUT = "payments/create-checkout-session/";
