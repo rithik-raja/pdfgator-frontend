@@ -38,6 +38,7 @@ export default function DocumentInfoModal(props) {
   const [publishDate, setpublishDate] = useState("");
   const [containerTitle, setcontainerTitle] = useState("");
   const [url, seturl] = useState("");
+  console.log(props);
   const ondocumentTypeSelectChange = (e) => {
     console.log(e.target.value);
     setdocumentType(e.target.value);

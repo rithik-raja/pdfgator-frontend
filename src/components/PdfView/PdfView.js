@@ -37,7 +37,7 @@ const PdfView = ({
   setAreas,
   isProcessingDocument,
   setErrorToastMessage,
-  handlePdfLinkClick
+  handlePdfLinkClick,
 }) => {
   const navigate = useNavigate();
   let totalPages;
@@ -205,7 +205,11 @@ const PdfView = ({
       if (res) {
         if (pdfLists && pdfLists?.length !== 1) {
           const idx = pdfLists.findIndex((obj) => obj.id == currentActiveURL); // obj.id int and currentActiveUrl string, don't use ===
-          navigate(`/chat/${pdfLists[idx === pdfLists.length - 1 ? idx - 1 : idx + 1].id}/`);
+          navigate(
+            `/chat/${
+              pdfLists[idx === pdfLists.length - 1 ? idx - 1 : idx + 1].id
+            }/`
+          );
         } else {
           navigate("/chat/");
         }
@@ -238,7 +242,7 @@ const PdfView = ({
                     if (areas?.bboxes?.length) {
                       jumpResult(0);
                     }
-                    console.log("loaded")
+                    console.log("loaded");
                   }}
                 />
               ) : (
@@ -254,7 +258,7 @@ const PdfView = ({
                 boxShadow: !fileUrl
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none",
-                zIndex: 1000
+                zIndex: 1000,
               }}
             >
               {areas?.bboxes?.length ? (
@@ -335,7 +339,9 @@ const PdfView = ({
                     <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}
-                      onClickFunc={() => pdfLists?.length && setCitationModalShow(true)}
+                      onClickFunc={() =>
+                        pdfLists?.length && setCitationModalShow(true)
+                      }
                     />
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
@@ -385,7 +391,9 @@ const PdfView = ({
           pdflists={pdfLists}
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}
-          setCopiedToClipboard={() => {setErrorToastMessage("Copied to Clipboard", "primary")}}
+          setCopiedToClipboard={() => {
+            setErrorToastMessage("Copied to Clipboard", "primary");
+          }}
         />
         <DocumentInfoModal
           pdflists={pdfLists}

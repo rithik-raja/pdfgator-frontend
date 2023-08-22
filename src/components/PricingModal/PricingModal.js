@@ -19,44 +19,55 @@ import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
 export default function PricingModal(props) {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
-  const [currentProduct, setcurrentProduct] = useState({});
+  const [currentProductId, setcurrentProductId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
 
-  function FooterButton({ is_active }) {
+  function FooterButton({ is_active, details }) {
+    function pricingButtonFunction() {
+      let product_id = details.id;
+      console.log(product_id);
+      if (is_active === false) {
+        if (props.email) {
+          handleCheckout();
+        } else {
+          login(); /**Checkout implemented in login callback function */
+        }
+      } else {
+        /*** TODO:: Cancel plan for already paid user */
+      }
+    }
     return (
       <>
         <Button
           className="float-end m-1"
           variant={is_active === true ? "light" : "primary"}
           size="sm"
-          onClick={props.email ? handleCheckout : getPlusFunction}
+          onClick={pricingButtonFunction}
         >
           {is_active === true ? "Cancel" : "Get Plus"}
         </Button>
       </>
     );
   }
+
   function loginCallBack(islogin) {
     console.log(islogin);
     if (islogin) {
       handleCheckout();
     }
   }
-  function getPlusFunction() {
-    login();
-  }
 
   async function handleCheckout() {
-    let data = {
-      id: 4,
-      price: "5.0",
-      product_name: "plus",
-      currency_code: "usd",
-    };
-    const config = { headers: { "Content-Type": "application/json" } };
-    const response = await post(CHECKOUT, data, config);
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    /**TODO:: Pro id hardcoded */
+    const response = await post(CHECKOUT + "4/", {}, config);
     console.log(response);
+    if (response && response?.data && response.data?.checkout_url) {
+      let checkout_url = response.data?.checkout_url;
+      console.log(checkout_url);
+      window.location.href = checkout_url;
+    }
   }
 
   async function handleCheckout1() {
@@ -158,7 +169,7 @@ export default function PricingModal(props) {
                   {/* TODO:: Conditionally render this footer button need backend data */}
                   {pricingDetail.price > 0 ? (
                     <Card.Footer className="text-muted">
-                      <FooterButton is_active={false} />
+                      <FooterButton is_active={false} details={pricingDetail} />
                     </Card.Footer>
                   ) : (
                     <></>
