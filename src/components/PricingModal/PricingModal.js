@@ -22,11 +22,11 @@ export default function PricingModal(props) {
   const [currentProductId, setcurrentProductId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-
+  let product_id = null;
   function FooterButton({ is_active, details }) {
     function pricingButtonFunction() {
-      let product_id = details.id;
-      console.log(product_id);
+      product_id = details.id;
+      // console.log(product_id);
       if (is_active === false) {
         if (props.email) {
           handleCheckout();
@@ -34,7 +34,7 @@ export default function PricingModal(props) {
           login(); /**Checkout implemented in login callback function */
         }
       } else {
-        /*** TODO:: Cancel plan for already paid user */
+        /* TODO :: Cancel plan for already paid user */
       }
     }
     return (
@@ -51,23 +51,24 @@ export default function PricingModal(props) {
     );
   }
 
-  function loginCallBack(islogin) {
+  async function loginCallBack(islogin) {
     console.log(islogin);
     if (islogin) {
-      handleCheckout();
+      await handleCheckout();
     }
   }
 
   async function handleCheckout() {
+    console.log(product_id);
     const config = { headers: { "Content-Type": "multipart/form-data" } };
-    /**TODO:: Pro id hardcoded */
-    const response = await post(CHECKOUT + "4/", {}, config);
+    const response = await post(CHECKOUT + product_id + "/", {}, config);
     console.log(response);
     if (response && response?.data && response.data?.checkout_url) {
       let checkout_url = response.data?.checkout_url;
       console.log(checkout_url);
       window.location.href = checkout_url;
     }
+    product_id = null;
   }
 
   async function handleCheckout1() {
@@ -166,7 +167,6 @@ export default function PricingModal(props) {
                       </li>
                     </ul>
                   </Card.Body>
-                  {/* TODO:: Conditionally render this footer button need backend data */}
                   {pricingDetail.price > 0 ? (
                     <Card.Footer className="text-muted">
                       <FooterButton is_active={false} details={pricingDetail} />
@@ -181,16 +181,33 @@ export default function PricingModal(props) {
         </Row>
         <Row>
           <div className="mt-3 text-center">
-            <span className="">Already have an account? </span>
-            <span
-              className="text-primary alert-link"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                login();
-              }}
-            >
-              Sign in
-            </span>
+            {props.email ? (
+              <>
+                <span className="">Not {props.email}? </span>
+                <span
+                  className="text-primary alert-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    logOut();
+                  }}
+                >
+                  Sign out
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="">Already have an account? </span>
+                <span
+                  className="text-primary alert-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    login();
+                  }}
+                >
+                  Sign in
+                </span>
+              </>
+            )}
           </div>
         </Row>
       </Modal.Body>

@@ -23,7 +23,6 @@ const useLogin = (setError, loginCallBack = () => {}) =>
     },
     onError: () => {
       console.log("Login Failed");
-
       loginCallBack(false);
     },
   });

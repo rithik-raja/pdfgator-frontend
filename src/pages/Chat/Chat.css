@@ -94,7 +94,9 @@ main {
   height: 100vh;
   overflow: auto;
 }
-
+.right-sidebar-button{
+  overflow: hidden;
+}
 .right-sidebar-button:hover {
   opacity: 1;
 }

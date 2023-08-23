@@ -53,15 +53,15 @@ export default function AccountModal(props) {
                       <ProgressBar now={2} min={0} max={3} />
                     </div>
                   </Col>
-                  <Col>0/3 PDFs</Col>
+                  <Col>2/3 PDFs</Col>
                 </Row>
                 <Row className="justify-content-md-center">
                   <Col xs={8}>
                     <div class="progress-container">
-                      <ProgressBar now={2} min={0} max={50} />
+                      <ProgressBar now={5} min={0} max={50} />
                     </div>
                   </Col>
-                  <Col>0/50 Questions</Col>
+                  <Col>5/50 Questions</Col>
                 </Row>
               </Container>
             </Card.Text>
