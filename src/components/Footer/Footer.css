@@ -5,10 +5,16 @@
     flex-wrap: wrap;
     gap: 8px
 }
-.footer-element{
+
+.footer-element {
     outline: none;
     border: none;
     color: #636060;
-    text-decoration: none;    
-    padding: 5px;
+    text-decoration: none; 
+    background-color: transparent;   
+    cursor: pointer;
+}
+
+.footer-element:hover {
+    opacity: 0.8;
 }

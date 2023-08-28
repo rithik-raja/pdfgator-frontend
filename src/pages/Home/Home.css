@@ -1,0 +1,9 @@
+.pdfgator-logo {
+    height: 80px;
+}
+
+@media (min-width: 991.98px) {
+    .pdfgator-logo {
+        height: 100px;
+    }
+}

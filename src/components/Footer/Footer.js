@@ -36,7 +36,7 @@ const Footer = (props) => {
         },
       ],
       mode: "subscription",
-      successUrl: `http://localhost:3000/success`,
+      successUrl: `http://localhost:3000/success`, // TODO: replace this
       cancelUrl: `http://localhost:3000`,
       customerEmail: "customer@email.com",
     });
@@ -46,13 +46,14 @@ const Footer = (props) => {
   return (
     <>
       <div className="footer">
-        <button className="footer-element" onClick={accountLinkClickFunction}>
+        <span className="footer-element" onClick={accountLinkClickFunction}>
           My Account
-        </button>
-
-        <button className="footer-element" onClick={pricingLinkClickFunction}>
+        </span>
+        <span className="footer-element">|</span>
+        <span className="footer-element" onClick={pricingLinkClickFunction}>
           Pricing
-        </button>
+        </span>
+        <span className="footer-element">|</span>
         <Link className="footer-element" to="/privacy-policy" target="_blank">
           Privacy Policy
         </Link>

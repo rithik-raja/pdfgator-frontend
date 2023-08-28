@@ -68,7 +68,7 @@ const Chat = (props) => {
             {
               ...response.data,
               name: name,
-              url: newurl,
+              str_url: newurl,
               isActive: "true",
             },
           ];
@@ -116,11 +116,11 @@ const Chat = (props) => {
       newlist = newlist.map((d, i) => ({
         ...d,
         name: d.file_name.split("/").pop() ?? "undefined",
-        url: String(d.id),
+        str_url: String(d.id),
       }));
 
       const index = newlist.findIndex((object) => {
-        return object.url === pdfid;
+        return object.str_url === pdfid;
       });
       if (index > -1) {
         newlist[index].isActive = "true";
@@ -135,7 +135,7 @@ const Chat = (props) => {
     const currentUrl = urlName ?? pdfid;
     if (currentUrl.length) {
       const index = allpdflists.findIndex((object) => {
-        return object.url === currentUrl;
+        return object.str_url === currentUrl;
       });
       if (index > -1) {
         let pdflists = allpdflists.map((e) => ({ ...e, isActive: "false" }));
@@ -211,7 +211,7 @@ const Chat = (props) => {
                   // data-bs-toggle="collapse"
                   // data-bs-target="#sidebarMenu"
                   aria-current="true"
-                  to={"/chat/" + list.url}
+                  to={"/chat/" + list.str_url}
                 >
                   <Icon.FileText />
                   {list.name}
