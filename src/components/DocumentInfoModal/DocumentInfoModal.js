@@ -13,6 +13,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { getAuthToken, logOut } from "../../services/userServices";
+import { post } from "../Api/api";
+import { UPDATECITATIONDATA } from "../../constants/apiConstants";
 
 const documentTypeOptions = [
   {
@@ -31,20 +33,24 @@ const documentTypeOptions = [
     id: "3",
   },
 ];
-const allowedKeys = ["id", "author_names", "doc_type", "publisher", "publication_year", "title", "url"];
+const allowedKeys = ["id", "author_names", "doc_type", "publisher", "publication_year", "title", "url", "container_title"];
 
-const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
+const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorToastMessage }) => {
 
   const initDocumentData = () => {
     console.log(pdflists)
-    if (!pdflists?.length) return {1: 1}
+    if (!pdflists?.length) return {}
     const allDocumentData = pdflists.find((obj) => obj.id == currentActiveURL) // obj.id int and currentActiveUrl string, don't use ===
     if (!allDocumentData) return {}
     const out = allowedKeys.reduce((obj, key) => {
       const val = allDocumentData[key];
+      console.log(val)
       obj[key] = key === "author_names" ? JSON.parse(val) : val;
       return obj;
-    }, {})
+    }, {});
+    if (out.author_names === null) {
+      out.author_names = [{given: "", family: ""}]
+    }
     console.log(out)
     return out
   }
@@ -69,15 +75,30 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
     setDocumentData({...documentData, doc_type: e.target.value});
   };
 
-  const saveDocumentInfo = (event) => {
+  const saveDocumentInfo = async (event) => {
     event.preventDefault();
-    console.log("save"); //TODO: send post request
+    const tempDocumentData = {}
+    const idx = pdflists.findIndex((obj) => obj.id == currentActiveURL);
+    Object.keys(documentData).forEach((key) => {
+      if (key === "author_names") {
+        const filteredAuthors = documentData[key].filter((obj) => obj.given && obj.family);
+        const newItem = filteredAuthors.length ? JSON.stringify(documentData[key]) : null;
+        tempDocumentData[key] = newItem;
+        pdflists[idx][key] = newItem;
+      } else {
+        const newItem = documentData[key] ? documentData[key] : null;
+        tempDocumentData[key] = newItem;
+        pdflists[idx][key] = newItem;
+      }
+    })
+    const res = await post(UPDATECITATIONDATA, {citation_data: tempDocumentData}, {}, setErrorToastMessage);
+    if (res) {
+      setErrorToastMessage("Successfully saved", "primary");
+    }
   };
 
   const handleNameChange = (idx, which, e) => {
     setDocumentData((current) => {
-      console.log(idx)
-      console.log(current)
       return {
         ...documentData,
         author_names: [
@@ -96,7 +117,7 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
         ...documentData,
         author_names: [
           ...current.author_names.slice(0, idx + 1),
-          ["", ""],
+          {given: "", family: ""},
           ...current.author_names.slice(idx + 1)
         ]
       };
@@ -166,7 +187,7 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
             <Form.Label>Author(s):</Form.Label>
           </Row>
 
-          {(documentData.author_names?.length ? documentData.author_names : [{given: "", family: ""}]).map((name, idx) => 
+          {documentData?.author_names && documentData.author_names.map((name, idx) => 
               <Row key={idx}>
                 <InputGroup className="mb-2">
                   <InputGroup.Text>{idx + 1}</InputGroup.Text>

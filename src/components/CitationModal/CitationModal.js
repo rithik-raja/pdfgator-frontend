@@ -13,7 +13,7 @@ let copyToClipboard = {
   bibliography: ""
 }
 
-export default function CitationModal(props) {
+const CitationModal = ({setCopiedToClipboard, ...props}) => {
 
   const renderPopover = (props) => (
     <Tooltip id="button-tooltip" {...props}>
@@ -203,7 +203,7 @@ export default function CitationModal(props) {
                 <OverlayTrigger overlay={renderPopover} placement="right">
                   <div className="citation-result" onClick={() => {
                       navigator.clipboard.writeText(copyToClipboard.citation);
-                      props.setCopiedToClipboard();
+                      setCopiedToClipboard();
                     }}>
                     <p dangerouslySetInnerHTML={{ __html: citationResult }} />
                     {/* <p>{citationResult}</p> */}
@@ -215,7 +215,7 @@ export default function CitationModal(props) {
                 <OverlayTrigger overlay={renderPopover} placement="right">
                   <div className="references-result" onClick={() => {
                       navigator.clipboard.writeText(copyToClipboard.bibliography);
-                      props.setCopiedToClipboard();
+                      setCopiedToClipboard();
                     }}>
                     <p dangerouslySetInnerHTML={{ __html: bibliographyResult }} />
                     {/* <p>{bibliographyResult}</p> */}
@@ -229,3 +229,5 @@ export default function CitationModal(props) {
     </Modal>
   );
 }
+
+export default CitationModal;

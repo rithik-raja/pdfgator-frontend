@@ -402,6 +402,7 @@ const PdfView = ({
           pdflists={pdfLists}
           show={infoModalShow}
           onHide={() => setInfoModalShow(false)}
+          setErrorToastMessage={setErrorToastMessage}
         />
       </Worker>
     </>
