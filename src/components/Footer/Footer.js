@@ -7,6 +7,19 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import "./Footer.css";
 import PricingModal from "../PricingModal/PricingModal";
+const newUserOrUnkonownUser = {
+  isSubscriped: "False",
+  isCanceled: "False",
+};
+const plusUser = {
+  isSubscriped: "True",
+  isCanceled: "False",
+};
+const cancelUser = {
+  isSubscriped: "False",
+  isCanceled: "True",
+};
+let subscription = plusUser;
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
@@ -25,23 +38,6 @@ const Footer = (props) => {
   const pricingLinkClickFunction = () => {
     setpricingModalShow(true);
   };
-
-  async function handleCheckout() {
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [
-        {
-          price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      successUrl: `http://localhost:3000/success`,
-      cancelUrl: `http://localhost:3000`,
-      customerEmail: "customer@email.com",
-    });
-    console.warn(error.message);
-  }
 
   return (
     <>
@@ -65,10 +61,13 @@ const Footer = (props) => {
           message={errorToastMessage}
           setMessage={setErrorToastMessage}
         />
+
         <PricingModal
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
+          isSubscriped={subscription.isSubscriped}
+          isCanceled={subscription.isCanceled}
         />
       </div>
     </>
