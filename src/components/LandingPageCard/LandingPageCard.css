@@ -6,10 +6,6 @@
     background-color: rgba(255, 255, 255, 0.7);
 }
 
-.card-body {
-    padding: 2rem;
-}
-
 .card-title {
     font-family: Open Sans;
     font-size: 1.25rem;
@@ -28,5 +24,18 @@
 
 .card:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 991.98px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .card {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
 }
   

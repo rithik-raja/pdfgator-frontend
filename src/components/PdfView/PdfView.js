@@ -329,11 +329,13 @@ const PdfView = ({
                     <span id="total-pages-span">of</span>
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
-                    <SearchBarButton
-                      text="Document Info"
-                      IconComponent={Icon.Info}
-                      onClickFunc={() => fileUrl && setInfoModalShow(true)}
-                    />
+                    {!pdfLists.find((obj) => obj.id == currentActiveURL)?.isbn &&
+                      <SearchBarButton
+                        text="Document Info"
+                        IconComponent={Icon.Info}
+                        onClickFunc={() => fileUrl && setInfoModalShow(true)}
+                      />
+                    }
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
                     <SearchBarButton
@@ -396,9 +398,11 @@ const PdfView = ({
           }}
         />
         <DocumentInfoModal
+          currentActiveURL={currentActiveURL}
           pdflists={pdfLists}
           show={infoModalShow}
           onHide={() => setInfoModalShow(false)}
+          setErrorToastMessage={setErrorToastMessage}
         />
       </Worker>
     </>

@@ -1,10 +1,13 @@
-.light-text{
+.light-text {
   color: #ddd;
 }
-.card-body{
+
+.card-body {
   padding: 1rem;
 }
 
-.plan-list li{
+.plan-list li {
   padding: 0;
 }
+
+

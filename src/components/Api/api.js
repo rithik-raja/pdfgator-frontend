@@ -71,9 +71,8 @@ export const post = async (url, data, config = null, setToastError = null) => {
       removeAuthToken();
       updateUser();
     }
-    console.error(error);
     if (setToastError) {
-      setToastError(error.message)
+      setToastError(error.response?.data?.data ?? error.message)
     }
     return null;
   }
