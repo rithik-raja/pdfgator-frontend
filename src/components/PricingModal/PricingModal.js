@@ -18,50 +18,79 @@ import { get, post } from "../Api/api";
 import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
 export default function PricingModal(props) {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
-  const [pricingDetails, setPricingDetails] = useState([]);
+  const [pricingDetails, setPricingDetails] = useState([
+    {
+      plan_name: "Free",
+      currency_code: "$",
+      price: "0",
+      no_pages: "120",
+      file_size: "10",
+      files_per_day: "3",
+      no_of_questions: "50",
+      is_current: "true",
+      is_paid: "false",
+    },
+    {
+      plan_name: "Plus",
+      currency_code: "$",
+      price: "5",
+      no_pages: "2000",
+      file_size: "32",
+      files_per_day: "50",
+      no_of_questions: "1000",
+      is_current: "false",
+      is_paid: "true",
+    },
+  ]);
   const [currentProductId, setcurrentProductId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-
-  function FooterButton({ is_active, details }) {
+  let product_id = null;
+  function FooterButton({ details }) {
+    let buttonVarient = "primary";
+    let buttonText = "Get Plus";
+    if (props.isSubscriped === "True") {
+      buttonText = "Cancel";
+      buttonVarient = "secondary";
+    } else if (props.isCanceled === "True") {
+      buttonText = "Undo Cancel";
+      buttonVarient = "primary";
+    }
     function pricingButtonFunction() {
-      let product_id = details.id;
-      console.log(product_id);
-      if (is_active === false) {
-        if (props.email) {
-          handleCheckout();
-        } else {
-          login(); /**Checkout implemented in login callback function */
-        }
+      product_id = details.id;
+      if (props.email) {
+        handleCheckout();
       } else {
-        /*** TODO:: Cancel plan for already paid user */
+        login(); /**strip implemented in login callback function */
       }
     }
     return (
       <>
+        {/* {props.isSubscriped === "False" && props.isCanceled === "True" && (
+          <span className="float-end">subscription was canceled</span>
+        )} */}
         <Button
           className="float-end m-1"
-          variant={is_active === true ? "light" : "primary"}
+          variant={buttonVarient}
           size="sm"
           onClick={pricingButtonFunction}
         >
-          {is_active === true ? "Cancel" : "Get Plus"}
+          {buttonText}
         </Button>
       </>
     );
   }
 
-  function loginCallBack(islogin) {
+  async function loginCallBack(islogin) {
     console.log(islogin);
     if (islogin) {
-      handleCheckout();
+      await handleCheckout();
     }
   }
 
-  async function handleCheckout() {
+  async function showStripeCustomerPortal() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
-    /**TODO:: Pro id hardcoded */
-    const response = await post(CHECKOUT + "4/", {}, config);
+    const response = await post(CHECKOUT, {}, config);
     console.log(response);
     if (response && response?.data && response.data?.checkout_url) {
       let checkout_url = response.data?.checkout_url;
@@ -70,21 +99,26 @@ export default function PricingModal(props) {
     }
   }
 
-  async function handleCheckout1() {
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [
-        {
-          price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      successUrl: `http://localhost:3000/success`,
-      cancelUrl: `http://localhost:3000`,
-      customerEmail: "customer@email.com",
-    });
-    console.warn(error.message);
+  async function handleCheckout() {
+    if (props.isSubscriped === "True") {
+      showStripeCustomerPortal();
+    } else if (props.isCanceled === "True") {
+      showStripeCustomerPortal();
+    } else {
+      const stripe = await getStripe();
+      await stripe.redirectToCheckout({
+        lineItems: [
+          {
+            price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        successUrl: `http://localhost:3000/checkout/success`,
+        cancelUrl: `http://localhost:3000/checkout/cancel`,
+        customerEmail: props.email,
+      });
+    }
   }
   const getProducts = async () => {
     let res = await get(GET_PRODUCTS);
@@ -117,7 +151,7 @@ export default function PricingModal(props) {
                     <span className="fw-bold">
                       {pricingDetail.product_name}
                     </span>
-                    {pricingDetail.is_active === true ? (
+                    {pricingDetail.is_current === true ? (
                       <span className="float-end text-muted">current</span>
                     ) : (
                       <></>
@@ -166,10 +200,9 @@ export default function PricingModal(props) {
                       </li>
                     </ul>
                   </Card.Body>
-                  {/* TODO:: Conditionally render this footer button need backend data */}
                   {pricingDetail.price > 0 ? (
                     <Card.Footer className="text-muted">
-                      <FooterButton is_active={false} details={pricingDetail} />
+                      <FooterButton details={pricingDetail} />
                     </Card.Footer>
                   ) : (
                     <></>
@@ -181,16 +214,33 @@ export default function PricingModal(props) {
         </Row>
         <Row>
           <div className="mt-3 text-center">
-            <span className="">Already have an account? </span>
-            <span
-              className="text-primary alert-link"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                login();
-              }}
-            >
-              Sign in
-            </span>
+            {props.email ? (
+              <>
+                <span className="">Not {props.email}? </span>
+                <span
+                  className="text-primary alert-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    logOut();
+                  }}
+                >
+                  Sign out
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="">Already have an account? </span>
+                <span
+                  className="text-primary alert-link"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    login();
+                  }}
+                >
+                  Sign in
+                </span>
+              </>
+            )}
           </div>
         </Row>
       </Modal.Body>

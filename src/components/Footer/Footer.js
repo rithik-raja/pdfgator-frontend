@@ -7,6 +7,19 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import "./Footer.css";
 import PricingModal from "../PricingModal/PricingModal";
+const newUserOrUnkonownUser = {
+  isSubscriped: "False",
+  isCanceled: "False",
+};
+const plusUser = {
+  isSubscriped: "True",
+  isCanceled: "False",
+};
+const cancelUser = {
+  isSubscriped: "False",
+  isCanceled: "True",
+};
+let subscription = plusUser;
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
@@ -66,10 +79,13 @@ const Footer = (props) => {
           message={errorToastMessage}
           setMessage={setErrorToastMessage}
         />
+
         <PricingModal
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
+          isSubscriped={subscription.isSubscriped}
+          isCanceled={subscription.isCanceled}
         />
       </div>
     </>
