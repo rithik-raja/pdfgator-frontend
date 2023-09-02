@@ -10,3 +10,5 @@ export const PROCESS_CITATION = "api/data/processcitation/";
 export const GET_PRODUCTS = "api/product/getproducts/";
 export const CHECKOUT = "payments/create-checkout-session/";
 export const UPDATECITATIONDATA = "api/data/updatecitationdata/";
+
+export const MAIN_APP_URL = "/app"

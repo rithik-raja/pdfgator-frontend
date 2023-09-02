@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { GET_USER } from "../../constants/apiConstants";
+import { GET_USER, MAIN_APP_URL } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -42,8 +42,8 @@ function App() {
       <div className="App">
         <Routes>
           <Route exact path="/" element={<Home {...props} />}></Route>
-          <Route exact path="/chat" element={<Chat {...props} />}></Route>
-          <Route path="/chat/*">
+          <Route exact path={MAIN_APP_URL} element={<Chat {...props} />}></Route>
+          <Route path={`${MAIN_APP_URL}/*`}>
             <Route path=":pdfid" element={<Chat {...props} />}></Route>
           </Route>
           <Route

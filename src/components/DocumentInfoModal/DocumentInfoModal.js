@@ -44,7 +44,6 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
     if (!allDocumentData) return {}
     const out = allowedKeys.reduce((obj, key) => {
       const val = allDocumentData[key];
-      console.log(val)
       obj[key] = key === "author_names" ? JSON.parse(val) : val;
       return obj;
     }, {});

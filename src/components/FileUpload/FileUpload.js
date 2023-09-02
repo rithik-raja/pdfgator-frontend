@@ -8,7 +8,7 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 
 import Spinner_ from "../Spinner/spinner";
 import * as Icon from "react-feather";
-import { PROCESS_CITATION } from "../../constants/apiConstants";
+import { MAIN_APP_URL, PROCESS_CITATION } from "../../constants/apiConstants";
 
 
 const FileUpload = () => {
@@ -36,7 +36,7 @@ const FileUpload = () => {
           console.log(response);
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
-          navigate("/chat/" + String(response.data.id));
+          navigate(MAIN_APP_URL + "/" + String(response.data.id));
         }
       } catch (e) {
         console.error(e)
