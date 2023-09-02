@@ -7,6 +7,7 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import "./Footer.css";
 import PricingModal from "../PricingModal/PricingModal";
+import { MAIN_APP_URL } from "../../constants/apiConstants";
 const newUserOrUnkonownUser = {
   isSubscriped: "False",
   isCanceled: "False",
@@ -39,26 +40,13 @@ const Footer = (props) => {
     setpricingModalShow(true);
   };
 
-  async function handleCheckout() {
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [
-        {
-          price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      successUrl: `http://localhost:3000/success`, // TODO: replace this
-      cancelUrl: `http://localhost:3000`,
-      customerEmail: "customer@email.com",
-    });
-    console.warn(error.message);
-  }
-
   return (
     <>
       <div className="footer">
+        <Link className="footer-element" to={MAIN_APP_URL}>
+          App
+        </Link>
+        <span className="footer-element">|</span>
         <span className="footer-element" onClick={accountLinkClickFunction}>
           My Account
         </span>

@@ -10,8 +10,10 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { getAuthToken, logOut } from "../../services/userServices";
+import { useNavigate } from "react-router-dom";
 
 export default function AccountModal(props) {
+  const navigate = useNavigate();
   return (
     <Modal
       {...props}
@@ -33,6 +35,7 @@ export default function AccountModal(props) {
                 onClick={() => {
                   logOut();
                   props.onHide();
+                  navigate("/")
                 }}
               >
                 Sign Out

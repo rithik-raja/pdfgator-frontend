@@ -6,7 +6,7 @@ import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { GET_FILES } from "../../constants/apiConstants";
+import { GET_FILES, MAIN_APP_URL } from "../../constants/apiConstants";
 import { get, post } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
@@ -80,7 +80,7 @@ const Chat = (props) => {
           setActivepdfList(newurl, newpdflist);
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
-          navigate("/chat/" + newurl);
+          navigate(MAIN_APP_URL + "/" + newurl);
         } else {
           document.body.style.pointerEvents = "auto";
           setErrorToastMessage("Failed to upload to server");
@@ -108,15 +108,16 @@ const Chat = (props) => {
     if (response1 === null) {
       return;
     }
-    console.log(response1.data);
     response1 = response1.data;
+    console.log(response1.search_history)
 
     if (response1 && response1.data && response1.data.length) {
       let newlist = response1.data;
       newlist = newlist.map((d, i) => ({
         ...d,
-        name: d.file_name.split("/").pop() ?? "undefined",
+        name: d.file_name ?? "undefined",
         str_url: String(d.id),
+        searchHistory: response1.search_history && response1.search_history[d.id] ? response1.search_history[d.id] : []
       }));
 
       const index = newlist.findIndex((object) => {
@@ -131,6 +132,7 @@ const Chat = (props) => {
       setpdfLists([]);
     }
   };
+
   const setActivepdfList = (urlName, allpdflists) => {
     const currentUrl = urlName ?? pdfid;
     if (currentUrl.length) {
@@ -176,7 +178,7 @@ const Chat = (props) => {
       setaccountModalShow(true);
     } else {
       login();
-      navigate("/chat");
+      navigate(MAIN_APP_URL);
     }
   };
 
@@ -211,7 +213,7 @@ const Chat = (props) => {
                   // data-bs-toggle="collapse"
                   // data-bs-target="#sidebarMenu"
                   aria-current="true"
-                  to={"/chat/" + list.str_url}
+                  to={MAIN_APP_URL + "/" + list.str_url}
                 >
                   <Icon.FileText />
                   {list.name}
@@ -249,7 +251,7 @@ const Chat = (props) => {
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         login();
-                        navigate("/chat");
+                        navigate(MAIN_APP_URL);
                       }}
                     >
                       Sign in
@@ -301,11 +303,11 @@ const Chat = (props) => {
           fileUrl={uploadedUrl}
           areas={areas}
           pdfLists={pdfLists}
+          setpdfLists={setpdfLists}
           currentActiveURL={currentActiveURL}
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
           setErrorToastMessage={setErrorToastMessage}
-          handlePdfLinkClick={handlePdfLinkClick}
         />
       </main>
       <AccountModal

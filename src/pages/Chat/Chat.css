@@ -97,13 +97,23 @@ main {
 .right-sidebar-button{
   overflow: hidden;
 }
-.right-sidebar-button:hover {
-  opacity: 1;
-}
 
 .right-sidebar-button:hover {
   cursor: pointer;
   opacity: 0.8;
+}
+
+.delete-search-query:hover::before {
+  content: ""; /* Create an invisible overlay */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.2); /* Transparent background */
+  z-index: 2000; /* Ensure the overlay is above the .clickable-div */
+  pointer-events: auto; /* Allow the overlay to capture pointer events */
 }
 
 .searchbar-container {

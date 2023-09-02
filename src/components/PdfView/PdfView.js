@@ -21,11 +21,12 @@ import { useNavigate } from "react-router-dom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
-import { DELETE_FILES, SEARCH_QUERY } from "../../constants/apiConstants";
+import { DELETE_FILES, DELETE_SEARCH, MAIN_APP_URL, SEARCH_QUERY } from "../../constants/apiConstants";
 import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
+import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 
 let jumpToPageFlag = 0;
 
@@ -37,7 +38,7 @@ const PdfView = ({
   setAreas,
   isProcessingDocument,
   setErrorToastMessage,
-  handlePdfLinkClick,
+  setpdfLists,
 }) => {
   const navigate = useNavigate();
   let totalPages;
@@ -45,6 +46,7 @@ const PdfView = ({
   const [citationModalShow, setCitationModalShow] = useState(false);
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
+  const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] = useState(false);
 
   useEffect(() => {
     if (areas?.bboxes?.length && jumpToPageFlag) {
@@ -133,9 +135,9 @@ const PdfView = ({
     }
   };
 
-  const handleSearchQuery = async (event) => {
+  const handleSearchQuery = async (event, overrideQuery=null) => {
     event.preventDefault();
-    const query = document.getElementById("search-bar-text-entry").value;
+    const query = overrideQuery ? overrideQuery : document.getElementById("search-bar-text-entry").value;
     let res;
     console.log(query);
     console.log(currentActiveURL);
@@ -163,6 +165,7 @@ const PdfView = ({
         );
       }
       const data = res?.data?.data;
+      console.log(data)
       if (data) {
         console.log(data);
         if (data.exception) {
@@ -174,9 +177,20 @@ const PdfView = ({
           setAreas(data);
         }
       }
+      const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+      console.log(pdfIdx)
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
       document.body.style.pointerEvents = "auto";
+      setpdfLists((current) => {
+        console.log(current)
+        if (!pdfLists[pdfIdx].searchHistory.includes(query)) {
+          current[pdfIdx] = {...pdfLists[pdfIdx], searchHistory: [query, ...pdfLists[pdfIdx].searchHistory.slice(0, SEARCH_MEMORY_PER_FILE - 1)]};
+        }
+        console.log(current)
+        return current;
+      })
+      setRightSidebarIsHistoryMode(false);
       setIsQueryLoading(false);
     } catch (e) {
       console.error(e);
@@ -206,12 +220,12 @@ const PdfView = ({
         if (pdfLists && pdfLists?.length !== 1) {
           const idx = pdfLists.findIndex((obj) => obj.id == currentActiveURL); // obj.id int and currentActiveUrl string, don't use ===
           navigate(
-            `/chat/${
+            `${MAIN_APP_URL}/${
               pdfLists[idx === pdfLists.length - 1 ? idx - 1 : idx + 1].id
             }/`
           );
         } else {
-          navigate("/chat/");
+          navigate(MAIN_APP_URL);
         }
       } else {
         setErrorToastMessage("Failed to delete file");
@@ -261,7 +275,47 @@ const PdfView = ({
                 zIndex: 1000,
               }}
             >
-              {areas?.bboxes?.length ? (
+              {isQueryLoading ? (
+                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
+                  <CustomSpinner />
+                  <span className="mt-2">Loading...</span>
+                </div>
+              ) : rightSidebarIsHistoryMode ? (
+                <ListGroup as="ol" numbered>
+                  {pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory?.length ?
+                    pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory?.map((query, ind) => (
+                      <ListGroup.Item
+                        as="li"
+                        key={ind}
+                        className="right-sidebar-button mx-2 my-1 d-flex justify-content-between align-items-start"
+                      >
+                        <div className="d-flex" style={{width: "85%", marginLeft: "3px"}} onClick={(e) => {handleSearchQuery(e, query);}}>
+                          <span className="me-auto" style={{cursor: "pointer"}}>{query}</span>
+                        </div>
+                        <span className="px-1 delete-search-query position-relative" onClick={async () => {
+                          const res = await post(DELETE_SEARCH, {target_query: query, target_file: parseInt(currentActiveURL)}, {}, setErrorToastMessage);
+                          if (res) {
+                            const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+                            setpdfLists((current) => [
+                              ...current.slice(0, pdfIdx),
+                              {...current[pdfIdx], searchHistory: current[pdfIdx].searchHistory.filter((q) => {console.log(q); return q !== query})},
+                              ...current.slice(pdfIdx + 1)
+                            ])
+                          }
+                        }}>×</span>
+                      </ListGroup.Item>
+                    )) : (
+                      <div
+                        className="d-flex flex-column align-items-center justify-content-center mt-2"
+                        style={{ color: "rgb(108,117,124)" }}
+                      >
+                        <Icon.Inbox size={"40px"} />
+                        <span>No Searches Yet</span>
+                      </div>
+                    )
+                  }
+                </ListGroup>
+              ) : areas?.bboxes?.length ? (
                 <ListGroup as="ol" numbered>
                   {areas?.previews?.map((preview, ind) => (
                     <ListGroup.Item
@@ -280,10 +334,6 @@ const PdfView = ({
                     </ListGroup.Item>
                   ))}
                 </ListGroup>
-              ) : isQueryLoading ? (
-                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
-                  <CustomSpinner />
-                </div>
               ) : (
                 <div
                   className="d-flex flex-column align-items-center justify-content-center mt-2"
@@ -339,6 +389,13 @@ const PdfView = ({
                   </div>
                   <div style={{ marginRight: "0.5rem" }}>
                     <SearchBarButton
+                      text={rightSidebarIsHistoryMode ? "Search Results" : "Search History"}
+                      IconComponent={rightSidebarIsHistoryMode ? Icon.CornerDownLeft : Icon.List}
+                      onClickFunc={() => setRightSidebarIsHistoryMode((cur) => !cur)}
+                    />
+                  </div>
+                  <div style={{ marginRight: "0.5rem" }}>
+                    <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}
                       onClickFunc={() =>
@@ -367,6 +424,7 @@ const PdfView = ({
                     className="me-2"
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
+                    autoComplete="off"
                   />
                   <Button id="search-bar-submit-button" type="submit">
                     Search
