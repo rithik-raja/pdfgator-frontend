@@ -21,11 +21,12 @@ import { useNavigate } from "react-router-dom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
-import { DELETE_FILES, MAIN_APP_URL, SEARCH_QUERY } from "../../constants/apiConstants";
+import { DELETE_FILES, DELETE_SEARCH, MAIN_APP_URL, SEARCH_QUERY } from "../../constants/apiConstants";
 import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
+import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 
 let jumpToPageFlag = 0;
 
@@ -184,7 +185,7 @@ const PdfView = ({
       setpdfLists((current) => {
         console.log(current)
         if (!pdfLists[pdfIdx].searchHistory.includes(query)) {
-          current[pdfIdx] = {...pdfLists[pdfIdx], searchHistory: [...pdfLists[pdfIdx].searchHistory, query]};
+          current[pdfIdx] = {...pdfLists[pdfIdx], searchHistory: [query, ...pdfLists[pdfIdx].searchHistory.slice(0, SEARCH_MEMORY_PER_FILE - 1)]};
         }
         console.log(current)
         return current;
@@ -284,12 +285,24 @@ const PdfView = ({
                   {pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory?.length ?
                     pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory?.map((query, ind) => (
                       <ListGroup.Item
-                        onClick={(e) => {handleSearchQuery(e, query);}}
                         as="li"
                         key={ind}
-                        className="right-sidebar-button mx-2 my-1"
+                        className="right-sidebar-button mx-2 my-1 d-flex justify-content-between align-items-start"
                       >
-                        {query}
+                        <div className="d-flex" style={{width: "85%", marginLeft: "3px"}} onClick={(e) => {handleSearchQuery(e, query);}}>
+                          <span className="me-auto" style={{cursor: "pointer"}}>{query}</span>
+                        </div>
+                        <span className="px-1 delete-search-query position-relative" onClick={async () => {
+                          const res = await post(DELETE_SEARCH, {target_query: query, target_file: parseInt(currentActiveURL)}, {}, setErrorToastMessage);
+                          if (res) {
+                            const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+                            setpdfLists((current) => [
+                              ...current.slice(0, pdfIdx),
+                              {...current[pdfIdx], searchHistory: current[pdfIdx].searchHistory.filter((q) => {console.log(q); return q !== query})},
+                              ...current.slice(pdfIdx + 1)
+                            ])
+                          }
+                        }}>×</span>
                       </ListGroup.Item>
                     )) : (
                       <div
@@ -411,6 +424,7 @@ const PdfView = ({
                     className="me-2"
                     aria-label="Search"
                     style={{ border: 0, boxShadow: "none" }}
+                    autoComplete="off"
                   />
                   <Button id="search-bar-submit-button" type="submit">
                     Search
