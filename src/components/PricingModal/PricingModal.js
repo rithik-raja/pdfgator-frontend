@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import "./PricingModal.css";
-import axios from "axios";
 import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import ProgressBar from "react-bootstrap/ProgressBar";
-import { getAuthToken, logOut } from "../../services/userServices";
+import { logOut } from "../../services/userServices";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
-
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
 import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
+
 export default function PricingModal(props) {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([
@@ -42,10 +38,9 @@ export default function PricingModal(props) {
       is_paid: "true",
     },
   ]);
-  const [currentProductId, setcurrentProductId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-  let product_id = null;
+
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
@@ -57,7 +52,6 @@ export default function PricingModal(props) {
       buttonVarient = "primary";
     }
     function pricingButtonFunction() {
-      product_id = details.id;
       if (props.email) {
         handleCheckout();
       } else {
@@ -115,7 +109,7 @@ export default function PricingModal(props) {
         ],
         mode: "subscription",
         successUrl: `http://localhost:3000/checkout/success`,
-        cancelUrl: `http://localhost:3000/checkout/cancel`,
+        cancelUrl: `http://localhost:3000`,
         customerEmail: props.email,
       });
     }

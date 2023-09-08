@@ -1,6 +1,7 @@
 .progress {
-    height: 5px;
-  }
-  .progress-container{
-    margin-top: 10px;
-  }
+  height: 5px;
+}
+
+.progress-container {
+  margin-top: 10px;
+}
