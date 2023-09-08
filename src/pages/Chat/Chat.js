@@ -5,32 +5,31 @@ import Dropzone from "react-dropzone";
 import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { GET_FILES, MAIN_APP_URL } from "../../constants/apiConstants";
-import { get, post } from "../../components/Api/api";
+import { get } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
-import { getAuthToken, logOut } from "../../services/userServices";
+import { getAuthToken } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
 
 let currentActiveURL;
 
 const Chat = (props) => {
-
   const navigate = useNavigate();
   const params = useParams();
 
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [errorToastMessage, setErrorToastMessage_] = useState(null);
-  const [errorToastColor, setErrorToastColor] = useState("danger")
-  const setErrorToastMessage = (msg, color="danger") => {
+  const [errorToastColor, setErrorToastColor] = useState("danger");
+  const setErrorToastMessage = (msg, color = "danger") => {
     setErrorToastMessage_(msg);
     setErrorToastColor(color);
-  }
+  };
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
@@ -44,11 +43,11 @@ const Chat = (props) => {
         ...searchMemory,
         [currentActiveURL]: {
           query: document.getElementById("search-bar-text-entry").value,
-          areas: areas
-        }
+          areas: areas,
+        },
       });
     }
-  }
+  };
 
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
@@ -109,7 +108,7 @@ const Chat = (props) => {
       return;
     }
     response1 = response1.data;
-    console.log(response1.search_history)
+    console.log(response1.search_history);
 
     if (response1 && response1.data && response1.data.length) {
       let newlist = response1.data;
@@ -117,7 +116,10 @@ const Chat = (props) => {
         ...d,
         name: d.file_name ?? "undefined",
         str_url: String(d.id),
-        searchHistory: response1.search_history && response1.search_history[d.id] ? response1.search_history[d.id] : []
+        searchHistory:
+          response1.search_history && response1.search_history[d.id]
+            ? response1.search_history[d.id]
+            : [],
       }));
 
       const index = newlist.findIndex((object) => {
@@ -155,25 +157,25 @@ const Chat = (props) => {
   useEffect(() => {
     getPdfLists();
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
-    document.getElementById("search-bar-text-entry").value = searchMemory[currentActiveURL]?.query ?? "";
-  }, [currentActiveURL])
+    document.getElementById("search-bar-text-entry").value =
+      searchMemory[currentActiveURL]?.query ?? "";
+  }, [currentActiveURL]);
 
   const handlePdfLinkClick = (index) => {
     if (currentActiveURL === pdfLists[index].id) {
-      return
+      return;
     }
     preserveOldSearch();
     currentActiveURL = pdfLists[index].id;
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
-    document.getElementById("search-bar-text-entry").value = searchMemory[currentActiveURL]?.query ?? "";
+    document.getElementById("search-bar-text-entry").value =
+      searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
     setuploadedUrl(pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
-    // setaccountModalShow(true);
-    // return;
     if (props.email) {
       setaccountModalShow(true);
     } else {
@@ -210,8 +212,6 @@ const Chat = (props) => {
                     (list.isActive === "true" ? "active" : "text-white")
                   }
                   onClick={(event) => handlePdfLinkClick(index)}
-                  // data-bs-toggle="collapse"
-                  // data-bs-target="#sidebarMenu"
                   aria-current="true"
                   to={MAIN_APP_URL + "/" + list.str_url}
                 >
@@ -226,22 +226,6 @@ const Chat = (props) => {
                 {props.email ? (
                   <></>
                 ) : (
-                  // <div
-                  //   className="alert alert-light nav-signin-prompt"
-                  //   role="alert"
-                  // >
-                  //   <span>{`${props.email} |`}</span>
-                  //   <span> </span>
-                  //   <span
-                  //     className="alert-link"
-                  //     style={{ cursor: "pointer" }}
-                  //     onClick={() => {
-                  //       logOut();
-                  //     }}
-                  //   >
-                  //     Log Out
-                  //   </span>
-                  // </div>
                   <div
                     className="alert alert-light nav-signin-prompt"
                     role="alert"
@@ -262,7 +246,6 @@ const Chat = (props) => {
                 <div className="sidebar-footer">
                   <Link to="/">Home</Link>
                   <Link onClick={accountLinkClickFunction}>Account</Link>
-                  {/* <Link onClick={accountLinkClickFunction}>Pricing</Link> */}
                 </div>
               </>
             </li>

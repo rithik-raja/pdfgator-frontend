@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Dropzone, { useDropzone } from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./FileUpload.css";
@@ -6,28 +6,28 @@ import "./FileUpload.css";
 import { useNavigate } from "react-router-dom";
 import { uploadFileToApi } from "../../services/fileUploadService";
 
-import Spinner_ from "../Spinner/spinner";
+import Spinner from "../Spinner/spinner";
 import * as Icon from "react-feather";
-import { MAIN_APP_URL, PROCESS_CITATION } from "../../constants/apiConstants";
-
+import { MAIN_APP_URL } from "../../constants/apiConstants";
+import ErrorToast from "../../components/ErrorToast/ErrorToast";
 
 const FileUpload = () => {
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+  const { acceptedFiles } = useDropzone();
   const navigate = useNavigate();
   const fileItems = acceptedFiles.map((file, index) => (
     <li key={index}>{file.name}</li>
   ));
-
-  const [uploadedUrl, setuploadedUrl] = useState("");
-  const [uploadedFile, setuploadedFile] = useState(null);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
+  const [errorToastMessage, setErrorToastMessage_] = useState(null);
+  const [errorToastColor, setErrorToastColor] = useState("danger");
+  const setErrorToastMessage = (msg, color = "danger") => {
+    setErrorToastMessage_(msg);
+    setErrorToastColor(color);
+  };
 
   const fileInputOnChange = async (acceptedFiles) => {
-    // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
       const newuploadedFile = acceptedFiles[0];
-      setuploadedUrl(URL.createObjectURL(newuploadedFile));
-      setuploadedFile(newuploadedFile);
       setIsProcessingDocument(true);
       document.body.style.pointerEvents = "none";
       try {
@@ -37,9 +37,15 @@ const FileUpload = () => {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           navigate(MAIN_APP_URL + "/" + String(response.data.id));
+        } else {
+          setErrorToastMessage("Failed to upload to server");
+          setIsProcessingDocument(false);
+          document.body.style.pointerEvents = "auto";
         }
       } catch (e) {
-        console.error(e)
+        console.error(e);
+        setErrorToastMessage("Failed to upload to server");
+        setIsProcessingDocument(false);
         document.body.style.pointerEvents = "auto";
       }
     }
@@ -52,19 +58,26 @@ const FileUpload = () => {
           <div className="file-upload-box" {...getRootProps()}>
             {isProcessingDocument ? (
               <>
-                <Spinner_ />
+                <Spinner />
                 <p className="small">Processing Document...</p>
               </>
             ) : (
               <>
                 <input {...getInputProps()} />
                 <Icon.Upload color="rgb(85, 85, 85)" />
-                <p className="d-none d-sm-block small pt-2">Drag and drop PDF here, or click to select</p>
+                <p className="d-none d-sm-block small pt-2">
+                  Drag and drop PDF here, or click to select
+                </p>
                 <p className="d-sm-none small">Click to upload PDF</p>
                 <ul>{fileItems}</ul>
               </>
             )}
           </div>
+          <ErrorToast
+            message={errorToastMessage}
+            setMessage={setErrorToastMessage}
+            color={errorToastColor}
+          />
         </section>
       )}
     </Dropzone>

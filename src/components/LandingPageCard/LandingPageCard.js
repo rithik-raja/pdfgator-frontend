@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './LandingPageCard.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./LandingPageCard.css";
 
-import * as Icon from 'react-feather';
+import * as Icon from "react-feather";
 
 const LandingPageCard = ({ heading, text, icon }) => {
-  const CustomIcon = Icon[icon]
+  const CustomIcon = Icon[icon];
   return (
     <div className="card">
       <CustomIcon className="card-img-top" color="rgb(1, 103, 255)" />
