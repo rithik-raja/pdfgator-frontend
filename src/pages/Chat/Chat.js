@@ -15,6 +15,7 @@ import useLogin from "../../components/Login/Login";
 import { getAuthToken } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
+import PricingModal from "../../components/PricingModal/PricingModal";
 
 let currentActiveURL;
 
@@ -23,6 +24,7 @@ const Chat = (props) => {
   const params = useParams();
 
   const [accountModalShow, setaccountModalShow] = useState(false);
+  const [pricingModalShow, setPricingModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [errorToastMessage, setErrorToastMessage_] = useState(null);
   const [errorToastColor, setErrorToastColor] = useState("danger");
@@ -82,8 +84,14 @@ const Chat = (props) => {
           navigate(MAIN_APP_URL + "/" + newurl);
         } else {
           document.body.style.pointerEvents = "auto";
-          setErrorToastMessage("Failed to upload to server");
           setIsProcessingDocument(false);
+          if (response === 0) {
+            setErrorToastMessage("File upload limit exceeded");
+            setuploadedUrl("");
+            setPricingModalShow(true);
+          } else {
+            setErrorToastMessage("Failed to upload to server");
+          }
         }
       } catch (e) {
         console.error(e);
@@ -96,6 +104,7 @@ const Chat = (props) => {
   currentActiveURL = pdfid;
 
   const getPdfLists = async () => {
+    console.log("TEST")
     console.log(getAuthToken());
     const sessionid = getSessionId();
     let response1;
@@ -150,9 +159,9 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
-    getPdfLists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props]);
+    document.addEventListener("userUpdate", getPdfLists);
+    return () => {document.removeEventListener("userUpdate", getPdfLists)}
+  }, []);
 
   useEffect(() => {
     getPdfLists();
@@ -190,6 +199,9 @@ const Chat = (props) => {
         <nav id="sidebarMenu" className="collapse d-lg-block sidebar bg-dark">
           <div className="upload-section text-white my-3 mx-2">
             <Dropzone
+              accept={{
+                "application/*": [".pdf"],
+              }}
               onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
             >
               {({ getRootProps, getInputProps }) => (
@@ -291,14 +303,27 @@ const Chat = (props) => {
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
           setErrorToastMessage={setErrorToastMessage}
+          setPricingModalShow={setPricingModalShow}
         />
       </main>
       <AccountModal
         show={accountModalShow}
         onHide={() => setaccountModalShow(false)}
         email={props.email}
+        isSubscriped={props.is_plus_user}
+        isCanceled={props.is_cancel_pending}
+        plan_id={props.plan_id}
+        plan_name={props.plan_name}
       />
-
+      <PricingModal
+        show={pricingModalShow}
+        onHide={() => setPricingModalShow(false)}
+        email={props.email}
+        isSubscriped={props.is_plus_user}
+        isCanceled={props.is_cancel_pending}
+        plan_id={props.plan_id}
+        plan_name={props.plan_name}
+      />
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}

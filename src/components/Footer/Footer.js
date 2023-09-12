@@ -63,6 +63,10 @@ const Footer = (props) => {
           show={accountModalShow}
           onHide={() => setaccountModalShow(false)}
           email={props.email}
+          isSubscriped={props.is_plus_user}
+          isCanceled={props.is_cancel_pending}
+          plan_id={props.plan_id}
+          plan_name={props.plan_name}
         />
         <ErrorToast
           message={errorToastMessage}
@@ -73,8 +77,10 @@ const Footer = (props) => {
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
-          isSubscriped={subscription.isSubscriped}
-          isCanceled={subscription.isCanceled}
+          isSubscriped={props.is_plus_user}
+          isCanceled={props.is_cancel_pending}
+          plan_id={props.plan_id}
+          plan_name={props.plan_name}
         />
       </div>
     </>

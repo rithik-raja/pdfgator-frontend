@@ -26,6 +26,7 @@ import {
   DELETE_SEARCH,
   MAIN_APP_URL,
   SEARCH_QUERY,
+  SEARCH_QUERY_FROM_HISTORY
 } from "../../constants/apiConstants";
 import { get, post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
@@ -44,6 +45,7 @@ const PdfView = ({
   isProcessingDocument,
   setErrorToastMessage,
   setpdfLists,
+  setPricingModalShow
 }) => {
   const navigate = useNavigate();
   let totalPages;
@@ -143,6 +145,7 @@ const PdfView = ({
 
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
+    if (currentActiveURL === undefined) return
     const query = overrideQuery
       ? overrideQuery
       : document.getElementById("search-bar-text-entry").value;
@@ -163,7 +166,7 @@ const PdfView = ({
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
         res = await get(
-          SEARCH_QUERY +
+          SEARCH_QUERY_FROM_HISTORY +
             currentActiveURL +
             "/" +
             encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
@@ -171,19 +174,29 @@ const PdfView = ({
             getSessionId() +
             "/"
         );
+        console.log(res)
+        if (!res) {
+          res = await get(
+            SEARCH_QUERY +
+              currentActiveURL +
+              "/" +
+              encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
+              "/" +
+              getSessionId() +
+              "/",
+              setErrorToastMessage
+          );
+        }
+        if (res === 0) {
+          setPricingModalShow(true);
+          setErrorToastMessage("Search query limit exceeded");
+        }
       }
       const data = res?.data?.data;
       console.log(data);
       if (data) {
-        console.log(data);
-        if (data.exception) {
-          setErrorToastMessage(
-            "An internal server error occured. Please contact us if this problem persists."
-          );
-        } else {
-          jumpToPageFlag = 1;
-          setAreas(data);
-        }
+        jumpToPageFlag = 1;
+        setAreas(data);
       }
       const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
       console.log(pdfIdx);

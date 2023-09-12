@@ -44,7 +44,7 @@ const Home = (props) => {
           </div>
         </header>
         <div className="row mb-4"></div>
-        <FileUpload />
+        <FileUpload {...props}/>
 
         <div className="row mt-4">
           <div className="col-lg-4 my-2">
