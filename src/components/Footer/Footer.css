@@ -1,4 +1,4 @@
-.footer{
+.footer {
     margin: 10px 0px;
     display: flex;
     justify-content: center;
@@ -10,8 +10,8 @@
     outline: none;
     border: none;
     color: #636060;
-    text-decoration: none; 
-    background-color: transparent;   
+    text-decoration: none;
+    background-color: transparent;
     cursor: pointer;
 }
 

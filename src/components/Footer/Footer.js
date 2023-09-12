@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import getStripe from "../../lib/getStripe";
-import AccountModal from "../../components/AccountModal/AccountModal";
-
 import { Link } from "react-router-dom";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
-import useLogin from "../../components/Login/Login";
 import "./Footer.css";
-import PricingModal from "../PricingModal/PricingModal";
+
+import useLogin from "../../components/Login/Login";
 import { MAIN_APP_URL } from "../../constants/apiConstants";
+
+import AccountModal from "../../components/AccountModal/AccountModal";
+import PricingModal from "../PricingModal/PricingModal";
+import ErrorToast from "../../components/ErrorToast/ErrorToast";
+
 const newUserOrUnkonownUser = {
   isSubscriped: "False",
   isCanceled: "False",
@@ -20,7 +21,7 @@ const cancelUser = {
   isSubscriped: "False",
   isCanceled: "True",
 };
-let subscription = plusUser;
+let subscription = newUserOrUnkonownUser;
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);

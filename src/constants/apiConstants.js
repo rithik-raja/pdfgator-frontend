@@ -13,5 +13,4 @@ export const CHECKOUT = "payments/create-checkout-session/";
 export const UPDATECITATIONDATA = "api/data/updatecitationdata/";
 export const DELETE_SEARCH = "api/data/deletesearch/";
 export const GET_USAGE = "api/getusage/"
-
 export const MAIN_APP_URL = "/app"

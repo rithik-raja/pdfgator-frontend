@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import "./AccountModal.css";
-import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { getAuthToken, logOut } from "../../services/userServices";
+import { logOut } from "../../services/userServices";
 import { useNavigate } from "react-router-dom";
 import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
@@ -66,7 +64,7 @@ export default function AccountModal(props) {
                 onClick={() => {
                   logOut();
                   props.onHide();
-                  navigate("/")
+                  navigate("/");
                 }}
               >
                 Sign Out

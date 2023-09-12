@@ -4,7 +4,7 @@ import FileUpload from "../../components/FileUpload/FileUpload";
 import LandingPageCard from "../../components/LandingPageCard/LandingPageCard";
 import Footer from "../../components/Footer/Footer";
 import { Image } from "react-bootstrap";
-import "./Home.css"
+import "./Home.css";
 
 const Home = (props) => {
   return (
@@ -35,7 +35,11 @@ const Home = (props) => {
               </span>
             </div>
             <div className="col-6 d-flex justify-content-end align-items-end">
-              <Image src="/images/logo.svg" alt="Logo" className="pdfgator-logo"/>
+              <Image
+                src="/images/logo.svg"
+                alt="Logo"
+                className="pdfgator-logo"
+              />
             </div>
           </div>
         </header>

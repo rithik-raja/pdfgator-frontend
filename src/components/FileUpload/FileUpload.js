@@ -8,10 +8,9 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import PricingModal from "../PricingModal/PricingModal";
 
-import Spinner_ from "../Spinner/spinner";
+import Spinner from "../Spinner/spinner";
 import * as Icon from "react-feather";
 import { MAIN_APP_URL } from "../../constants/apiConstants";
-
 
 const FileUpload = (props) => {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ const FileUpload = (props) => {
   const [pricingModalShow, setPricingModalShow] = useState(false);
 
   const fileInputOnChange = async (acceptedFiles) => {
-    // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
       const newuploadedFile = acceptedFiles[0];
       setIsProcessingDocument(true);
