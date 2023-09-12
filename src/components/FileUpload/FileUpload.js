@@ -1,33 +1,29 @@
-import React, { useEffect, useState } from "react";
-import Dropzone, { useDropzone } from "react-dropzone";
+import React, { useState } from "react";
+import Dropzone from "react-dropzone";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./FileUpload.css";
 
 import { useNavigate } from "react-router-dom";
 import { uploadFileToApi } from "../../services/fileUploadService";
+import ErrorToast from "../../components/ErrorToast/ErrorToast";
+import PricingModal from "../PricingModal/PricingModal";
 
 import Spinner_ from "../Spinner/spinner";
 import * as Icon from "react-feather";
-import { MAIN_APP_URL, PROCESS_CITATION } from "../../constants/apiConstants";
+import { MAIN_APP_URL } from "../../constants/apiConstants";
 
 
-const FileUpload = () => {
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+const FileUpload = (props) => {
   const navigate = useNavigate();
-  const fileItems = acceptedFiles.map((file, index) => (
-    <li key={index}>{file.name}</li>
-  ));
 
-  const [uploadedUrl, setuploadedUrl] = useState("");
-  const [uploadedFile, setuploadedFile] = useState(null);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState(null);
+  const [pricingModalShow, setPricingModalShow] = useState(false);
 
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
       const newuploadedFile = acceptedFiles[0];
-      setuploadedUrl(URL.createObjectURL(newuploadedFile));
-      setuploadedFile(newuploadedFile);
       setIsProcessingDocument(true);
       document.body.style.pointerEvents = "none";
       try {
@@ -37,37 +33,67 @@ const FileUpload = () => {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           navigate(MAIN_APP_URL + "/" + String(response.data.id));
+        } else {
+          setIsProcessingDocument(false);
+          document.body.style.pointerEvents = "auto";
+          if (response === 0) {
+            setErrorToastMessage("File upload limit exceeded");
+            setPricingModalShow(true);
+          } else {
+            setErrorToastMessage("Failed to upload to server");
+          }
         }
       } catch (e) {
         console.error(e)
+        setIsProcessingDocument(false);
         document.body.style.pointerEvents = "auto";
       }
     }
   };
 
   return (
-    <Dropzone onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}>
-      {({ getRootProps, getInputProps }) => (
-        <section>
-          <div className="file-upload-box" {...getRootProps()}>
-            {isProcessingDocument ? (
-              <>
-                <Spinner_ />
-                <p className="small">Processing Document...</p>
-              </>
-            ) : (
-              <>
-                <input {...getInputProps()} />
-                <Icon.Upload color="rgb(85, 85, 85)" />
-                <p className="d-none d-sm-block small pt-2">Drag and drop PDF here, or click to select</p>
-                <p className="d-sm-none small">Click to upload PDF</p>
-                <ul>{fileItems}</ul>
-              </>
-            )}
-          </div>
-        </section>
-      )}
-    </Dropzone>
+    <>
+      <Dropzone
+        onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
+        accept={{
+          "application/*": [".pdf"],
+        }}
+      >
+        {({ getRootProps, getInputProps }) => (
+          <section>
+            <div className="file-upload-box" {...getRootProps()}>
+              {isProcessingDocument ? (
+                <>
+                  <Spinner_ />
+                  <p className="small">Processing Document...</p>
+                </>
+              ) : (
+                <>
+                  <input {...getInputProps()} />
+                  <Icon.Upload color="rgb(85, 85, 85)" />
+                  <p className="d-none d-sm-block small pt-2">Drag and drop PDF here, or click to select</p>
+                  <p className="d-sm-none small">Click to upload PDF</p>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+      </Dropzone>
+      <ErrorToast
+        message={errorToastMessage}
+        setMessage={setErrorToastMessage}
+        color={"danger"}
+      />
+      <PricingModal
+        show={pricingModalShow}
+        onHide={() => setPricingModalShow(false)}
+        email={props.email}
+        isSubscriped={props.is_plus_user}
+        isCanceled={props.is_cancel_pending}
+        plan_id={props.plan_id}
+        plan_name={props.plan_name}
+      />
+    </>
   );
 };
 

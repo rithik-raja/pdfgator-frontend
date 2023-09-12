@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
-import "./PricingModal.css";
 import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
@@ -16,30 +15,34 @@ import useLogin from "../../components/Login/Login";
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
 import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
+import "./PricingModal.css";
 export default function PricingModal(props) {
+  console.log(props.plan_id)
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([
     {
-      plan_name: "Free",
+      product_name: "Free",
       currency_code: "$",
-      price: "0",
-      no_pages: "120",
-      file_size: "10",
-      files_per_day: "3",
-      no_of_questions: "50",
-      is_current: "true",
-      is_paid: "false",
+      price: 0,
+      no_pages: 123,
+      file_size: 10,
+      files_per_day: 3,
+      no_of_questions: 50,
+      //is_current: true
+      plan_id: 0,
+      is_paid: false,
     },
     {
-      plan_name: "Plus",
+      product_name: "Plus",
       currency_code: "$",
-      price: "5",
-      no_pages: "2000",
-      file_size: "32",
-      files_per_day: "50",
-      no_of_questions: "1000",
-      is_current: "false",
-      is_paid: "true",
+      price: 5,
+      no_pages: 2000,
+      file_size: 32,
+      files_per_day: 50,
+      no_of_questions: 1000,
+      //is_current: false,
+      plan_id: 1,
+      is_paid: true,
     },
   ]);
   const [currentProductId, setcurrentProductId] = useState(null);
@@ -49,12 +52,12 @@ export default function PricingModal(props) {
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    if (props.isSubscriped === "True") {
-      buttonText = "Cancel";
-      buttonVarient = "secondary";
-    } else if (props.isCanceled === "True") {
+    if (props.isCanceled) {
       buttonText = "Undo Cancel";
       buttonVarient = "primary";
+    } else if (props.isSubscriped) {
+      buttonText = "Cancel";
+      buttonVarient = "secondary";
     }
     function pricingButtonFunction() {
       product_id = details.id;
@@ -151,7 +154,7 @@ export default function PricingModal(props) {
                     <span className="fw-bold">
                       {pricingDetail.product_name}
                     </span>
-                    {pricingDetail.is_current === true ? (
+                    {pricingDetail.product_name.toLowerCase() === props.plan_name?.toLowerCase() ? (
                       <span className="float-end text-muted">current</span>
                     ) : (
                       <></>
@@ -200,7 +203,7 @@ export default function PricingModal(props) {
                       </li>
                     </ul>
                   </Card.Body>
-                  {pricingDetail.price > 0 ? (
+                  {pricingDetail.product_name.toLocaleLowerCase() !== "free" ? (
                     <Card.Footer className="text-muted">
                       <FooterButton details={pricingDetail} />
                     </Card.Footer>

@@ -34,13 +34,16 @@ export const get = async (url, setToastError = null) => {
     });
     return response;
   } catch (error) {
+    if (error?.response?.status === 429) {
+      return 0
+    }
     if (error?.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
       updateUser();
     }
     console.error(error);
     if (setToastError) {
-      setToastError(error.message)
+      setToastError(error.response?.data?.data ?? error.message)
     }
     return null;
   }
@@ -67,6 +70,10 @@ export const post = async (url, data, config = null, setToastError = null) => {
     const response = await api.post(url, data, config);
     return response;
   } catch (error) {
+    if (error?.response?.status === 429) {
+      return 0
+    }
+    console.error(error)
     if (error?.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
       updateUser();
