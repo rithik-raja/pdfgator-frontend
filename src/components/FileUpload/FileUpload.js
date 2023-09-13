@@ -61,7 +61,6 @@ const FileUpload = (props) => {
     <>
       <Dropzone
         onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
-        onDropRejected={() => {setErrorToastMessage("The selected file is either too large or in an invalid format.")}}
         accept={{
           "application/pdf": [".pdf"],
         }}
