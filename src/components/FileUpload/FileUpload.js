@@ -31,7 +31,11 @@ const FileUpload = (props) => {
       setIsProcessingDocument(true);
       document.body.style.pointerEvents = "none";
       try {
-        const response = await uploadFileToApi(newuploadedFile, props, setErrorToastMessage);
+        const response = await uploadFileToApi(
+          newuploadedFile,
+          props,
+          setErrorToastMessage
+        );
         if (response && response.data && response.data.id) {
           console.log(response);
           setIsProcessingDocument(false);
@@ -46,7 +50,7 @@ const FileUpload = (props) => {
           }
         }
       } catch (e) {
-        console.error(e)
+        console.error(e);
         setIsProcessingDocument(false);
         document.body.style.pointerEvents = "auto";
       }
@@ -59,7 +63,7 @@ const FileUpload = (props) => {
         onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
         onDropRejected={() => {setErrorToastMessage("The selected file is either too large or in an invalid format.")}}
         accept={{
-          "application/*": [".pdf"],
+          "application/pdf": [".pdf"],
         }}
       >
         {({ getRootProps, getInputProps }) => (
@@ -74,7 +78,9 @@ const FileUpload = (props) => {
                 <>
                   <input {...getInputProps()} />
                   <Icon.Upload color="rgb(85, 85, 85)" />
-                  <p className="d-none d-sm-block small pt-2">Drag and drop PDF here, or click to select</p>
+                  <p className="d-none d-sm-block small pt-2">
+                    Drag and drop PDF here, or click to select
+                  </p>
                   <p className="d-sm-none small">Click to upload PDF</p>
                 </>
               )}

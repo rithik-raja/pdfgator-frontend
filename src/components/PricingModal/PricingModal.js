@@ -11,8 +11,8 @@ import useLogin from "../../components/Login/Login";
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
 import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
-export default function PricingModal(props) {
-  console.log(props.plan_id)
+const PricingModal = (props) => {
+  console.log(props.plan_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([
     {
@@ -139,14 +139,13 @@ export default function PricingModal(props) {
       </Modal.Header>
       <Modal.Body>
         <Row>
-          {pricingDetails.map((pricingDetail, idx_) => (
-            <Col key={idx_}>
+          {pricingDetails.map((pricingDetail, index) => (
+            <Col key={index}>
               <Card className="pricing">
                 <Card.Header>
-                  <span className="fw-bold">
-                    {pricingDetail.product_name}
-                  </span>
-                  {pricingDetail.product_name.toLowerCase() === props.plan_name?.toLowerCase() ? (
+                  <span className="fw-bold">{pricingDetail.product_name}</span>
+                  {pricingDetail.product_name.toLowerCase() ===
+                  props.plan_name?.toLowerCase() ? (
                     <span className="float-end text-muted">current</span>
                   ) : (
                     <></>
@@ -244,4 +243,5 @@ export default function PricingModal(props) {
       />
     </Modal>
   );
-}
+};
+export default PricingModal;

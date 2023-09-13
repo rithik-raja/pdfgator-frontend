@@ -64,7 +64,11 @@ const Chat = (props) => {
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
-        const response = await uploadFileToApi(newuploadedFile, props, setErrorToastMessage);
+        const response = await uploadFileToApi(
+          newuploadedFile,
+          props,
+          setErrorToastMessage
+        );
         if (response && response.data && response.data.id) {
           console.log(response);
           const name = response.data.file_name.split("/").pop() ?? "undefined";
@@ -108,7 +112,7 @@ const Chat = (props) => {
   currentActiveURL = pdfid;
 
   const getPdfLists = async () => {
-    console.log("TEST")
+    console.log("TEST");
     console.log(getAuthToken());
     const sessionid = getSessionId();
     let response1;
@@ -164,7 +168,9 @@ const Chat = (props) => {
 
   useEffect(() => {
     document.addEventListener("userUpdate", getPdfLists);
-    return () => {document.removeEventListener("userUpdate", getPdfLists)}
+    return () => {
+      document.removeEventListener("userUpdate", getPdfLists);
+    };
   }, []);
 
   useEffect(() => {
@@ -204,7 +210,7 @@ const Chat = (props) => {
           <div className="upload-section text-white my-3 mx-2">
             <Dropzone
               accept={{
-                "application/*": [".pdf"],
+                "application/pdf": [".pdf"],
               }}
               onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
             >
