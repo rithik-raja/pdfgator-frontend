@@ -8,7 +8,7 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import PricingModal from "../PricingModal/PricingModal";
 
-import Spinner from "../Spinner/spinner";
+import Spinner_ from "../Spinner/spinner";
 import * as Icon from "react-feather";
 import { MAIN_APP_URL } from "../../constants/apiConstants";
 
@@ -25,7 +25,7 @@ const FileUpload = (props) => {
       setIsProcessingDocument(true);
       document.body.style.pointerEvents = "none";
       try {
-        const response = await uploadFileToApi(newuploadedFile);
+        const response = await uploadFileToApi(newuploadedFile, props, setErrorToastMessage);
         if (response && response.data && response.data.id) {
           console.log(response);
           setIsProcessingDocument(false);
@@ -37,8 +37,6 @@ const FileUpload = (props) => {
           if (response === 0) {
             setErrorToastMessage("File upload limit exceeded");
             setPricingModalShow(true);
-          } else {
-            setErrorToastMessage("Failed to upload to server");
           }
         }
       } catch (e) {
