@@ -16,6 +16,7 @@ import { getAuthToken } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../../components/PricingModal/PricingModal";
+import { FREE_PLAN_MAX_FILE_SIZE, PAID_PLAN_MAX_FILE_SIZE } from "../../constants/storageConstants";
 
 let currentActiveURL;
 
@@ -54,6 +55,10 @@ const Chat = (props) => {
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
+      if (acceptedFiles[0].size > 1024 * 1024 * (props.is_plus_user ? PAID_PLAN_MAX_FILE_SIZE : FREE_PLAN_MAX_FILE_SIZE)) {
+        setErrorToastMessage("The selected file is either too large or in an invalid format.");
+        return;
+      }
       const newuploadedFile = acceptedFiles[0];
       setuploadedUrl(URL.createObjectURL(newuploadedFile));
       document.body.style.pointerEvents = "none";
@@ -94,6 +99,7 @@ const Chat = (props) => {
             setPricingModalShow(true);
           }
           setuploadedUrl("");
+          navigate(MAIN_APP_URL);
         }
       } catch (e) {
         console.error(e);

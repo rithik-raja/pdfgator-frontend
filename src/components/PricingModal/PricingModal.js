@@ -153,7 +153,9 @@ const PricingModal = (props) => {
                 </Card.Header>
                 <Card.Body>
                   <div className="p-3">
-                    <span className="fw-bold fs-4">${pricingDetail.price}</span>
+                    <span className="fw-bold fs-4">
+                      ${pricingDetail.price}
+                    </span>
 
                     <span className="text-muted">/month</span>
                   </div>

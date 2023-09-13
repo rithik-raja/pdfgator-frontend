@@ -82,7 +82,7 @@ export default function AccountModal(props) {
               <Container>
                 <Row className="justify-content-md-center">
                   <Col xs={8}>
-                    <div class="progress-container">
+                    <div className="progress-container">
                       <ProgressBar now={usage[getScopes().upload]} min={0} max={usage.usage_limits[getScopes().upload]} />
                     </div>
                   </Col>
@@ -90,7 +90,7 @@ export default function AccountModal(props) {
                 </Row>
                 <Row className="justify-content-md-center">
                   <Col xs={8}>
-                    <div class="progress-container">
+                    <div className="progress-container">
                       <ProgressBar now={usage[getScopes().search]} min={0} max={usage.usage_limits[getScopes().search]} />
                     </div>
                   </Col>
