@@ -59,7 +59,7 @@ const Chat = (props) => {
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
-        const response = await uploadFileToApi(newuploadedFile, props);
+        const response = await uploadFileToApi(newuploadedFile, props, setErrorToastMessage);
         if (response && response.data && response.data.id) {
           console.log(response);
           const name = response.data.file_name.split("/").pop() ?? "undefined";
@@ -87,11 +87,9 @@ const Chat = (props) => {
           setIsProcessingDocument(false);
           if (response === 0) {
             setErrorToastMessage("File upload limit exceeded");
-            setuploadedUrl("");
             setPricingModalShow(true);
-          } else {
-            setErrorToastMessage("Failed to upload to server");
           }
+          setuploadedUrl("");
         }
       } catch (e) {
         console.error(e);

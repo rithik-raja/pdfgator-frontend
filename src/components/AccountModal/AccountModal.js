@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./AccountModal.css";
@@ -25,7 +26,7 @@ export default function AccountModal(props) {
   };
   useEffect(() => {
     getUsage();
-  }, []);
+  }, [props.show]);
 
   const getScopes = () => (!props.email) ? {
     search: "search_query_anon",
