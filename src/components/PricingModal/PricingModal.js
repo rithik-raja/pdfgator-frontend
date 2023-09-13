@@ -11,8 +11,8 @@ import useLogin from "../../components/Login/Login";
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
 import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
-export default function PricingModal(props) {
-  console.log(props.plan_id)
+const PricingModal = (props) => {
+  console.log(props.plan_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([
     {
@@ -139,73 +139,68 @@ export default function PricingModal(props) {
       </Modal.Header>
       <Modal.Body>
         <Row>
-          {pricingDetails.map((pricingDetail) => (
-            <>
-              <Col>
-                <Card className="pricing">
-                  <Card.Header>
-                    <span className="fw-bold">
-                      {pricingDetail.product_name}
-                    </span>
-                    {pricingDetail.product_name.toLowerCase() === props.plan_name?.toLowerCase() ? (
-                      <span className="float-end text-muted">current</span>
-                    ) : (
-                      <></>
-                    )}
-                  </Card.Header>
-                  <Card.Body>
-                    <div className="p-3">
-                      <span className="fw-bold fs-4">
-                        ${pricingDetail.price}
-                      </span>
-
-                      <span className="text-muted">/month</span>
-                    </div>
-                    <ul className="plan-list">
-                      <li>
-                        <div>
-                          <span className="fw-bold">
-                            {pricingDetail.no_pages} pages
-                          </span>
-                          <span className="text-muted">/PDF</span>
-                        </div>
-                      </li>
-                      <li>
-                        <div>
-                          <span className="fw-bold">
-                            {pricingDetail.file_size} MB
-                          </span>
-                          <span className="text-muted">/PDF</span>
-                        </div>
-                      </li>
-                      <li>
-                        <div>
-                          <span className="fw-bold">
-                            {pricingDetail.files_per_day} PDFs
-                          </span>
-                          <span className="text-muted">/day</span>
-                        </div>
-                      </li>
-                      <li>
-                        <div>
-                          <span className="fw-bold">
-                            {pricingDetail.no_of_questions} questions
-                          </span>
-                          <span className="text-muted">/day</span>
-                        </div>
-                      </li>
-                    </ul>
-                  </Card.Body>
-                  {pricingDetail.product_name.toLocaleLowerCase() !== "free" ? (
-                    <Card.Footer className="text-muted">
-                      <FooterButton details={pricingDetail} />
-                    </Card.Footer>
+          {pricingDetails.map((pricingDetail, index) => (
+            <Col key={index}>
+              <Card className="pricing">
+                <Card.Header>
+                  <span className="fw-bold">{pricingDetail.product_name}</span>
+                  {pricingDetail.product_name.toLowerCase() ===
+                  props.plan_name?.toLowerCase() ? (
+                    <span className="float-end text-muted">current</span>
                   ) : (
                     <></>
                   )}
-                </Card>
-              </Col>
-            </>
+                </Card.Header>
+                <Card.Body>
+                  <div className="p-3">
+                    <span className="fw-bold fs-4">${pricingDetail.price}</span>
+
+                    <span className="text-muted">/month</span>
+                  </div>
+                  <ul className="plan-list">
+                    <li>
+                      <div>
+                        <span className="fw-bold">
+                          {pricingDetail.no_pages} pages
+                        </span>
+                        <span className="text-muted">/PDF</span>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <span className="fw-bold">
+                          {pricingDetail.file_size} MB
+                        </span>
+                        <span className="text-muted">/PDF</span>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <span className="fw-bold">
+                          {pricingDetail.files_per_day} PDFs
+                        </span>
+                        <span className="text-muted">/day</span>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <span className="fw-bold">
+                          {pricingDetail.no_of_questions} questions
+                        </span>
+                        <span className="text-muted">/day</span>
+                      </div>
+                    </li>
+                  </ul>
+                </Card.Body>
+                {pricingDetail.product_name.toLocaleLowerCase() !== "free" ? (
+                  <Card.Footer className="text-muted">
+                    <FooterButton details={pricingDetail} />
+                  </Card.Footer>
+                ) : (
+                  <></>
+                )}
+              </Card>
+            </Col>
           ))}
         </Row>
         <Row>
@@ -246,4 +241,5 @@ export default function PricingModal(props) {
       />
     </Modal>
   );
-}
+};
+export default PricingModal;
