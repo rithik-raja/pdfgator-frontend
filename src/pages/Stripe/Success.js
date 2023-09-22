@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as Icon from "react-feather";
 import Button from "react-bootstrap/Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Success = () => {
   const navigate = useNavigate();
+  const params = useParams();
+  let currentSessionId = null;
+  const { session_id } = params;
+  currentSessionId = session_id;
+
+  const verifySession = async () => {};
+  useEffect(() => {
+    verifySession();
+  }, [currentSessionId]);
   return (
     <div className="container">
       <div className="my-auto" style={{ padding: "80px 20px", color: "white" }}>

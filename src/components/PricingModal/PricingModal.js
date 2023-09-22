@@ -10,7 +10,7 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
-import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
+import { CREATE_CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
 const PricingModal = (props) => {
   console.log(props.plan_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
@@ -42,7 +42,7 @@ const PricingModal = (props) => {
   ]);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-
+  let product_id = null;
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
@@ -54,6 +54,7 @@ const PricingModal = (props) => {
       buttonVarient = "secondary";
     }
     function pricingButtonFunction() {
+      product_id = details.id;
       if (props.email) {
         handleCheckout();
       } else {
@@ -85,14 +86,31 @@ const PricingModal = (props) => {
   }
 
   async function showStripeCustomerPortal() {
+    // const config = { headers: { "Content-Type": "multipart/form-data" } };
+    // const response = await post(CREATE_CHECKOUT, {}, config);
+    // console.log(response);
+    // if (response && response?.data && response.data?.checkout_url) {
+    //   let checkout_url = response.data?.checkout_url;
+    //   console.log(checkout_url);
+    //   window.location.href = checkout_url;
+    // }
+  }
+  async function createCheckout() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
-    const response = await post(CHECKOUT, {}, config);
+    const formData = new FormData();
+    formData.append("product_id", product_id);
+    formData.append(
+      "stripe_price_id",
+      process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
+    );
+    const response = await post(CREATE_CHECKOUT, formData, config);
     console.log(response);
     if (response && response?.data && response.data?.checkout_url) {
       let checkout_url = response.data?.checkout_url;
       console.log(checkout_url);
       window.location.href = checkout_url;
     }
+    product_id = null;
   }
 
   async function handleCheckout() {
@@ -101,19 +119,20 @@ const PricingModal = (props) => {
     } else if (props.isCanceled === "True") {
       showStripeCustomerPortal();
     } else {
-      const stripe = await getStripe();
-      await stripe.redirectToCheckout({
-        lineItems: [
-          {
-            price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        successUrl: `http://localhost:3000/checkout/success`,
-        cancelUrl: `http://localhost:3000`,
-        customerEmail: props.email,
-      });
+      createCheckout();
+      // const stripe = await getStripe();
+      // await stripe.redirectToCheckout({
+      //   lineItems: [
+      //     {
+      //       price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
+      //       quantity: 1,
+      //     },
+      //   ],
+      //   mode: "subscription",
+      //   successUrl: `http://localhost:3000/checkout/success`,
+      //   cancelUrl: `http://localhost:3000`,
+      //   customerEmail: props.email,
+      // });
     }
   }
   const getProducts = async () => {
@@ -153,9 +172,7 @@ const PricingModal = (props) => {
                 </Card.Header>
                 <Card.Body>
                   <div className="p-3">
-                    <span className="fw-bold fs-4">
-                      ${pricingDetail.price}
-                    </span>
+                    <span className="fw-bold fs-4">${pricingDetail.price}</span>
 
                     <span className="text-muted">/month</span>
                   </div>
