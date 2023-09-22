@@ -3,7 +3,7 @@ import * as Icon from "react-feather";
 import Button from "react-bootstrap/Button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { VERIFY_CHECKOUT } from "../../constants/apiConstants";
-import { get } from "../../components/Api/api";
+import { post } from "../../components/Api/api";
 import CustomSpinner from "../../components/Spinner/spinner";
 
 const Success = () => {
@@ -12,10 +12,12 @@ const Success = () => {
   let currentSessionId = searchParams.get("session_id");
   console.log(currentSessionId);
   const [isValid, setisValid] = useState(null);
+
   const verifySession = async () => {
-    const res = await get(
-      VERIFY_CHECKOUT + "?session_id=" + currentSessionId + "/"
-    );
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    const formData = new FormData();
+    formData.append("checkout_session_id", currentSessionId);
+    const res = await post(VERIFY_CHECKOUT, formData, config);
     console.log(res);
     if (res?.data && res?.data?.data) {
       if (Response?.data?.data?.is_valid === true) {
