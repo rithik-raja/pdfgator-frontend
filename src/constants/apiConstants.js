@@ -10,6 +10,7 @@ export const DELETE_FILES = "api/data/deletefiles/";
 export const PROCESS_CITATION = "api/data/processcitation/";
 export const GET_PRODUCTS = "api/product/getproducts/";
 export const CREATE_CHECKOUT = "payments/create-checkout-session/";
+export const VERIFY_CHECKOUT = "payments/verify-checkout-session/";
 export const UPDATECITATIONDATA = "api/data/updatecitationdata/";
 export const DELETE_SEARCH = "api/data/deletesearch/";
 export const GET_USAGE = "api/getusage/";

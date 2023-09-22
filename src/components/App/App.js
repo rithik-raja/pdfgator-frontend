@@ -42,7 +42,11 @@ function App() {
       <div className="App">
         <Routes>
           <Route exact path="/" element={<Home {...props} />}></Route>
-          <Route exact path={MAIN_APP_URL} element={<Chat {...props} />}></Route>
+          <Route
+            exact
+            path={MAIN_APP_URL}
+            element={<Chat {...props} />}
+          ></Route>
           <Route path={`${MAIN_APP_URL}/*`}>
             <Route path=":pdfid" element={<Chat {...props} />}></Route>
           </Route>
@@ -53,7 +57,7 @@ function App() {
           ></Route>
           <Route
             exact
-            path="/checkout/failed"
+            path="/checkout/canceled"
             element={<Failed {...props} />}
           ></Route>
           <Route
