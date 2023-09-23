@@ -8,6 +8,8 @@ import { MAIN_APP_URL } from "../../constants/apiConstants";
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../PricingModal/PricingModal";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
+import Cookies from "js-cookie";
+import { CHECKOUT_SESSION_ID } from "../../constants/storageConstants";
 
 const newUserOrUnkonownUser = {
   isSubscriped: "False",
@@ -28,7 +30,11 @@ const Footer = (props) => {
   const [pricingModalShow, setpricingModalShow] = useState(false);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const login = useLogin(setErrorToastMessage);
-
+  const checkout_session_id = Cookies.get(CHECKOUT_SESSION_ID);
+  let is_plus_user = false;
+  if (checkout_session_id) {
+    is_plus_user = true;
+  }
   const accountLinkClickFunction = () => {
     if (props.email) {
       setaccountModalShow(true);
@@ -77,10 +83,11 @@ const Footer = (props) => {
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
-          isSubscriped={props.is_plus_user}
+          isSubscriped={is_plus_user}
           isCanceled={props.is_cancel_pending}
           plan_id={props.plan_id}
           plan_name={props.plan_name}
+          checkout_session_id={checkout_session_id}
         />
       </div>
     </>

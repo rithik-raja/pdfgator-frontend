@@ -10,7 +10,11 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
-import { CREATE_CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
+import {
+  CREATE_CHECKOUT,
+  CUSTOMER_PORTAL,
+  GET_PRODUCTS,
+} from "../../constants/apiConstants";
 const PricingModal = (props) => {
   console.log(props.plan_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
@@ -86,14 +90,16 @@ const PricingModal = (props) => {
   }
 
   async function showStripeCustomerPortal() {
-    // const config = { headers: { "Content-Type": "multipart/form-data" } };
-    // const response = await post(CREATE_CHECKOUT, {}, config);
-    // console.log(response);
-    // if (response && response?.data && response.data?.checkout_url) {
-    //   let checkout_url = response.data?.checkout_url;
-    //   console.log(checkout_url);
-    //   window.location.href = checkout_url;
-    // }
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    const formData = new FormData();
+    formData.append("checkout_session_id", props.checkout_session_id);
+    const response = await post(CUSTOMER_PORTAL, formData, config);
+    console.log(response);
+    if (response && response?.data && response.data?.session) {
+      let session = response.data?.session;
+      console.log(session);
+      window.location.href = session;
+    }
   }
   async function createCheckout() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
@@ -114,9 +120,9 @@ const PricingModal = (props) => {
   }
 
   async function handleCheckout() {
-    if (props.isSubscriped === "True") {
+    if (props.isSubscriped === true) {
       showStripeCustomerPortal();
-    } else if (props.isCanceled === "True") {
+    } else if (props.isCanceled === true) {
       showStripeCustomerPortal();
     } else {
       createCheckout();
