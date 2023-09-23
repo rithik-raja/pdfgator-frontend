@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { AUTH_TOKEN } from "../constants/storageConstants";
+import { AUTH_TOKEN, CHECKOUT_SESSION_ID } from "../constants/storageConstants";
 import updateUser from "../utils/updateUser";
 
 export const getAuthToken = () => {
@@ -14,4 +14,6 @@ export const removeAuthToken = () => {
 export const logOut = () => {
   removeAuthToken();
   updateUser();
+
+  Cookies.remove(CHECKOUT_SESSION_ID);
 };
