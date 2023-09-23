@@ -9,9 +9,10 @@ import CustomSpinner from "../../components/Spinner/spinner";
 const Success = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  let currentSessionId = searchParams.get("session_id");
+  let currentSessionId = searchParams.get("checkout_session_id");
   console.log(currentSessionId);
-  const [isValid, setisValid] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const verifySession = async () => {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
@@ -19,33 +20,32 @@ const Success = () => {
     formData.append("checkout_session_id", currentSessionId);
     const res = await post(VERIFY_CHECKOUT, formData, config);
     console.log(res);
-    if (res?.data && res?.data?.data) {
-      if (Response?.data?.data?.is_valid === true) {
-        setisValid(true);
-      } else {
-        setisValid(false);
-      }
+    let data = res?.data?.data;
+    if (data) {
+      setPaymentStatus(data.payment_status);
+      setMessage(data.message);
     } else {
-      setisValid(false);
+      setPaymentStatus(false);
+      setMessage("Something went wrong");
     }
   };
   useEffect(() => {
     verifySession();
   }, [currentSessionId]);
-  const [seconds, setseconds] = useState(5);
+  const [seconds, setseconds] = useState(10);
 
-  // setInterval(function () {
-  //   if (isValid !== null) {
-  //     let newSec = seconds - 1;
-  //     setseconds(newSec);
-  //     if (newSec === 0) {
-  //       navigate("/", { replace: true });
-  //       return 1;
-  //     }
-  //   }
-  // }, 1000);
-  function TopContainer({ isValid }) {
-    if (isValid === null) {
+  setInterval(function () {
+    if (paymentStatus !== null) {
+      let newSec = seconds - 1;
+      setseconds(newSec);
+      if (newSec === 0) {
+        navigate("/", { replace: true });
+        return 1;
+      }
+    }
+  }, 1000);
+  function TopContainer({ paymentStatus }) {
+    if (paymentStatus === null) {
       return (
         <div
           className="top-container"
@@ -55,14 +55,14 @@ const Success = () => {
           <h4 className="mt-5">Loading...</h4>
         </div>
       );
-    } else if (isValid === true) {
+    } else if (paymentStatus === true) {
       return (
         <div
           className="top-container success-bg"
           style={{ padding: "100px 20px", color: "white" }}
         >
           <Icon.CheckCircle size={"100px"} color="white" />
-          <h4 className="mt-5">PAYMENT SUCCESS</h4>
+          <h4 className="mt-5">{message}</h4>
         </div>
       );
     } else {
@@ -72,7 +72,7 @@ const Success = () => {
           style={{ padding: "100px 20px", color: "white" }}
         >
           <Icon.XCircle size={"100px"} color="white" />
-          <h4 className="mt-5">Something Went Wrong</h4>
+          <h4 className="mt-5">{message}</h4>
         </div>
       );
     }
@@ -97,11 +97,11 @@ const Success = () => {
       <div className="container-fluid p-0">
         <div className="h-100  d-flex align-items-center justify-content-center">
           <div className="w-100">
-            <TopContainer isValid={isValid} />
+            <TopContainer paymentStatus={paymentStatus} />
 
             <div className="mt-5 bottom-container">
               <p style={{ color: "#3f51b5" }}>
-                {/* You will be redirected to the home page */}
+                You will be redirected to the home page in {seconds} seconds
               </p>
               <Button
                 className="mt-1 btn-secondary "
