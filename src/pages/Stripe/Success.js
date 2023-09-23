@@ -35,18 +35,30 @@ const Success = () => {
     verifySession();
     Cookies.set(CHECKOUT_SESSION_ID, currentSessionId, { expires: 30 });
   }, [currentSessionId]);
+
   const [seconds, setseconds] = useState(10);
 
-  setInterval(function () {
-    if (paymentStatus !== null) {
-      let newSec = seconds - 1;
-      setseconds(newSec);
-      if (newSec === 0) {
-        navigate("/", { replace: true });
-        return 1;
-      }
+  useEffect(() => {
+    if (seconds === 0) {
+      navigate("/", { replace: true });
+      return;
     }
-  }, 1000);
+    setTimeout(() => {
+      console.log(seconds);
+      setseconds((seconds) => seconds - 1);
+    }, 1000);
+  }, [seconds]);
+
+  // setInterval(function () {
+  //   if (paymentStatus !== null) {
+  //     let newSec = seconds - 1;
+  //     setseconds(newSec);
+  //     if (newSec === 0) {
+  //       navigate("/", { replace: true });
+  //       return 1;
+  //     }
+  //   }
+  // }, 1000);
   function TopContainer({ paymentStatus }) {
     if (paymentStatus === null) {
       return (

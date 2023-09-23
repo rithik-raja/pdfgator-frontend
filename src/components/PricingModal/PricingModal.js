@@ -143,9 +143,17 @@ const PricingModal = (props) => {
   }
   const getProducts = async () => {
     let res = await get(GET_PRODUCTS);
-    console.log(res);
-    if (res?.data && res?.data?.data && res?.data?.data.length) {
-      setPricingDetails(res?.data?.data);
+    console.log(res?.data?.data?.data);
+    if (
+      res?.data &&
+      res?.data?.data &&
+      res?.data?.data?.data &&
+      res?.data?.data?.data.length
+    ) {
+      let priceData = res?.data?.data?.data;
+      if (priceData.length)
+        priceData = priceData.filter((ele) => ele.active === true);
+      setPricingDetails(priceData);
     }
   };
   useEffect(() => {
@@ -168,8 +176,10 @@ const PricingModal = (props) => {
             <Col key={index}>
               <Card className="pricing">
                 <Card.Header>
-                  <span className="fw-bold">{pricingDetail.product_name}</span>
-                  {pricingDetail.product_name.toLowerCase() ===
+                  <span className="fw-bold">
+                    {pricingDetail.metadata?.product_name}
+                  </span>
+                  {pricingDetail.metadata?.product_name.toLowerCase() ===
                   props.plan_name?.toLowerCase() ? (
                     <span className="float-end text-muted">current</span>
                   ) : (
@@ -178,7 +188,9 @@ const PricingModal = (props) => {
                 </Card.Header>
                 <Card.Body>
                   <div className="p-3">
-                    <span className="fw-bold fs-4">${pricingDetail.price}</span>
+                    <span className="fw-bold fs-4">
+                      ${pricingDetail.metadata?.price}
+                    </span>
 
                     <span className="text-muted">/month</span>
                   </div>
@@ -186,7 +198,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.no_pages} pages
+                          {pricingDetail.metadata?.no_pages} pages
                         </span>
                         <span className="text-muted">/PDF</span>
                       </div>
@@ -194,7 +206,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.file_size} MB
+                          {pricingDetail.metadata?.file_size} MB
                         </span>
                         <span className="text-muted">/PDF</span>
                       </div>
@@ -202,7 +214,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.files_per_day} PDFs
+                          {pricingDetail.metadata?.files_per_day} PDFs
                         </span>
                         <span className="text-muted">/day</span>
                       </div>
@@ -210,14 +222,15 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.no_of_questions} questions
+                          {pricingDetail.metadata?.no_of_questions} questions
                         </span>
                         <span className="text-muted">/day</span>
                       </div>
                     </li>
                   </ul>
                 </Card.Body>
-                {pricingDetail.product_name.toLocaleLowerCase() !== "free" ? (
+                {pricingDetail.metadata?.product_name.toLocaleLowerCase() !==
+                "free" ? (
                   <Card.Footer className="text-muted">
                     <FooterButton details={pricingDetail} />
                   </Card.Footer>
