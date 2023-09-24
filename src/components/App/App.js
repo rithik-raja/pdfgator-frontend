@@ -12,6 +12,9 @@ import { getAuthToken } from "../../services/userServices";
 import PrivacyPolicy from "../../pages/PrivacyPolicy/PrivacyPolicy";
 import Failed from "../../pages/Stripe/Failed";
 
+import { CHECKOUT_SESSION_ID } from "../../constants/storageConstants";
+import Cookies from "js-cookie";
+
 function App() {
   const [props, setProps] = useState({});
   useEffect(() => {
@@ -22,6 +25,7 @@ function App() {
       }
       if (res) {
         setProps(res?.data);
+        Cookies.set(CHECKOUT_SESSION_ID, res?.data?.stripe_checkout_session_id, { expires: 30 });
       } else {
         setProps({});
       }
