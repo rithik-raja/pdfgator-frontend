@@ -14,7 +14,7 @@ import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
 
-export default function AccountModal(props) {
+const AccountModal = ({isCanceled, isSubscriped, ...props}) => {
 
   const getUsage = async () => {
     let res = await get(GET_USAGE);
@@ -76,28 +76,26 @@ export default function AccountModal(props) {
         <Card>
           <Card.Body>
             <Card.Subtitle className="mb-2 text-muted">
-              {props.isSubscriped ? "Usage Today" : "Free Usage Today"}
+              {isSubscriped ? "Usage Today" : "Free Usage Today"}
             </Card.Subtitle>
-            <Card.Text>
-              <Container>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div className="progress-container">
-                      <ProgressBar now={usage[getScopes().upload]} min={0} max={usage.usage_limits[getScopes().upload]} />
-                    </div>
-                  </Col>
-                  <Col>{usage[getScopes().upload]}/{usage.usage_limits[getScopes().upload]} PDFs</Col>
-                </Row>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div className="progress-container">
-                      <ProgressBar now={usage[getScopes().search]} min={0} max={usage.usage_limits[getScopes().search]} />
-                    </div>
-                  </Col>
-                  <Col>{usage[getScopes().search]}/{usage.usage_limits[getScopes().search]} Questions</Col>
-                </Row>
-              </Container>
-            </Card.Text>
+            <Container>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar now={usage[getScopes().upload]} min={0} max={usage.usage_limits[getScopes().upload]} />
+                  </div>
+                </Col>
+                <Col>{usage[getScopes().upload]}/{usage.usage_limits[getScopes().upload]} PDFs</Col>
+              </Row>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar now={usage[getScopes().search]} min={0} max={usage.usage_limits[getScopes().search]} />
+                  </div>
+                </Col>
+                <Col>{usage[getScopes().search]}/{usage.usage_limits[getScopes().search]} Questions</Col>
+              </Row>
+            </Container>
           </Card.Body>
           <Card.Footer>
             <Row className="justify-content-md-center">
@@ -116,10 +114,12 @@ export default function AccountModal(props) {
         onHide={() => setPricingModalShow(false)}
         email={props.email}
         isSubscriped={props.is_plus_user}
-        isCanceled={props.is_cancel_pending}
+        isCanceled={props.isCanceled}
         plan_id={props.plan_id}
         plan_name={props.plan_name}
       />
     </Modal>
   );
 }
+
+export default AccountModal;
