@@ -83,7 +83,7 @@ const Footer = (props) => {
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
-          isSubscriped={is_plus_user}
+          isSubscriped={props.is_plus_user}
           isCanceled={props.is_cancel_pending}
           plan_id={props.plan_id}
           plan_name={props.plan_name}

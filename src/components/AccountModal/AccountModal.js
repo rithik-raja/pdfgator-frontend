@@ -113,8 +113,8 @@ const AccountModal = ({isCanceled, isSubscriped, ...props}) => {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        isSubscriped={props.is_plus_user}
-        isCanceled={props.isCanceled}
+        isSubscriped={isSubscriped}
+        isCanceled={isCanceled}
         plan_id={props.plan_id}
         plan_name={props.plan_name}
       />

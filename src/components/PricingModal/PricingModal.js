@@ -99,6 +99,8 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       let session = response.data?.session;
       console.log(session);
       window.location.href = session;
+    } else {
+      setErrorToastMessage("Something went wrong.");
     }
   }
   async function createCheckout() {
@@ -115,6 +117,8 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       let checkout_url = response.data?.checkout_url;
       console.log(checkout_url);
       window.location.href = checkout_url;
+    } else {
+      setErrorToastMessage("Something went wrong while creating the Stripe session.");
     }
     product_id = null;
   }
@@ -154,6 +158,10 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       if (priceData.length)
         priceData = priceData.filter((ele) => ele.active === true);
       setPricingDetails(priceData);
+      console.log(pricingDetails);
+      console.log(props)
+      console.log(isSubscriped)
+      console.log(isCanceled)
     }
   };
   useEffect(() => {
@@ -276,6 +284,7 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}
+        color={"danger"}
       />
     </Modal>
   );
