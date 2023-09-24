@@ -15,7 +15,7 @@ import {
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
-const PricingModal = (props) => {
+const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
   console.log(props.plan_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([
@@ -50,10 +50,10 @@ const PricingModal = (props) => {
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    if (props.isCanceled) {
+    if (isCanceled) {
       buttonText = "Undo Cancel";
       buttonVarient = "primary";
-    } else if (props.isSubscriped) {
+    } else if (isSubscriped) {
       buttonText = "Cancel";
       buttonVarient = "secondary";
     }
@@ -67,7 +67,7 @@ const PricingModal = (props) => {
     }
     return (
       <>
-        {/* {props.isSubscriped === "False" && props.isCanceled === "True" && (
+        {/* {isSubscriped === "False" && isCanceled === "True" && (
           <span className="float-end">subscription was canceled</span>
         )} */}
         <Button
@@ -120,9 +120,9 @@ const PricingModal = (props) => {
   }
 
   async function handleCheckout() {
-    if (props.isSubscriped === true) {
+    if (isSubscriped === true) {
       showStripeCustomerPortal();
-    } else if (props.isCanceled === true) {
+    } else if (isCanceled === true) {
       showStripeCustomerPortal();
     } else {
       createCheckout();
