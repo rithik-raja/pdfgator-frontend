@@ -8,52 +8,27 @@ import Col from "react-bootstrap/Col";
 import { logOut } from "../../services/userServices";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
-import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
 import {
   CREATE_CHECKOUT,
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
-const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
-  console.log(props.plan_id);
+const PricingModal = ({ isCanceled, ...props }) => {
+  console.log(props.product_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
-  const [pricingDetails, setPricingDetails] = useState([
-    {
-      product_name: "Free",
-      currency_code: "$",
-      price: 0,
-      no_pages: 123,
-      file_size: 10,
-      files_per_day: 3,
-      no_of_questions: 50,
-      //is_current: true
-      plan_id: 0,
-      is_paid: false,
-    },
-    {
-      product_name: "Plus",
-      currency_code: "$",
-      price: 5,
-      no_pages: 2000,
-      file_size: 32,
-      files_per_day: 50,
-      no_of_questions: 1000,
-      //is_current: false,
-      plan_id: 1,
-      is_paid: true,
-    },
-  ]);
+  const [pricingDetails, setPricingDetails] = useState([]);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
   let product_id = null;
+  let current_pro_id = props?.product_id;
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
     if (isCanceled) {
       buttonText = "Undo Cancel";
       buttonVarient = "primary";
-    } else if (isSubscriped) {
+    } else if (current_pro_id) {
       buttonText = "Cancel";
       buttonVarient = "secondary";
     }
@@ -67,9 +42,6 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
     }
     return (
       <>
-        {/* {isSubscriped === "False" && isCanceled === "True" && (
-          <span className="float-end">subscription was canceled</span>
-        )} */}
         <Button
           className="float-end m-1"
           variant={buttonVarient}
@@ -118,31 +90,20 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       console.log(checkout_url);
       window.location.href = checkout_url;
     } else {
-      setErrorToastMessage("Something went wrong while creating the Stripe session.");
+      setErrorToastMessage(
+        "Something went wrong while creating the Stripe session."
+      );
     }
     product_id = null;
   }
 
   async function handleCheckout() {
-    if (isSubscriped === true) {
+    if (isCanceled === true) {
       showStripeCustomerPortal();
-    } else if (isCanceled === true) {
+    } else if (current_pro_id) {
       showStripeCustomerPortal();
     } else {
       createCheckout();
-      // const stripe = await getStripe();
-      // await stripe.redirectToCheckout({
-      //   lineItems: [
-      //     {
-      //       price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-      //       quantity: 1,
-      //     },
-      //   ],
-      //   mode: "subscription",
-      //   successUrl: `http://localhost:3000/checkout/success`,
-      //   cancelUrl: `http://localhost:3000`,
-      //   customerEmail: props.email,
-      // });
     }
   }
   const getProducts = async () => {
@@ -157,11 +118,19 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
       let priceData = res?.data?.data?.data;
       if (priceData.length)
         priceData = priceData.filter((ele) => ele.active === true);
+      if (!current_pro_id && priceData.length) {
+        priceData[0].isCurrent = true;
+      } else {
+        priceData = priceData?.map((ele) => {
+          ele.isCurrent = false;
+          if (current_pro_id && ele.id === current_pro_id) {
+            ele.isCurrent = true;
+          }
+          return ele;
+        });
+      }
+
       setPricingDetails(priceData);
-      console.log(pricingDetails);
-      console.log(props)
-      console.log(isSubscriped)
-      console.log(isCanceled)
     }
   };
   useEffect(() => {
@@ -187,8 +156,7 @@ const PricingModal = ({isCanceled, isSubscriped, ...props}) => {
                   <span className="fw-bold">
                     {pricingDetail.metadata?.product_name}
                   </span>
-                  {pricingDetail.metadata?.product_name.toLowerCase() ===
-                  props.plan_name?.toLowerCase() ? (
+                  {pricingDetail.isCurrent === true ? (
                     <span className="float-end text-muted">current</span>
                   ) : (
                     <></>
