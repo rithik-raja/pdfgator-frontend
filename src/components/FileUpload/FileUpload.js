@@ -11,7 +11,10 @@ import PricingModal from "../PricingModal/PricingModal";
 import Spinner_ from "../Spinner/spinner";
 import * as Icon from "react-feather";
 import { MAIN_APP_URL } from "../../constants/apiConstants";
-import { FREE_PLAN_MAX_FILE_SIZE, PAID_PLAN_MAX_FILE_SIZE } from "../../constants/storageConstants";
+import {
+  FREE_PLAN_MAX_FILE_SIZE,
+  PAID_PLAN_MAX_FILE_SIZE,
+} from "../../constants/storageConstants";
 
 const FileUpload = (props) => {
   const navigate = useNavigate();
@@ -23,8 +26,17 @@ const FileUpload = (props) => {
   const fileInputOnChange = async (acceptedFiles) => {
     console.log(acceptedFiles);
     if (acceptedFiles.length > 0) {
-      if (acceptedFiles[0].size > 1024 * 1024 * (props.is_plus_user ? PAID_PLAN_MAX_FILE_SIZE : FREE_PLAN_MAX_FILE_SIZE)) {
-        setErrorToastMessage("The selected file is either too large or in an invalid format.");
+      if (
+        acceptedFiles[0].size >
+        1024 *
+          1024 *
+          (props.is_plus_user
+            ? PAID_PLAN_MAX_FILE_SIZE
+            : FREE_PLAN_MAX_FILE_SIZE)
+      ) {
+        setErrorToastMessage(
+          "The selected file is either too large or in an invalid format."
+        );
         return;
       }
       const newuploadedFile = acceptedFiles[0];
@@ -96,10 +108,9 @@ const FileUpload = (props) => {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        isSubscriped={props.is_plus_user}
-        isCanceled={props.is_cancel_pending}
-        plan_id={props.plan_id}
-        plan_name={props.plan_name}
+        is_canceled={props.is_canceled}
+        product_id={props.product_id}
+        stripe_checkout_session_id={props.stripe_checkout_session_id}
       />
     </>
   );

@@ -13,8 +13,16 @@ import { useNavigate } from "react-router-dom";
 import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
+import { getProducts } from "../../services/productsService";
 
-const AccountModal = ({ isCanceled, isSubscriped, ...props }) => {
+const AccountModal = ({ ...props }) => {
+  let prods = getProducts();
+  console.log(prods);
+  let plan_name = "Free";
+  if (prods && prods?.length && props?.product_id && !props.is_canceled) {
+    let prod = prods.find((ele) => ele.id === props?.product_id);
+    plan_name = prod?.metadata?.product_name;
+  }
   const getUsage = async () => {
     let res = await get(GET_USAGE);
     console.log(res);
@@ -80,7 +88,9 @@ const AccountModal = ({ isCanceled, isSubscriped, ...props }) => {
         <Card>
           <Card.Body>
             <Card.Subtitle className="mb-2 text-muted">
-              {isSubscriped ? "Usage Today" : "Free Usage Today"}
+              {props?.product_id && !props.is_canceled
+                ? "Usage Today"
+                : "Free Usage Today"}
             </Card.Subtitle>
             <Container>
               <Row className="justify-content-md-center">
@@ -118,7 +128,7 @@ const AccountModal = ({ isCanceled, isSubscriped, ...props }) => {
           <Card.Footer>
             <Row className="justify-content-md-center">
               <Col xs={8}>
-                <div>Current Plan: {props.plan_name}</div>
+                <div>Current Plan: {plan_name}</div>
               </Col>
               <Col>
                 <Button
@@ -138,9 +148,9 @@ const AccountModal = ({ isCanceled, isSubscriped, ...props }) => {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        isCanceled={props.is_cancel_pending}
+        is_canceled={props.is_canceled}
         product_id={props.product_id}
-        checkout_session_id={props.stripe_checkout_session_id}
+        stripe_checkout_session_id={props.stripe_checkout_session_id}
       />
     </Modal>
   );

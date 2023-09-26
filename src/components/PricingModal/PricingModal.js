@@ -14,7 +14,7 @@ import {
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
-const PricingModal = ({ isCanceled, ...props }) => {
+const PricingModal = ({ ...props }) => {
   console.log(props.product_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
@@ -25,7 +25,7 @@ const PricingModal = ({ isCanceled, ...props }) => {
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    if (isCanceled) {
+    if (props.is_canceled === true) {
       buttonText = "Undo Cancel";
       buttonVarient = "primary";
     } else if (current_pro_id) {
@@ -64,7 +64,7 @@ const PricingModal = ({ isCanceled, ...props }) => {
   async function showStripeCustomerPortal() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
-    formData.append("checkout_session_id", props.checkout_session_id);
+    formData.append("checkout_session_id", props.stripe_checkout_session_id);
     const response = await post(CUSTOMER_PORTAL, formData, config);
     console.log(response);
     if (response && response?.data && response.data?.session) {
@@ -98,7 +98,7 @@ const PricingModal = ({ isCanceled, ...props }) => {
   }
 
   async function handleCheckout() {
-    if (isCanceled === true) {
+    if (props.is_canceled === true) {
       showStripeCustomerPortal();
     } else if (current_pro_id) {
       showStripeCustomerPortal();
@@ -118,7 +118,7 @@ const PricingModal = ({ isCanceled, ...props }) => {
       let priceData = res?.data?.data?.data;
       if (priceData.length)
         priceData = priceData.filter((ele) => ele.active === true);
-      if (!current_pro_id && priceData.length) {
+      if ((props.is_canceled === true || !current_pro_id) && priceData.length) {
         priceData[0].isCurrent = true;
       } else {
         priceData = priceData?.map((ele) => {

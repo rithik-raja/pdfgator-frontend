@@ -48,11 +48,7 @@ const Footer = (props) => {
         <AccountModal
           show={accountModalShow}
           onHide={() => setaccountModalShow(false)}
-          email={props.email}
-          isSubscriped={props.is_plus_user}
-          isCanceled={props.is_cancel_pending}
-          plan_id={props.plan_id}
-          plan_name={props.plan_name}
+          {...props}
         />
         <ErrorToast
           message={errorToastMessage}
@@ -63,9 +59,9 @@ const Footer = (props) => {
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
-          isCanceled={props.is_cancel_pending}
+          is_canceled={props.is_canceled}
           product_id={props.product_id}
-          checkout_session_id={props.stripe_checkout_session_id}
+          stripe_checkout_session_id={props.stripe_checkout_session_id}
         />
       </div>
     </>

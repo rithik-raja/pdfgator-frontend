@@ -16,7 +16,10 @@ import { getAuthToken } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../../components/PricingModal/PricingModal";
-import { FREE_PLAN_MAX_FILE_SIZE, PAID_PLAN_MAX_FILE_SIZE } from "../../constants/storageConstants";
+import {
+  FREE_PLAN_MAX_FILE_SIZE,
+  PAID_PLAN_MAX_FILE_SIZE,
+} from "../../constants/storageConstants";
 
 let currentActiveURL;
 
@@ -55,8 +58,17 @@ const Chat = (props) => {
   const fileInputOnChange = async (acceptedFiles) => {
     // const acceptedFiles = e.target.files;
     if (acceptedFiles.length > 0) {
-      if (acceptedFiles[0].size > 1024 * 1024 * (props.is_plus_user ? PAID_PLAN_MAX_FILE_SIZE : FREE_PLAN_MAX_FILE_SIZE)) {
-        setErrorToastMessage("The selected file is either too large or in an invalid format.");
+      if (
+        acceptedFiles[0].size >
+        1024 *
+          1024 *
+          (props.is_plus_user
+            ? PAID_PLAN_MAX_FILE_SIZE
+            : FREE_PLAN_MAX_FILE_SIZE)
+      ) {
+        setErrorToastMessage(
+          "The selected file is either too large or in an invalid format."
+        );
         return;
       }
       const newuploadedFile = acceptedFiles[0];
@@ -319,20 +331,15 @@ const Chat = (props) => {
       <AccountModal
         show={accountModalShow}
         onHide={() => setaccountModalShow(false)}
-        email={props.email}
-        isSubscriped={props.is_plus_user}
-        isCanceled={props.is_cancel_pending}
-        plan_id={props.plan_id}
-        plan_name={props.plan_name}
+        {...props}
       />
       <PricingModal
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        isSubscriped={props.is_plus_user}
-        isCanceled={props.is_cancel_pending}
-        plan_id={props.plan_id}
-        plan_name={props.plan_name}
+        is_canceled={props.is_canceled}
+        product_id={props.product_id}
+        stripe_checkout_session_id={props.stripe_checkout_session_id}
       />
       <ErrorToast
         message={errorToastMessage}
