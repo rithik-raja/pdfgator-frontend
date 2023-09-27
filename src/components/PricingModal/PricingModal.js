@@ -14,21 +14,20 @@ import {
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
-const PricingModal = ({ ...props }) => {
+const PricingModal = ({ is_canceled, ...props }) => {
   console.log(props.product_id);
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
   let product_id = null;
-  let current_pro_id = props?.product_id;
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
     if (props.is_canceled === true) {
       buttonText = "Undo Cancel";
       buttonVarient = "primary";
-    } else if (current_pro_id) {
+    } else if (props?.product_id) {
       buttonText = "Cancel";
       buttonVarient = "secondary";
     }
@@ -100,7 +99,7 @@ const PricingModal = ({ ...props }) => {
   async function handleCheckout() {
     if (props.is_canceled === true) {
       showStripeCustomerPortal();
-    } else if (current_pro_id) {
+    } else if (props?.product_id) {
       showStripeCustomerPortal();
     } else {
       createCheckout();
@@ -118,12 +117,15 @@ const PricingModal = ({ ...props }) => {
       let priceData = res?.data?.data?.data;
       if (priceData.length)
         priceData = priceData.filter((ele) => ele.active === true);
-      if ((props.is_canceled === true || !current_pro_id) && priceData.length) {
+      if (
+        (props.is_canceled === true || !props?.product_id) &&
+        priceData.length
+      ) {
         priceData[0].isCurrent = true;
       } else {
         priceData = priceData?.map((ele) => {
           ele.isCurrent = false;
-          if (current_pro_id && ele.id === current_pro_id) {
+          if (props?.product_id && ele.id === props?.product_id) {
             ele.isCurrent = true;
           }
           return ele;
@@ -135,7 +137,7 @@ const PricingModal = ({ ...props }) => {
   };
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [props?.product_id]);
 
   return (
     <Modal

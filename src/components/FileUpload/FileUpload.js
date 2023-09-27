@@ -8,7 +8,7 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import PricingModal from "../PricingModal/PricingModal";
 
-import Spinner_ from "../Spinner/spinner";
+import Spinner from "../Spinner/spinner";
 import * as Icon from "react-feather";
 import { MAIN_APP_URL } from "../../constants/apiConstants";
 import {
@@ -82,7 +82,7 @@ const FileUpload = (props) => {
             <div className="file-upload-box" {...getRootProps()}>
               {isProcessingDocument ? (
                 <>
-                  <Spinner_ />
+                  <Spinner />
                   <p className="small">Processing Document...</p>
                 </>
               ) : (
