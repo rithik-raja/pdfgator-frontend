@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./PricingModal.css";
@@ -105,7 +105,7 @@ const PricingModal = ({ is_canceled, ...props }) => {
       createCheckout();
     }
   }
-  const getProducts = async () => {
+  const getProducts = useCallback(async () => {
     let res = await get(GET_PRODUCTS);
     console.log(res?.data?.data?.data);
     if (
@@ -134,10 +134,40 @@ const PricingModal = ({ is_canceled, ...props }) => {
 
       setPricingDetails(priceData);
     }
-  };
+  }, [props?.product_id, props?.is_canceled]);
+  // const getProducts = async () => {
+  //   let res = await get(GET_PRODUCTS);
+  //   console.log(res?.data?.data?.data);
+  //   if (
+  //     res?.data &&
+  //     res?.data?.data &&
+  //     res?.data?.data?.data &&
+  //     res?.data?.data?.data.length
+  //   ) {
+  //     let priceData = res?.data?.data?.data;
+  //     if (priceData.length)
+  //       priceData = priceData.filter((ele) => ele.active === true);
+  //     if (
+  //       (props.is_canceled === true || !props?.product_id) &&
+  //       priceData.length
+  //     ) {
+  //       priceData[0].isCurrent = true;
+  //     } else {
+  //       priceData = priceData?.map((ele) => {
+  //         ele.isCurrent = false;
+  //         if (props?.product_id && ele.id === props?.product_id) {
+  //           ele.isCurrent = true;
+  //         }
+  //         return ele;
+  //       });
+  //     }
+
+  //     setPricingDetails(priceData);
+  //   }
+  // };
   useEffect(() => {
     getProducts();
-  }, [props?.product_id]);
+  }, [getProducts]);
 
   return (
     <Modal

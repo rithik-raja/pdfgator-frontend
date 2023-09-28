@@ -15,7 +15,7 @@ const Cancelled = () => {
     setTimeout(() => {
       setseconds((seconds) => seconds - 1);
     }, 1000);
-  }, [seconds]);
+  }, [seconds, navigate]);
 
   return (
     <>

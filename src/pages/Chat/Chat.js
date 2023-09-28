@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import "./Chat.css";
 import Dropzone from "react-dropzone";
@@ -123,7 +123,7 @@ const Chat = (props) => {
   const { pdfid } = params;
   currentActiveURL = pdfid;
 
-  const getPdfLists = async () => {
+  const getPdfLists = useCallback(async () => {
     console.log("TEST");
     console.log(getAuthToken());
     const sessionid = getSessionId();
@@ -162,7 +162,7 @@ const Chat = (props) => {
     } else {
       setpdfLists([]);
     }
-  };
+  }, [pdfid, props.email]);
 
   const setActivepdfList = (urlName, allpdflists) => {
     const currentUrl = urlName ?? pdfid;
@@ -183,14 +183,14 @@ const Chat = (props) => {
     return () => {
       document.removeEventListener("userUpdate", getPdfLists);
     };
-  }, []);
+  }, [getPdfLists]);
 
   useEffect(() => {
     getPdfLists();
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
-  }, [currentActiveURL]);
+  }, [currentActiveURL, getPdfLists, searchMemory]);
 
   const handlePdfLinkClick = (index) => {
     if (currentActiveURL === pdfLists[index].id) {
@@ -224,7 +224,12 @@ const Chat = (props) => {
               accept={{
                 "application/pdf": [".pdf"],
               }}
-              onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
+              onDrop={(acceptedFiles, fileRejections) => {
+                if (fileRejections?.length) {
+                  setErrorToastMessage("File type must be 'pdf' ");
+                }
+                fileInputOnChange(acceptedFiles);
+              }}
             >
               {({ getRootProps, getInputProps }) => (
                 <section>
@@ -331,7 +336,10 @@ const Chat = (props) => {
       <AccountModal
         show={accountModalShow}
         onHide={() => setaccountModalShow(false)}
-        {...props}
+        email={props.email}
+        is_canceled={props.is_canceled}
+        product_id={props.product_id}
+        stripe_checkout_session_id={props.stripe_checkout_session_id}
       />
       <PricingModal
         show={pricingModalShow}

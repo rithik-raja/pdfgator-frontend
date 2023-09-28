@@ -72,7 +72,13 @@ const FileUpload = (props) => {
   return (
     <>
       <Dropzone
-        onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
+        onDrop={(acceptedFiles, fileRejections) => {
+          console.log(fileRejections);
+          if (fileRejections.length) {
+            setErrorToastMessage("File type must be 'pdf' ");
+          }
+          fileInputOnChange(acceptedFiles);
+        }}
         accept={{
           "application/pdf": [".pdf"],
         }}

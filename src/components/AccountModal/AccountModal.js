@@ -15,13 +15,17 @@ import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
 import { getProducts } from "../../services/productsService";
 
-const AccountModal = ({ ...props }) => {
+const AccountModal = ({ is_canceled, ...props }) => {
   let prods = getProducts();
   console.log(prods);
   let plan_name = "Free";
-  if (prods && prods?.length && props?.product_id && !props.is_canceled) {
-    let prod = prods.find((ele) => ele.id === props?.product_id);
-    plan_name = prod?.metadata?.product_name;
+  if (props?.product_id && !props.is_canceled) {
+    if (prods && prods?.length) {
+      let prod = prods.find((ele) => ele.id === props?.product_id);
+      plan_name = prod?.metadata?.product_name;
+    } else {
+      plan_name = props?.product_id;
+    }
   }
   const getUsage = async () => {
     let res = await get(GET_USAGE);

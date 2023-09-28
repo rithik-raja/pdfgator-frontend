@@ -48,7 +48,10 @@ const Footer = (props) => {
         <AccountModal
           show={accountModalShow}
           onHide={() => setaccountModalShow(false)}
-          {...props}
+          email={props.email}
+          is_canceled={props.is_cancel_pending}
+          product_id={props.product_id}
+          stripe_checkout_session_id={props.stripe_checkout_session_id}
         />
         <ErrorToast
           message={errorToastMessage}
