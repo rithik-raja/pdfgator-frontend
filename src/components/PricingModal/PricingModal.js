@@ -5,7 +5,7 @@ import "./PricingModal.css";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { logOut } from "../../services/userServices";
+import { getUserPlanStatus, logOut } from "../../services/userServices";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import { get, post } from "../Api/api";
@@ -14,6 +14,12 @@ import {
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
+import {
+  CURRENT_PLAN_EXPIRED,
+  CURRENT_PLAN_FREE,
+  CURRENT_PLAN_SUBSCRIPED,
+  CURRENT_PLAN_SUBSCRIPTION_CANCELED,
+} from "../../constants/userConstants";
 const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
   const result = stripeDetails?.reduce((accumulator, value, index) => {
     return { ...accumulator, [value.product_id]: value };
@@ -28,27 +34,31 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    let plan_user = "free";
-    if (result && result[details.id] !== undefined) {
-      let plan = result[details.id];
-      if (plan.is_plan_canceled === false) {
-        if (plan.is_subscription_canceled === false) {
-          buttonText = "Cancel";
-          buttonVarient = "secondary";
-          plan_user = "subcriped";
-        } else if (plan.is_subscription_canceled === true) {
-          buttonText = "Undo Cancel";
-          buttonVarient = "primary";
-          plan_user = "canceled";
-        }
-      }
+    let userPlan =
+      getUserPlanStatus(stripeDetails, details?.id) || CURRENT_PLAN_FREE;
+    if (userPlan === CURRENT_PLAN_FREE || userPlan === CURRENT_PLAN_EXPIRED) {
+      buttonVarient = "primary";
+      buttonText = "Get Plus";
+    } else if (userPlan === CURRENT_PLAN_SUBSCRIPED) {
+      buttonText = "Cancel";
+      buttonVarient = "secondary";
+    } else if (userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED) {
+      buttonText = "Undo Cancel";
+      buttonVarient = "primary";
     }
+
     function pricingButtonFunction() {
-      product_id = details.id;
+      product_id = details?.id;
       if (props.email) {
-        if (plan_user === "free") {
+        if (
+          userPlan === CURRENT_PLAN_FREE ||
+          userPlan === CURRENT_PLAN_EXPIRED
+        ) {
           handleCheckout();
-        } else {
+        } else if (
+          userPlan === CURRENT_PLAN_SUBSCRIPED ||
+          userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+        ) {
           showStripeCustomerPortal();
         }
       } else {
@@ -71,6 +81,7 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
 
   async function loginCallBack(islogin) {
     console.log(islogin);
+    console.log(stripeDetails, product_id);
     if (islogin) {
       await handleCheckout();
     }
@@ -114,14 +125,18 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
   }
 
   async function handleCheckout() {
-    if (props.is_canceled === true) {
-      showStripeCustomerPortal();
-    } else if (props?.product_id) {
-      showStripeCustomerPortal();
-    } else {
+    if (!product_id) return 0;
+    let userPlan = getUserPlanStatus(stripeDetails, product_id);
+    if (userPlan === CURRENT_PLAN_FREE || userPlan === CURRENT_PLAN_EXPIRED) {
       createCheckout();
+    } else if (
+      userPlan === CURRENT_PLAN_SUBSCRIPED ||
+      userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+    ) {
+      showStripeCustomerPortal();
     }
   }
+
   const getProducts = useCallback(async () => {
     let res = await get(GET_PRODUCTS);
     console.log(res?.data?.data?.data);
@@ -144,20 +159,19 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
     let result = stripeDetails?.reduce((accumulator, value, index) => {
       return { ...accumulator, [value.product_id]: value };
     }, {});
-    if (!stripeDetails?.length && priceData.length) {
+    priceData = priceData?.map((ele) => {
+      ele.isCurrent = false;
+      if (result && result[ele.id] !== undefined) {
+        let plan = result[ele.id];
+        if (plan.is_plan_canceled === false)
+          if (plan.is_subscription_canceled === false) {
+            ele.isCurrent = true;
+          }
+      }
+      return ele;
+    });
+    if ((!stripeDetails?.length || !props.email) && priceData.length) {
       priceData[0].isCurrent = true;
-    } else {
-      priceData = priceData?.map((ele) => {
-        ele.isCurrent = false;
-        if (result && result[ele.id] !== undefined) {
-          let plan = result[ele.id];
-          if (plan.is_plan_canceled === false)
-            if (plan.is_subscription_canceled === false) {
-              ele.isCurrent = true;
-            }
-        }
-        return ele;
-      });
     }
     let test = priceData?.reduce((accumulator, value, index) => {
       return { ...accumulator, [value.isCurrent]: value };
@@ -166,7 +180,7 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
       priceData[0].isCurrent = true;
     }
     setPricingDetails(priceData);
-  }, [pricingDetails1, stripeDetails]);
+  }, [pricingDetails1, stripeDetails, props?.email]);
 
   useEffect(() => {
     getProducts();
@@ -175,6 +189,16 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
   useEffect(() => {
     setActive();
   }, [setActive]);
+
+  // useEffect(() => {
+  //   function handleUserLogin() {
+  //     console.log(props.stripeDetails);
+  //   }
+  //   document.addEventListener("userUpdate", handleUserLogin);
+  //   return () => {
+  //     document.removeEventListener("userUpdate", handleUserLogin);
+  //   };
+  // }, [props.stripeDetails]);
 
   return (
     <Modal
@@ -278,6 +302,8 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
+                    product_id =
+                      pricingDetails.length > 1 && pricingDetails[1]?.id;
                     login();
                   }}
                 >

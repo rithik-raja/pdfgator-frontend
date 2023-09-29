@@ -8,25 +8,26 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { logOut } from "../../services/userServices";
+import { getUserPlanStatus, logOut } from "../../services/userServices";
 import { useNavigate } from "react-router-dom";
 import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
 import { getProducts } from "../../services/productsService";
 
-const AccountModal = ({ is_canceled, ...props }) => {
+const AccountModal = ({ stripeDetails, ...props }) => {
   let prods = getProducts();
   console.log(prods);
+
+  let plan = stripeDetails?.find(
+    (ele) => ele.is_subscription_canceled === false
+  );
   let plan_name = "Free";
-  if (props?.product_id && !props.is_canceled) {
-    if (prods && prods?.length) {
-      let prod = prods.find((ele) => ele.id === props?.product_id);
-      plan_name = prod?.metadata?.product_name;
-    } else {
-      plan_name = props?.product_id;
-    }
+  if (prods && prods?.length && plan?.product_id) {
+    let prod = prods?.find((ele) => ele.id === plan?.product_id);
+    plan_name = prod?.metadata?.product_name;
   }
+
   const getUsage = async () => {
     let res = await get(GET_USAGE);
     console.log(res);
@@ -153,7 +154,6 @@ const AccountModal = ({ is_canceled, ...props }) => {
         onHide={() => setPricingModalShow(false)}
         email={props.email}
         stripeDetails={props.stripeDetails}
-        {...props}
       />
     </Modal>
   );
