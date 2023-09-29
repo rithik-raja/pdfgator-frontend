@@ -345,9 +345,7 @@ const Chat = (props) => {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        is_canceled={props.is_canceled}
-        product_id={props.product_id}
-        stripe_checkout_session_id={props.stripe_checkout_session_id}
+        stripeDetails={props.stripeDetails}
       />
       <ErrorToast
         message={errorToastMessage}

@@ -14,27 +14,43 @@ import {
   CUSTOMER_PORTAL,
   GET_PRODUCTS,
 } from "../../constants/apiConstants";
-const PricingModal = ({ is_canceled, ...props }) => {
-  console.log(props.product_id);
+const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
+  const result = stripeDetails?.reduce((accumulator, value, index) => {
+    return { ...accumulator, [value.product_id]: value };
+  }, {});
+
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
+  const [pricingDetails1, setPricingDetails1] = useState([]);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
   let product_id = null;
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    if (props.is_canceled === true) {
-      buttonText = "Undo Cancel";
-      buttonVarient = "primary";
-    } else if (props?.product_id) {
-      buttonText = "Cancel";
-      buttonVarient = "secondary";
+    let plan_user = "free";
+    if (result && result[details.id] !== undefined) {
+      let plan = result[details.id];
+      if (plan.is_plan_canceled === false) {
+        if (plan.is_subscription_canceled === false) {
+          buttonText = "Cancel";
+          buttonVarient = "secondary";
+          plan_user = "subcriped";
+        } else if (plan.is_subscription_canceled === true) {
+          buttonText = "Undo Cancel";
+          buttonVarient = "primary";
+          plan_user = "canceled";
+        }
+      }
     }
     function pricingButtonFunction() {
       product_id = details.id;
       if (props.email) {
-        handleCheckout();
+        if (plan_user === "free") {
+          handleCheckout();
+        } else {
+          showStripeCustomerPortal();
+        }
       } else {
         login(); /**strip implemented in login callback function */
       }
@@ -63,7 +79,8 @@ const PricingModal = ({ is_canceled, ...props }) => {
   async function showStripeCustomerPortal() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
-    formData.append("checkout_session_id", props.stripe_checkout_session_id);
+    let checkout_session_id = result?.[product_id]?.stripe_checkout_session_id;
+    formData.append("checkout_session_id", checkout_session_id);
     const response = await post(CUSTOMER_PORTAL, formData, config);
     console.log(response);
     if (response && response?.data && response.data?.session) {
@@ -117,57 +134,47 @@ const PricingModal = ({ is_canceled, ...props }) => {
       let priceData = res?.data?.data?.data;
       if (priceData.length)
         priceData = priceData.filter((ele) => ele.active === true);
-      if (
-        (props.is_canceled === true || !props?.product_id) &&
-        priceData.length
-      ) {
-        priceData[0].isCurrent = true;
-      } else {
-        priceData = priceData?.map((ele) => {
-          ele.isCurrent = false;
-          if (props?.product_id && ele.id === props?.product_id) {
-            ele.isCurrent = true;
-          }
-          return ele;
-        });
-      }
 
-      setPricingDetails(priceData);
+      setPricingDetails1(priceData);
     }
-  }, [props?.product_id, props?.is_canceled]);
-  // const getProducts = async () => {
-  //   let res = await get(GET_PRODUCTS);
-  //   console.log(res?.data?.data?.data);
-  //   if (
-  //     res?.data &&
-  //     res?.data?.data &&
-  //     res?.data?.data?.data &&
-  //     res?.data?.data?.data.length
-  //   ) {
-  //     let priceData = res?.data?.data?.data;
-  //     if (priceData.length)
-  //       priceData = priceData.filter((ele) => ele.active === true);
-  //     if (
-  //       (props.is_canceled === true || !props?.product_id) &&
-  //       priceData.length
-  //     ) {
-  //       priceData[0].isCurrent = true;
-  //     } else {
-  //       priceData = priceData?.map((ele) => {
-  //         ele.isCurrent = false;
-  //         if (props?.product_id && ele.id === props?.product_id) {
-  //           ele.isCurrent = true;
-  //         }
-  //         return ele;
-  //       });
-  //     }
+  }, []);
 
-  //     setPricingDetails(priceData);
-  //   }
-  // };
+  const setActive = useCallback(() => {
+    let priceData = pricingDetails1;
+    let result = stripeDetails?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.product_id]: value };
+    }, {});
+    if (!stripeDetails?.length && priceData.length) {
+      priceData[0].isCurrent = true;
+    } else {
+      priceData = priceData?.map((ele) => {
+        ele.isCurrent = false;
+        if (result && result[ele.id] !== undefined) {
+          let plan = result[ele.id];
+          if (plan.is_plan_canceled === false)
+            if (plan.is_subscription_canceled === false) {
+              ele.isCurrent = true;
+            }
+        }
+        return ele;
+      });
+    }
+    let test = priceData?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.isCurrent]: value };
+    }, {});
+    if (!test[true] && priceData.length) {
+      priceData[0].isCurrent = true;
+    }
+    setPricingDetails(priceData);
+  }, [pricingDetails1, stripeDetails]);
+
   useEffect(() => {
     getProducts();
   }, [getProducts]);
+
+  useEffect(() => {
+    setActive();
+  }, [setActive]);
 
   return (
     <Modal
