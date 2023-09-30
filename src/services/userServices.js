@@ -22,7 +22,7 @@ export const getCheckoutSessionID = () => {
   return Cookies.get(CHECKOUT_SESSION_ID);
 };
 export const setCheckoutSessionID = (value) => {
-  Cookies.set(CHECKOUT_SESSION_ID, value, { expires: 30 });
+  Cookies.set(CHECKOUT_SESSION_ID, value, { expires: 7 });
 };
 export const removeCheckoutSessionID = () => {
   Cookies.remove(CHECKOUT_SESSION_ID);

@@ -8,7 +8,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { getUserPlanStatus, logOut } from "../../services/userServices";
+import { logOut } from "../../services/userServices";
 import { useNavigate } from "react-router-dom";
 import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
@@ -46,7 +46,7 @@ const AccountModal = ({ stripeDetails, ...props }) => {
           search: "search_query_anon",
           upload: "file_upload_anon",
         }
-      : props.plan_name?.toLowerCase() === "free"
+      : !plan?.product_id
       ? {
           search: "search_query_user_free",
           upload: "file_upload_user_free",
@@ -93,9 +93,7 @@ const AccountModal = ({ stripeDetails, ...props }) => {
         <Card>
           <Card.Body>
             <Card.Subtitle className="mb-2 text-muted">
-              {props?.product_id && !props.is_canceled
-                ? "Usage Today"
-                : "Free Usage Today"}
+              {plan?.product_id ? "Usage Today" : "Free Usage Today"}
             </Card.Subtitle>
             <Container>
               <Row className="justify-content-md-center">

@@ -61,7 +61,6 @@ const Footer = (props) => {
           onHide={() => setpricingModalShow(false)}
           email={props.email}
           stripeDetails={props.stripeDetails}
-          {...props}
         />
       </div>
     </>

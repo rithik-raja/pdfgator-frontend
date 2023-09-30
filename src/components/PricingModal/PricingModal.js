@@ -5,7 +5,11 @@ import "./PricingModal.css";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { getUserPlanStatus, logOut } from "../../services/userServices";
+import {
+  getCheckoutSessionID,
+  getUserPlanStatus,
+  logOut,
+} from "../../services/userServices";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import { get, post } from "../Api/api";
@@ -20,17 +24,16 @@ import {
   CURRENT_PLAN_SUBSCRIPED,
   CURRENT_PLAN_SUBSCRIPTION_CANCELED,
 } from "../../constants/userConstants";
-const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
-  const result = stripeDetails?.reduce((accumulator, value, index) => {
-    return { ...accumulator, [value.product_id]: value };
-  }, {});
-
+import { useRef } from "react";
+const PricingModal = ({ stripeDetails, ...props }) => {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingDetails, setPricingDetails] = useState([]);
   const [pricingDetails1, setPricingDetails1] = useState([]);
+  const [loginCheck, setLoginCheck] = useState(false);
+  const [loginProId, setloginProId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-  let product_id = null;
+  let product_id = useRef(null);
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
@@ -48,7 +51,7 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
     }
 
     function pricingButtonFunction() {
-      product_id = details?.id;
+      product_id.current = details?.id;
       if (props.email) {
         if (
           userPlan === CURRENT_PLAN_FREE ||
@@ -81,16 +84,22 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
 
   async function loginCallBack(islogin) {
     console.log(islogin);
-    console.log(stripeDetails, product_id);
+    console.log(stripeDetails, product_id.current);
     if (islogin) {
-      await handleCheckout();
+      setLoginCheck(true);
+      setloginProId(product_id.current);
+      // await handleCheckout();
     }
   }
-
-  async function showStripeCustomerPortal() {
+  const showStripeCustomerPortal = useCallback(async () => {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
-    let checkout_session_id = result?.[product_id]?.stripe_checkout_session_id;
+    const result = stripeDetails?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.product_id]: value };
+    }, {});
+    let checkout_session_id =
+      result?.[product_id.current]?.stripe_checkout_session_id ||
+      getCheckoutSessionID();
     formData.append("checkout_session_id", checkout_session_id);
     const response = await post(CUSTOMER_PORTAL, formData, config);
     console.log(response);
@@ -101,11 +110,12 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
     } else {
       setErrorToastMessage("Something went wrong.");
     }
-  }
+  }, [stripeDetails]);
+
   async function createCheckout() {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
-    formData.append("product_id", product_id);
+    formData.append("product_id", product_id.current);
     formData.append(
       "stripe_price_id",
       process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
@@ -121,12 +131,12 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
         "Something went wrong while creating the Stripe session."
       );
     }
-    product_id = null;
+    product_id.current = null;
   }
 
   async function handleCheckout() {
-    if (!product_id) return 0;
-    let userPlan = getUserPlanStatus(stripeDetails, product_id);
+    if (!product_id.current) return 0;
+    let userPlan = getUserPlanStatus(stripeDetails, product_id.current);
     if (userPlan === CURRENT_PLAN_FREE || userPlan === CURRENT_PLAN_EXPIRED) {
       createCheckout();
     } else if (
@@ -189,6 +199,34 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
   useEffect(() => {
     setActive();
   }, [setActive]);
+
+  useEffect(() => {
+    if (loginCheck) {
+      console.log(stripeDetails, loginProId);
+      if (stripeDetails && loginProId) {
+        product_id.current = loginProId;
+        if (!product_id.current) return 0;
+        let userPlan = getUserPlanStatus(stripeDetails, product_id.current);
+        if (
+          userPlan === CURRENT_PLAN_FREE ||
+          userPlan === CURRENT_PLAN_EXPIRED
+        ) {
+          createCheckout();
+        } else if (
+          userPlan === CURRENT_PLAN_SUBSCRIPED ||
+          userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+        ) {
+          showStripeCustomerPortal();
+        }
+      }
+    }
+  }, [
+    loginCheck,
+    loginProId,
+    product_id,
+    showStripeCustomerPortal,
+    stripeDetails,
+  ]);
 
   // useEffect(() => {
   //   function handleUserLogin() {
@@ -290,6 +328,7 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
                   style={{ cursor: "pointer" }}
                   onClick={() => {
                     logOut();
+                    setLoginCheck(false);
                   }}
                 >
                   Sign out
@@ -302,7 +341,7 @@ const PricingModal = ({ stripeDetails, is_canceled, ...props }) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    product_id =
+                    product_id.current =
                       pricingDetails.length > 1 && pricingDetails[1]?.id;
                     login();
                   }}

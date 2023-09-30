@@ -5,8 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { VERIFY_CHECKOUT } from "../../constants/apiConstants";
 import { post } from "../../components/Api/api";
 import CustomSpinner from "../../components/Spinner/spinner";
-import { CHECKOUT_SESSION_ID } from "../../constants/storageConstants";
-import Cookies from "js-cookie";
+import { setCheckoutSessionID } from "../../services/userServices";
 
 const Success = () => {
   const navigate = useNavigate();
@@ -33,7 +32,7 @@ const Success = () => {
   };
   useEffect(() => {
     verifySession();
-    Cookies.set(CHECKOUT_SESSION_ID, currentSessionId, { expires: 30 });
+    setCheckoutSessionID(currentSessionId);
   }, [currentSessionId]);
 
   const [seconds, setseconds] = useState(10);

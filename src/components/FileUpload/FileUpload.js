@@ -115,7 +115,6 @@ const FileUpload = (props) => {
         onHide={() => setPricingModalShow(false)}
         email={props.email}
         stripeDetails={props.stripeDetails}
-        {...props}
       />
     </>
   );
