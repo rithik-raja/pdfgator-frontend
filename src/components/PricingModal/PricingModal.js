@@ -1,70 +1,75 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./PricingModal.css";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { logOut } from "../../services/userServices";
+import {
+  getCheckoutSessionID,
+  getUserPlanStatus,
+  logOut,
+} from "../../services/userServices";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
-import getStripe from "../../lib/getStripe";
 import { get, post } from "../Api/api";
-import { CHECKOUT, GET_PRODUCTS } from "../../constants/apiConstants";
-const PricingModal = (props) => {
-  console.log(props.plan_id);
+import {
+  CREATE_CHECKOUT,
+  CUSTOMER_PORTAL,
+  GET_PRODUCTS,
+} from "../../constants/apiConstants";
+import {
+  CURRENT_PLAN_EXPIRED,
+  CURRENT_PLAN_FREE,
+  CURRENT_PLAN_SUBSCRIPED,
+  CURRENT_PLAN_SUBSCRIPTION_CANCELED,
+} from "../../constants/userConstants";
+import { useRef } from "react";
+const PricingModal = ({ stripeDetails, ...props }) => {
   const [errorToastMessage, setErrorToastMessage] = useState(null);
-  const [pricingDetails, setPricingDetails] = useState([
-    {
-      product_name: "Free",
-      currency_code: "$",
-      price: 0,
-      no_pages: 123,
-      file_size: 10,
-      files_per_day: 3,
-      no_of_questions: 50,
-      //is_current: true
-      plan_id: 0,
-      is_paid: false,
-    },
-    {
-      product_name: "Plus",
-      currency_code: "$",
-      price: 5,
-      no_pages: 2000,
-      file_size: 32,
-      files_per_day: 50,
-      no_of_questions: 1000,
-      //is_current: false,
-      plan_id: 1,
-      is_paid: true,
-    },
-  ]);
+  const [pricingDetails, setPricingDetails] = useState([]);
+  const [pricingDetails1, setPricingDetails1] = useState([]);
+  const [loginCheck, setLoginCheck] = useState(false);
+  const [loginProId, setloginProId] = useState(null);
 
   const login = useLogin(setErrorToastMessage, loginCallBack);
-
+  let product_id = useRef(null);
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
-    if (props.isCanceled) {
-      buttonText = "Undo Cancel";
+    let userPlan =
+      getUserPlanStatus(stripeDetails, details?.id) || CURRENT_PLAN_FREE;
+    if (userPlan === CURRENT_PLAN_FREE || userPlan === CURRENT_PLAN_EXPIRED) {
       buttonVarient = "primary";
-    } else if (props.isSubscriped) {
+      buttonText = "Get Plus";
+    } else if (userPlan === CURRENT_PLAN_SUBSCRIPED) {
       buttonText = "Cancel";
       buttonVarient = "secondary";
+    } else if (userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED) {
+      buttonText = "Undo Cancel";
+      buttonVarient = "primary";
     }
+
     function pricingButtonFunction() {
+      product_id.current = details?.id;
       if (props.email) {
-        handleCheckout();
+        if (
+          userPlan === CURRENT_PLAN_FREE ||
+          userPlan === CURRENT_PLAN_EXPIRED
+        ) {
+          handleCheckout();
+        } else if (
+          userPlan === CURRENT_PLAN_SUBSCRIPED ||
+          userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+        ) {
+          showStripeCustomerPortal();
+        }
       } else {
         login(); /**strip implemented in login callback function */
       }
     }
     return (
       <>
-        {/* {props.isSubscriped === "False" && props.isCanceled === "True" && (
-          <span className="float-end">subscription was canceled</span>
-        )} */}
         <Button
           className="float-end m-1"
           variant={buttonVarient}
@@ -79,53 +84,159 @@ const PricingModal = (props) => {
 
   async function loginCallBack(islogin) {
     console.log(islogin);
+    console.log(stripeDetails, product_id.current);
     if (islogin) {
-      await handleCheckout();
+      setLoginCheck(true);
+      setloginProId(product_id.current);
+      // await handleCheckout();
     }
   }
-
-  async function showStripeCustomerPortal() {
+  const showStripeCustomerPortal = useCallback(async () => {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
-    const response = await post(CHECKOUT, {}, config);
+    const formData = new FormData();
+    const result = stripeDetails?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.product_id]: value };
+    }, {});
+    let checkout_session_id =
+      result?.[product_id.current]?.stripe_checkout_session_id ||
+      getCheckoutSessionID();
+    formData.append("checkout_session_id", checkout_session_id);
+    const response = await post(CUSTOMER_PORTAL, formData, config);
+    console.log(response);
+    if (response && response?.data && response.data?.session) {
+      let session = response.data?.session;
+      console.log(session);
+      window.location.href = session;
+    } else {
+      setErrorToastMessage("Something went wrong.");
+    }
+  }, [stripeDetails]);
+
+  async function createCheckout() {
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+    const formData = new FormData();
+    formData.append("product_id", product_id.current);
+    formData.append(
+      "stripe_price_id",
+      process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
+    );
+    const response = await post(CREATE_CHECKOUT, formData, config);
     console.log(response);
     if (response && response?.data && response.data?.checkout_url) {
       let checkout_url = response.data?.checkout_url;
       console.log(checkout_url);
       window.location.href = checkout_url;
+    } else {
+      setErrorToastMessage(
+        "Something went wrong while creating the Stripe session."
+      );
     }
+    product_id.current = null;
   }
 
   async function handleCheckout() {
-    if (props.isSubscriped === "True") {
+    if (!product_id.current) return 0;
+    let userPlan = getUserPlanStatus(stripeDetails, product_id.current);
+    if (userPlan === CURRENT_PLAN_FREE || userPlan === CURRENT_PLAN_EXPIRED) {
+      createCheckout();
+    } else if (
+      userPlan === CURRENT_PLAN_SUBSCRIPED ||
+      userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+    ) {
       showStripeCustomerPortal();
-    } else if (props.isCanceled === "True") {
-      showStripeCustomerPortal();
-    } else {
-      const stripe = await getStripe();
-      await stripe.redirectToCheckout({
-        lineItems: [
-          {
-            price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        successUrl: `http://localhost:3000/checkout/success`,
-        cancelUrl: `http://localhost:3000`,
-        customerEmail: props.email,
-      });
     }
   }
-  const getProducts = async () => {
+
+  const getProducts = useCallback(async () => {
     let res = await get(GET_PRODUCTS);
-    console.log(res);
-    if (res?.data && res?.data?.data && res?.data?.data.length) {
-      setPricingDetails(res?.data?.data);
+    console.log(res?.data?.data?.data);
+    if (
+      res?.data &&
+      res?.data?.data &&
+      res?.data?.data?.data &&
+      res?.data?.data?.data.length
+    ) {
+      let priceData = res?.data?.data?.data;
+      if (priceData.length)
+        priceData = priceData.filter((ele) => ele.active === true);
+
+      setPricingDetails1(priceData);
     }
-  };
+  }, []);
+
+  const setActive = useCallback(() => {
+    let priceData = pricingDetails1;
+    let result = stripeDetails?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.product_id]: value };
+    }, {});
+    priceData = priceData?.map((ele) => {
+      ele.isCurrent = false;
+      if (result && result[ele.id] !== undefined) {
+        let plan = result[ele.id];
+        if (plan.is_plan_canceled === false)
+          if (plan.is_subscription_canceled === false) {
+            ele.isCurrent = true;
+          }
+      }
+      return ele;
+    });
+    if ((!stripeDetails?.length || !props.email) && priceData.length) {
+      priceData[0].isCurrent = true;
+    }
+    let test = priceData?.reduce((accumulator, value, index) => {
+      return { ...accumulator, [value.isCurrent]: value };
+    }, {});
+    if (!test[true] && priceData.length) {
+      priceData[0].isCurrent = true;
+    }
+    setPricingDetails(priceData);
+  }, [pricingDetails1, stripeDetails, props?.email]);
+
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [getProducts]);
+
+  useEffect(() => {
+    setActive();
+  }, [setActive]);
+
+  useEffect(() => {
+    if (loginCheck) {
+      console.log(stripeDetails, loginProId);
+      if (stripeDetails && loginProId) {
+        product_id.current = loginProId;
+        if (!product_id.current) return 0;
+        let userPlan = getUserPlanStatus(stripeDetails, product_id.current);
+        if (
+          userPlan === CURRENT_PLAN_FREE ||
+          userPlan === CURRENT_PLAN_EXPIRED
+        ) {
+          createCheckout();
+        } else if (
+          userPlan === CURRENT_PLAN_SUBSCRIPED ||
+          userPlan === CURRENT_PLAN_SUBSCRIPTION_CANCELED
+        ) {
+          showStripeCustomerPortal();
+        }
+      }
+    }
+  }, [
+    loginCheck,
+    loginProId,
+    product_id,
+    showStripeCustomerPortal,
+    stripeDetails,
+  ]);
+
+  // useEffect(() => {
+  //   function handleUserLogin() {
+  //     console.log(props.stripeDetails);
+  //   }
+  //   document.addEventListener("userUpdate", handleUserLogin);
+  //   return () => {
+  //     document.removeEventListener("userUpdate", handleUserLogin);
+  //   };
+  // }, [props.stripeDetails]);
 
   return (
     <Modal
@@ -143,9 +254,10 @@ const PricingModal = (props) => {
             <Col key={index}>
               <Card className="pricing">
                 <Card.Header>
-                  <span className="fw-bold">{pricingDetail.product_name}</span>
-                  {pricingDetail.product_name.toLowerCase() ===
-                  props.plan_name?.toLowerCase() ? (
+                  <span className="fw-bold">
+                    {pricingDetail.metadata?.product_name}
+                  </span>
+                  {pricingDetail.isCurrent === true ? (
                     <span className="float-end text-muted">current</span>
                   ) : (
                     <></>
@@ -154,7 +266,7 @@ const PricingModal = (props) => {
                 <Card.Body>
                   <div className="p-3">
                     <span className="fw-bold fs-4">
-                      ${pricingDetail.price}
+                      ${pricingDetail.metadata?.price}
                     </span>
 
                     <span className="text-muted">/month</span>
@@ -163,7 +275,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.no_pages} pages
+                          {pricingDetail.metadata?.no_pages} pages
                         </span>
                         <span className="text-muted">/PDF</span>
                       </div>
@@ -171,7 +283,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.file_size} MB
+                          {pricingDetail.metadata?.file_size} MB
                         </span>
                         <span className="text-muted">/PDF</span>
                       </div>
@@ -179,7 +291,7 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.files_per_day} PDFs
+                          {pricingDetail.metadata?.files_per_day} PDFs
                         </span>
                         <span className="text-muted">/day</span>
                       </div>
@@ -187,14 +299,15 @@ const PricingModal = (props) => {
                     <li>
                       <div>
                         <span className="fw-bold">
-                          {pricingDetail.no_of_questions} questions
+                          {pricingDetail.metadata?.no_of_questions} questions
                         </span>
                         <span className="text-muted">/day</span>
                       </div>
                     </li>
                   </ul>
                 </Card.Body>
-                {pricingDetail.product_name.toLocaleLowerCase() !== "free" ? (
+                {pricingDetail.metadata?.product_name.toLocaleLowerCase() !==
+                "free" ? (
                   <Card.Footer className="text-muted">
                     <FooterButton details={pricingDetail} />
                   </Card.Footer>
@@ -215,6 +328,7 @@ const PricingModal = (props) => {
                   style={{ cursor: "pointer" }}
                   onClick={() => {
                     logOut();
+                    setLoginCheck(false);
                   }}
                 >
                   Sign out
@@ -227,6 +341,8 @@ const PricingModal = (props) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
+                    product_id.current =
+                      pricingDetails.length > 1 && pricingDetails[1]?.id;
                     login();
                   }}
                 >
@@ -240,6 +356,7 @@ const PricingModal = (props) => {
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}
+        color={"danger"}
       />
     </Modal>
   );

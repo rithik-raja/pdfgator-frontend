@@ -13,8 +13,20 @@ import { useNavigate } from "react-router-dom";
 import { GET_USAGE } from "../../constants/apiConstants";
 import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
+import { getProducts } from "../../services/productsService";
 
-export default function AccountModal(props) {
+const AccountModal = ({ stripeDetails, ...props }) => {
+  let prods = getProducts();
+  console.log(prods);
+
+  let plan = stripeDetails?.find(
+    (ele) => ele.is_subscription_canceled === false
+  );
+  let plan_name = "Free";
+  if (prods && prods?.length && plan?.product_id) {
+    let prod = prods?.find((ele) => ele.id === plan?.product_id);
+    plan_name = prod?.metadata?.product_name;
+  }
 
   const getUsage = async () => {
     let res = await get(GET_USAGE);
@@ -28,21 +40,26 @@ export default function AccountModal(props) {
     getUsage();
   }, [props.show]);
 
-  const getScopes = () => (!props.email) ? {
-    search: "search_query_anon",
-    upload: "file_upload_anon"
-  } : (props.plan_name?.toLowerCase() === "free") ? {
-    search: "search_query_user_free",
-    upload: "file_upload_user_free"
-  } : {
-    search: "search_query_user_paid",
-    upload: "file_upload_user_paid"
-  }
+  const getScopes = () =>
+    !props.email
+      ? {
+          search: "search_query_anon",
+          upload: "file_upload_anon",
+        }
+      : !plan?.product_id
+      ? {
+          search: "search_query_user_free",
+          upload: "file_upload_user_free",
+        }
+      : {
+          search: "search_query_user_paid",
+          upload: "file_upload_user_paid",
+        };
 
   const navigate = useNavigate();
   const [usage, setUsage] = useState({
-    usage_limits: {}
-  })
+    usage_limits: {},
+  });
   const [pricingModalShow, setPricingModalShow] = useState(false);
   return (
     <Modal
@@ -76,36 +93,55 @@ export default function AccountModal(props) {
         <Card>
           <Card.Body>
             <Card.Subtitle className="mb-2 text-muted">
-              {props.isSubscriped ? "Usage Today" : "Free Usage Today"}
+              {plan?.product_id ? "Usage Today" : "Free Usage Today"}
             </Card.Subtitle>
-            <Card.Text>
-              <Container>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div className="progress-container">
-                      <ProgressBar now={usage[getScopes().upload]} min={0} max={usage.usage_limits[getScopes().upload]} />
-                    </div>
-                  </Col>
-                  <Col>{usage[getScopes().upload]}/{usage.usage_limits[getScopes().upload]} PDFs</Col>
-                </Row>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div className="progress-container">
-                      <ProgressBar now={usage[getScopes().search]} min={0} max={usage.usage_limits[getScopes().search]} />
-                    </div>
-                  </Col>
-                  <Col>{usage[getScopes().search]}/{usage.usage_limits[getScopes().search]} Questions</Col>
-                </Row>
-              </Container>
-            </Card.Text>
+            <Container>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar
+                      now={usage[getScopes().upload]}
+                      min={0}
+                      max={usage.usage_limits[getScopes().upload]}
+                    />
+                  </div>
+                </Col>
+                <Col>
+                  {usage[getScopes().upload]}/
+                  {usage.usage_limits[getScopes().upload]} PDFs
+                </Col>
+              </Row>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar
+                      now={usage[getScopes().search]}
+                      min={0}
+                      max={usage.usage_limits[getScopes().search]}
+                    />
+                  </div>
+                </Col>
+                <Col>
+                  {usage[getScopes().search]}/
+                  {usage.usage_limits[getScopes().search]} Questions
+                </Col>
+              </Row>
+            </Container>
           </Card.Body>
           <Card.Footer>
             <Row className="justify-content-md-center">
               <Col xs={8}>
-                <div>Current Plan: {props.plan_name}</div>
+                <div>Current Plan: {plan_name}</div>
               </Col>
               <Col>
-                <Button size="sm" onClick={() => {setPricingModalShow(true)}}>View Plans</Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setPricingModalShow(true);
+                  }}
+                >
+                  View Plans
+                </Button>
               </Col>
             </Row>
           </Card.Footer>
@@ -115,11 +151,10 @@ export default function AccountModal(props) {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        isSubscriped={props.is_plus_user}
-        isCanceled={props.is_cancel_pending}
-        plan_id={props.plan_id}
-        plan_name={props.plan_name}
+        stripeDetails={props.stripeDetails}
       />
     </Modal>
   );
-}
+};
+
+export default AccountModal;

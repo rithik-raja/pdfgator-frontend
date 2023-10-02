@@ -9,20 +9,6 @@ import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../PricingModal/PricingModal";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 
-const newUserOrUnkonownUser = {
-  isSubscriped: "False",
-  isCanceled: "False",
-};
-const plusUser = {
-  isSubscriped: "True",
-  isCanceled: "False",
-};
-const cancelUser = {
-  isSubscriped: "False",
-  isCanceled: "True",
-};
-let subscription = newUserOrUnkonownUser;
-
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setpricingModalShow] = useState(false);
@@ -63,10 +49,7 @@ const Footer = (props) => {
           show={accountModalShow}
           onHide={() => setaccountModalShow(false)}
           email={props.email}
-          isSubscriped={props.is_plus_user}
-          isCanceled={props.is_cancel_pending}
-          plan_id={props.plan_id}
-          plan_name={props.plan_name}
+          stripeDetails={props.stripeDetails}
         />
         <ErrorToast
           message={errorToastMessage}
@@ -77,10 +60,7 @@ const Footer = (props) => {
           show={pricingModalShow}
           onHide={() => setpricingModalShow(false)}
           email={props.email}
-          isSubscriped={props.is_plus_user}
-          isCanceled={props.is_cancel_pending}
-          plan_id={props.plan_id}
-          plan_name={props.plan_name}
+          stripeDetails={props.stripeDetails}
         />
       </div>
     </>
