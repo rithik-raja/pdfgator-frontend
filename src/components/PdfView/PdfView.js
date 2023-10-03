@@ -445,7 +445,7 @@ const PdfView = ({
                     />
                     <span id="total-pages-span">of</span>
                   </div>
-                  <div style={{ marginRight: "0.5rem" }}>
+                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
                     {!pdfLists.find((obj) => obj.id == currentActiveURL)
                       ?.isbn && (
                       <SearchBarButton
@@ -455,7 +455,7 @@ const PdfView = ({
                       />
                     )}
                   </div>
-                  <div style={{ marginRight: "0.5rem" }}>
+                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
                     <SearchBarButton
                       text={
                         rightSidebarIsHistoryMode
@@ -472,7 +472,7 @@ const PdfView = ({
                       }
                     />
                   </div>
-                  <div style={{ marginRight: "0.5rem" }}>
+                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
                     <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}

@@ -337,9 +337,7 @@ const Chat = (props) => {
         show={accountModalShow}
         onHide={() => setaccountModalShow(false)}
         email={props.email}
-        is_canceled={props.is_canceled}
-        product_id={props.product_id}
-        stripe_checkout_session_id={props.stripe_checkout_session_id}
+        stripeDetails={props.stripeDetails}
       />
       <PricingModal
         show={pricingModalShow}

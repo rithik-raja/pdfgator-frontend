@@ -151,7 +151,7 @@ const AccountModal = ({ stripeDetails, ...props }) => {
         show={pricingModalShow}
         onHide={() => setPricingModalShow(false)}
         email={props.email}
-        stripeDetails={props.stripeDetails}
+        stripeDetails={stripeDetails}
       />
     </Modal>
   );
