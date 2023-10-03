@@ -174,9 +174,9 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       if (result && result[ele.id] !== undefined) {
         let plan = result[ele.id];
         if (plan.is_plan_canceled === false)
-          if (plan.is_subscription_canceled === false) {
-            ele.isCurrent = true;
-          }
+          // if (plan.is_subscription_canceled === false) {
+          ele.isCurrent = true;
+        // }
       }
       return ele;
     });
