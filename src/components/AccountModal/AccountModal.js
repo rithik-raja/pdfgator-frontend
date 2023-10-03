@@ -19,9 +19,7 @@ const AccountModal = ({ stripeDetails, ...props }) => {
   let prods = getProducts();
   console.log(prods);
 
-  let plan = stripeDetails?.find(
-    (ele) => ele.is_subscription_canceled === false
-  );
+  let plan = stripeDetails?.find((ele) => ele.is_plan_canceled === false);
   let plan_name = "Free";
   if (prods && prods?.length && plan?.product_id) {
     let prod = prods?.find((ele) => ele.id === plan?.product_id);
