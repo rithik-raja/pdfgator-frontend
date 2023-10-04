@@ -35,28 +35,28 @@ const PrivacyPolicy = (props) => {
         <strong>Last updated January 05, 2023</strong>
         <br />
         <div className="mt-3">
-          We use your data to provide and improve the Service. By using the
-          Service, you agree to the collection and use of information in
-          accordance with this policy.
+          Lorem Ipsum is simply dummy text of the printing and typesetting
+          industry. <strong>Lorem Ipsum</strong> has been the industry's
+          standard dummy text ever since the 1500s, when an unknown printer took
+          a galley of type and scrambled it to make a type specimen book.
         </div>
-        <div className="sub-title">Information Collection And Use</div>
+        <div className="sub-title"> Lorem Ipsum</div>
         <div>
-          We collect several different types of information for various purposes
-          to provide and improve our Service to you.
+          Lorem Ipsum is simply dummy text of the printing and typesetting
+          industry.
         </div>
-        <div className="sub-title">Types of Data Collected</div>
-        <strong>Personal Data</strong>
+        <div className="sub-title"> Lorem Ipsum</div>
+        <strong> Lorem Ipsum: Lorem Ipsum</strong>
         <div>
-          While using our Service, we may ask you to provide us with certain
-          personally identifiable information that can be used to contact or
-          identify you ("Personal Data"). Personally identifiable information:
+          Lorem Ipsum is simply dummy text of the printing and typesetting
+          industry.
         </div>
         <ul>
-          <li>Email address</li>
-          <li>Names</li>
+          <li> Lorem Ipsum</li>
+          <li> Lorem Ipsum</li>
         </ul>
-        <strong>Sensitive Information : </strong>
-        <span>We do not process sensitive information.</span>
+        <strong> Lorem Ipsum : </strong>
+        <span>Lorem Ipsum is simply dummy text</span>
 
         <div className="sub-title">Table of contents</div>
         <div>
