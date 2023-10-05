@@ -24,19 +24,20 @@ const FileUpload = (props) => {
   const [pricingModalShow, setPricingModalShow] = useState(false);
 
   const fileInputOnChange = async (acceptedFiles) => {
-    console.log(acceptedFiles);
+    const plan = props?.stripeDetails?.find((ele) => ele.is_plan_canceled === false);
     if (acceptedFiles.length > 0) {
       if (
         acceptedFiles[0].size >
         1024 *
           1024 *
-          (props.is_plus_user
+          (plan?.is_plan_canceled === false
             ? PAID_PLAN_MAX_FILE_SIZE
             : FREE_PLAN_MAX_FILE_SIZE)
       ) {
         setErrorToastMessage(
           "The selected file is either too large or in an invalid format."
         );
+        setPricingModalShow(true);
         return;
       }
       const newuploadedFile = acceptedFiles[0];
