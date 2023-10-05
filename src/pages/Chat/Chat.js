@@ -56,19 +56,22 @@ const Chat = (props) => {
   };
 
   const fileInputOnChange = async (acceptedFiles) => {
-    // const acceptedFiles = e.target.files;
+    const plan = props?.stripeDetails?.find((ele) => ele.is_plan_canceled === false);
     if (acceptedFiles.length > 0) {
+      console.log(props?.stripeDetails)
+      console.log(props?.stripeDetails?.is_plan_canceled)
       if (
         acceptedFiles[0].size >
         1024 *
           1024 *
-          (props.is_plus_user
+          (plan?.is_plan_canceled === false
             ? PAID_PLAN_MAX_FILE_SIZE
             : FREE_PLAN_MAX_FILE_SIZE)
       ) {
         setErrorToastMessage(
           "The selected file is either too large or in an invalid format."
         );
+        setPricingModalShow(true);
         return;
       }
       const newuploadedFile = acceptedFiles[0];
