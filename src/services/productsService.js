@@ -16,7 +16,6 @@ export const setProducts = (value) => {
 };
 const getProductsFromApi = async () => {
   let res = await get(GET_PRODUCTS);
-  console.log(res?.data?.data?.data);
   if (
     res?.data &&
     res?.data?.data &&

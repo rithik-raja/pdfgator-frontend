@@ -6,13 +6,8 @@ import * as Icon from "react-feather";
 
 import InputGroup from "react-bootstrap/InputGroup";
 import "./DocumentInfoModal.css";
-import axios from "axios";
-import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import ProgressBar from "react-bootstrap/ProgressBar";
-import { getAuthToken, logOut } from "../../services/userServices";
 import { post } from "../Api/api";
 import { UPDATECITATIONDATA } from "../../constants/apiConstants";
 
@@ -38,8 +33,8 @@ const allowedKeys = ["id", "author_names", "doc_type", "publisher", "publication
 const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorToastMessage }) => {
 
   const initDocumentData = () => {
-    console.log(pdflists)
     if (!pdflists?.length) return {}
+    // eslint-disable-next-line eqeqeq
     const allDocumentData = pdflists.find((obj) => obj.id == currentActiveURL) // obj.id int and currentActiveUrl string, don't use ===
     if (!allDocumentData) return {}
     const out = allowedKeys.reduce((obj, key) => {
@@ -50,7 +45,6 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
     if (out.author_names === null) {
       out.author_names = [{given: "", family: ""}]
     }
-    console.log(out)
     return out
   }
 
@@ -58,6 +52,7 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
 
   useEffect(() => {
     setDocumentData(initDocumentData())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdflists])
 
   // const [documentType, setdocumentType] = useState("");
@@ -70,13 +65,13 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
   // const [url, seturl] = useState("");
 
   const ondocumentTypeSelectChange = (e) => {
-    console.log(e.target.value);
     setDocumentData({...documentData, doc_type: e.target.value});
   };
 
   const saveDocumentInfo = async (event) => {
     event.preventDefault();
     const tempDocumentData = {}
+    // eslint-disable-next-line eqeqeq
     const idx = pdflists.findIndex((obj) => obj.id == currentActiveURL);
     Object.keys(documentData).forEach((key) => {
       if (key === "author_names") {
@@ -125,7 +120,6 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
 
   const handleRemoveAuthor = (idx) => {
     setDocumentData((current) => {
-      console.log(current);
       return {
         ...documentData,
         author_names: current.author_names.filter((val, i) => idx !== i)

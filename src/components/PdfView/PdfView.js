@@ -1,3 +1,5 @@
+/* eslint-disable eqeqeq */
+
 import { useState, useEffect } from "react";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
@@ -125,7 +127,6 @@ const PdfView = ({
   };
 
   const jumpResult = (ind) => {
-    console.log(areas);
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
       setcurrentIndex(ind);
@@ -137,7 +138,6 @@ const PdfView = ({
       let page = document.getElementById("page-number-input").value;
       page = parseInt(page);
       if (Number.isInteger(page) && page <= totalPages && page > 0) {
-        console.log(page);
         jumpToPage(page - 1);
       }
     }
@@ -150,8 +150,6 @@ const PdfView = ({
       ? overrideQuery
       : document.getElementById("search-bar-text-entry").value;
     let res;
-    console.log(query);
-    console.log(currentActiveURL);
     document.body.style.pointerEvents = "none";
     try {
       const searchInputElement = document.getElementById(
@@ -174,7 +172,6 @@ const PdfView = ({
             getSessionId() +
             "/"
         );
-        console.log(res)
         if (!res) {
           res = await get(
             SEARCH_QUERY +
@@ -193,18 +190,15 @@ const PdfView = ({
         }
       }
       const data = res?.data?.data;
-      console.log(data);
       if (data) {
         jumpToPageFlag = 1;
         setAreas(data);
       }
       const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
-      console.log(pdfIdx);
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
       document.body.style.pointerEvents = "auto";
       setpdfLists((current) => {
-        console.log(current);
         if (!pdfLists[pdfIdx].searchHistory.includes(query)) {
           current[pdfIdx] = {
             ...pdfLists[pdfIdx],
@@ -217,7 +211,6 @@ const PdfView = ({
             ],
           };
         }
-        console.log(current);
         return current;
       });
       setRightSidebarIsHistoryMode(false);
@@ -286,7 +279,6 @@ const PdfView = ({
                     if (areas?.bboxes?.length) {
                       jumpResult(0);
                     }
-                    console.log("loaded");
                   }}
                 />
               ) : (
@@ -359,7 +351,6 @@ const PdfView = ({
                                     searchHistory: current[
                                       pdfIdx
                                     ].searchHistory.filter((q) => {
-                                      console.log(q);
                                       return q !== query;
                                     }),
                                   },

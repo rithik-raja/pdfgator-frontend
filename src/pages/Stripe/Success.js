@@ -11,7 +11,6 @@ const Success = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   let currentSessionId = searchParams.get("checkout_session_id");
-  console.log(currentSessionId);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [message, setMessage] = useState(null);
 
@@ -20,7 +19,6 @@ const Success = () => {
     const formData = new FormData();
     formData.append("checkout_session_id", currentSessionId);
     const res = await post(VERIFY_CHECKOUT, formData, config);
-    console.log(res);
     let data = res?.data?.data;
     if (data) {
       setPaymentStatus(data.payment_status);
@@ -33,6 +31,7 @@ const Success = () => {
   useEffect(() => {
     verifySession();
     setCheckoutSessionID(currentSessionId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId]);
 
   const [seconds, setseconds] = useState(10);
@@ -43,9 +42,9 @@ const Success = () => {
       return;
     }
     setTimeout(() => {
-      console.log(seconds);
       setseconds((seconds) => seconds - 1);
     }, 1000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds]);
 
   // setInterval(function () {
