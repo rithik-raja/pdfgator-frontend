@@ -83,8 +83,6 @@ const PricingModal = ({ stripeDetails, ...props }) => {
   }
 
   async function loginCallBack(islogin) {
-    console.log(islogin);
-    console.log(stripeDetails, product_id.current);
     if (islogin) {
       setLoginCheck(true);
       setloginProId(product_id.current);
@@ -102,10 +100,8 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       getCheckoutSessionID();
     formData.append("checkout_session_id", checkout_session_id);
     const response = await post(CUSTOMER_PORTAL, formData, config);
-    console.log(response);
     if (response && response?.data && response.data?.session) {
       let session = response.data?.session;
-      console.log(session);
       window.location.href = session;
     } else {
       setErrorToastMessage("Something went wrong.");
@@ -121,10 +117,8 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
     );
     const response = await post(CREATE_CHECKOUT, formData, config);
-    console.log(response);
     if (response && response?.data && response.data?.checkout_url) {
       let checkout_url = response.data?.checkout_url;
-      console.log(checkout_url);
       window.location.href = checkout_url;
     } else {
       setErrorToastMessage(
@@ -149,7 +143,6 @@ const PricingModal = ({ stripeDetails, ...props }) => {
 
   const getProducts = useCallback(async () => {
     let res = await get(GET_PRODUCTS);
-    console.log(res?.data?.data?.data);
     if (
       res?.data &&
       res?.data?.data &&
@@ -202,7 +195,6 @@ const PricingModal = ({ stripeDetails, ...props }) => {
 
   useEffect(() => {
     if (loginCheck) {
-      console.log(stripeDetails, loginProId);
       if (stripeDetails && loginProId) {
         product_id.current = loginProId;
         if (!product_id.current) return 0;

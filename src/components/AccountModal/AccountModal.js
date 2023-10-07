@@ -17,7 +17,6 @@ import { getProducts } from "../../services/productsService";
 
 const AccountModal = ({ stripeDetails, ...props }) => {
   let prods = getProducts();
-  console.log(prods);
 
   let plan = stripeDetails?.find((ele) => ele.is_plan_canceled === false);
   let plan_name = "Free";
@@ -28,11 +27,9 @@ const AccountModal = ({ stripeDetails, ...props }) => {
 
   const getUsage = async () => {
     let res = await get(GET_USAGE);
-    console.log(res);
     if (res?.data && res?.data?.data) {
       setUsage(res?.data?.data);
     }
-    console.log(res?.data?.data);
   };
   useEffect(() => {
     getUsage();

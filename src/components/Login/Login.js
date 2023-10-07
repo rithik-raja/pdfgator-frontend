@@ -7,7 +7,6 @@ import { setAuthToken } from "../../services/userServices";
 const useLogin = (setError, loginCallBack = () => {}) =>
   useGoogleLogin({
     onSuccess: async (codeResponse) => {
-      console.log(codeResponse);
       let loginResponse = codeResponse;
       let data = { access_token: loginResponse.access_token };
       const config = { headers: { "Content-Type": "application/json" } };
@@ -22,7 +21,7 @@ const useLogin = (setError, loginCallBack = () => {}) =>
       }
     },
     onError: () => {
-      console.log("Login Failed");
+      //console.log("Login Failed");
       loginCallBack(false);
     },
   });

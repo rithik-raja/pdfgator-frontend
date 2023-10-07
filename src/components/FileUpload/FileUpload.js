@@ -50,7 +50,6 @@ const FileUpload = (props) => {
           setErrorToastMessage
         );
         if (response && response.data && response.data.id) {
-          console.log(response);
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           navigate(MAIN_APP_URL + "/" + String(response.data.id));
@@ -58,7 +57,7 @@ const FileUpload = (props) => {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           if (response === 0) {
-            setErrorToastMessage("File upload limit exceeded");
+            setErrorToastMessage("Usage limit exceeded");
             setPricingModalShow(true);
           }
         }
@@ -74,7 +73,6 @@ const FileUpload = (props) => {
     <>
       <Dropzone
         onDrop={(acceptedFiles, fileRejections) => {
-          console.log(fileRejections);
           if (fileRejections.length) {
             setErrorToastMessage("File type must be 'pdf' ");
           }

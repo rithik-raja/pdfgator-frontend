@@ -23,7 +23,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
 
   const setFromCitationList = (list) => {
     let cite = new Cite(list);
-    console.log(cite);
     let bibliography = cite.format("bibliography", {
       template: templateFormat,
       format: "html",
@@ -36,7 +35,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
       bibliography = bibliography.replaceAll(`class="csl-entry"`, `class="csl-entry-with-margin"`)
     }
     setbibliographyResult(bibliography);
-    console.log(bibliography);
     let citation = cite.format("citation", {
       template: templateFormat,
       format: "html",
@@ -48,7 +46,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
       lang: "en-US",
     });
     setcitationResult(citation);
-    console.log(citation);
   }
 
   const [templateFormat, settemplateFormat] = useState("apa");
@@ -94,10 +91,8 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
     );
 
     if (result.is_default === "true") {
-      console.log(checkedState);
       setFromCitationList(citationList);
     } else {
-      console.log(checkedState);
       let data;
       let cslPath = result?.file_path
         ? result.file_path
@@ -105,7 +100,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
       axios
         .get("/csl-files/" + cslPath + ".csl")
         .then((res) => {
-          console.log(res.data);
           data = res.data;
           let templateName = result.value;
 
@@ -117,7 +111,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
     }
   };
   const onTemplateFormatChange = (e) => {
-    console.log(e.target.value);
     settemplateFormat(e.target.value);
   };
   const onSourceChange = (position) => {
@@ -128,7 +121,6 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
     const updatedCheckedState = newCheckstate.map((item, index) =>
       index === position ? !item : item
     );
-    console.log(updatedCheckedState)
     setCheckedState(updatedCheckedState);
   };
 

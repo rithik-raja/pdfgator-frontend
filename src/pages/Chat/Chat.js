@@ -12,7 +12,6 @@ import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
-import { getAuthToken } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../../components/PricingModal/PricingModal";
@@ -58,8 +57,6 @@ const Chat = (props) => {
   const fileInputOnChange = async (acceptedFiles) => {
     const plan = props?.stripeDetails?.find((ele) => ele.is_plan_canceled === false);
     if (acceptedFiles.length > 0) {
-      console.log(props?.stripeDetails)
-      console.log(props?.stripeDetails?.is_plan_canceled)
       if (
         acceptedFiles[0].size >
         1024 *
@@ -85,7 +82,6 @@ const Chat = (props) => {
           setErrorToastMessage
         );
         if (response && response.data && response.data.id) {
-          console.log(response);
           const name = response.data.file_name.split("/").pop() ?? "undefined";
           const newurl = String(response.data.id);
           const newpdflist = [
@@ -110,7 +106,7 @@ const Chat = (props) => {
           document.body.style.pointerEvents = "auto";
           setIsProcessingDocument(false);
           if (response === 0) {
-            setErrorToastMessage("File upload limit exceeded");
+            setErrorToastMessage("Usage limit exceeded");
             setPricingModalShow(true);
           }
           setuploadedUrl("");
@@ -127,8 +123,6 @@ const Chat = (props) => {
   currentActiveURL = pdfid;
 
   const getPdfLists = useCallback(async () => {
-    console.log("TEST");
-    console.log(getAuthToken());
     const sessionid = getSessionId();
     let response1;
     if (props.email) {
@@ -140,7 +134,6 @@ const Chat = (props) => {
       return;
     }
     response1 = response1.data;
-    console.log(response1.search_history);
 
     if (response1 && response1.data && response1.data.length) {
       let newlist = response1.data;
@@ -193,6 +186,7 @@ const Chat = (props) => {
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentActiveURL, getPdfLists, searchMemory]);
 
   const handlePdfLinkClick = (index) => {
