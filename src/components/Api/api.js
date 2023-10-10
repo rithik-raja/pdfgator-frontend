@@ -9,12 +9,6 @@ const api = axios.create({
   // withCredentials: "true",
 });
 
-export const get1 = async (url) => {
-  const response = await fetch("http://127.0.0.1:8000" + url, {
-    credentials: "include",
-  });
-  return response;
-};
 export const get = async (url, setToastError = null) => {
   try {
     const authtok = getAuthToken();
@@ -35,7 +29,7 @@ export const get = async (url, setToastError = null) => {
     return response;
   } catch (error) {
     if (error?.response?.status === 429) {
-      return 0
+      return 0;
     }
     if (error?.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
@@ -43,7 +37,7 @@ export const get = async (url, setToastError = null) => {
     }
     console.error(error);
     if (setToastError) {
-      setToastError(error.response?.data?.data ?? error.message)
+      setToastError(error.response?.data?.data ?? error.message);
     }
     return null;
   }
@@ -63,23 +57,23 @@ export const post = async (url, data, config = null, setToastError = null) => {
       config = {};
     }
     if (data instanceof FormData) {
-      data.append("session_id", getSessionId())
+      data.append("session_id", getSessionId());
     } else {
-      data = {...data, session_id: getSessionId()}
+      data = { ...data, session_id: getSessionId() };
     }
     const response = await api.post(url, data, config);
     return response;
   } catch (error) {
     if (error?.response?.status === 429) {
-      return 0
+      return 0;
     }
-    console.error(error)
+    console.error(error);
     if (error?.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
       updateUser();
     }
     if (setToastError) {
-      setToastError(error.response?.data?.data ?? error.message)
+      setToastError(error.response?.data?.data ?? error.message);
     }
     return null;
   }
