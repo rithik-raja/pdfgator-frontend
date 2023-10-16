@@ -336,18 +336,22 @@ const Chat = (props) => {
           setPricingModalShow={setPricingModalShow}
         />
       </main>
-      <AccountModal
-        show={accountModalShow}
-        onHide={() => setaccountModalShow(false)}
-        email={props.email}
-        stripeDetails={props.stripeDetails}
-      />
-      <PricingModal
-        show={pricingModalShow}
-        onHide={() => setPricingModalShow(false)}
-        email={props.email}
-        stripeDetails={props.stripeDetails}
-      />
+      {accountModalShow && (
+        <AccountModal
+          show={accountModalShow}
+          onHide={() => setaccountModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}

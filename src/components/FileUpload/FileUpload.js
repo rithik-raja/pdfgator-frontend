@@ -24,7 +24,9 @@ const FileUpload = (props) => {
   const [pricingModalShow, setPricingModalShow] = useState(false);
 
   const fileInputOnChange = async (acceptedFiles) => {
-    const plan = props?.stripeDetails?.find((ele) => ele.is_plan_canceled === false);
+    const plan = props?.stripeDetails?.find(
+      (ele) => ele.is_plan_canceled === false
+    );
     if (acceptedFiles.length > 0) {
       if (
         acceptedFiles[0].size >
@@ -109,12 +111,14 @@ const FileUpload = (props) => {
         setMessage={setErrorToastMessage}
         color={"danger"}
       />
-      <PricingModal
-        show={pricingModalShow}
-        onHide={() => setPricingModalShow(false)}
-        email={props.email}
-        stripeDetails={props.stripeDetails}
-      />
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
     </>
   );
 };
