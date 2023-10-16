@@ -6,7 +6,11 @@ import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
 import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import { useNavigate, useParams } from "react-router-dom";
-import { GET_FILES, MAIN_APP_URL } from "../../constants/apiConstants";
+import {
+  BASE_URL,
+  GET_FILES,
+  MAIN_APP_URL,
+} from "../../constants/apiConstants";
 import { get } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
@@ -55,7 +59,9 @@ const Chat = (props) => {
   };
 
   const fileInputOnChange = async (acceptedFiles) => {
-    const plan = props?.stripeDetails?.find((ele) => ele.is_plan_canceled === false);
+    const plan = props?.stripeDetails?.find(
+      (ele) => ele.is_plan_canceled === false
+    );
     if (acceptedFiles.length > 0) {
       if (
         acceptedFiles[0].size >
@@ -152,7 +158,7 @@ const Chat = (props) => {
       });
       if (index > -1) {
         newlist[index].isActive = "true";
-        setuploadedUrl(newlist[index].file_path);
+        setuploadedUrl(BASE_URL + newlist[index].file_path);
       }
       setpdfLists(newlist);
     } else {
@@ -186,7 +192,7 @@ const Chat = (props) => {
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentActiveURL, getPdfLists, searchMemory]);
 
   const handlePdfLinkClick = (index) => {
@@ -201,7 +207,7 @@ const Chat = (props) => {
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
-    setuploadedUrl(pdflists[index].file_path);
+    setuploadedUrl(BASE_URL + pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
     if (props.email) {
@@ -330,18 +336,22 @@ const Chat = (props) => {
           setPricingModalShow={setPricingModalShow}
         />
       </main>
-      <AccountModal
-        show={accountModalShow}
-        onHide={() => setaccountModalShow(false)}
-        email={props.email}
-        stripeDetails={props.stripeDetails}
-      />
-      <PricingModal
-        show={pricingModalShow}
-        onHide={() => setPricingModalShow(false)}
-        email={props.email}
-        stripeDetails={props.stripeDetails}
-      />
+      {accountModalShow && (
+        <AccountModal
+          show={accountModalShow}
+          onHide={() => setaccountModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}

@@ -45,23 +45,27 @@ const Footer = (props) => {
         <Link className="footer-element" to="/privacy-policy" target="_blank">
           Privacy Policy
         </Link>
-        <AccountModal
-          show={accountModalShow}
-          onHide={() => setaccountModalShow(false)}
-          email={props.email}
-          stripeDetails={props.stripeDetails}
-        />
+        {accountModalShow && (
+          <AccountModal
+            show={accountModalShow}
+            onHide={() => setaccountModalShow(false)}
+            email={props.email}
+            stripeDetails={props.stripeDetails}
+          />
+        )}
         <ErrorToast
           message={errorToastMessage}
           setMessage={setErrorToastMessage}
         />
 
-        <PricingModal
-          show={pricingModalShow}
-          onHide={() => setpricingModalShow(false)}
-          email={props.email}
-          stripeDetails={props.stripeDetails}
-        />
+        {pricingModalShow && (
+          <PricingModal
+            show={pricingModalShow}
+            onHide={() => setpricingModalShow(false)}
+            email={props.email}
+            stripeDetails={props.stripeDetails}
+          />
+        )}
       </div>
     </>
   );

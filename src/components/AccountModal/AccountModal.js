@@ -142,12 +142,14 @@ const AccountModal = ({ stripeDetails, ...props }) => {
           </Card.Footer>
         </Card>
       </Modal.Body>
-      <PricingModal
-        show={pricingModalShow}
-        onHide={() => setPricingModalShow(false)}
-        email={props.email}
-        stripeDetails={stripeDetails}
-      />
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={stripeDetails}
+        />
+      )}
     </Modal>
   );
 };
