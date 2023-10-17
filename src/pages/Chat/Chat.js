@@ -181,6 +181,7 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
+    getPdfLists();
     document.addEventListener("userUpdate", getPdfLists);
     return () => {
       document.removeEventListener("userUpdate", getPdfLists);
@@ -188,12 +189,11 @@ const Chat = (props) => {
   }, [getPdfLists]);
 
   useEffect(() => {
-    getPdfLists();
     setAreas(searchMemory[currentActiveURL]?.areas ?? {});
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentActiveURL, getPdfLists, searchMemory]);
+  }, [currentActiveURL])
 
   const handlePdfLinkClick = (index) => {
     if (currentActiveURL === pdfLists[index].id) {

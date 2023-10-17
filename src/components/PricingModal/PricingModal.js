@@ -5,6 +5,7 @@ import "./PricingModal.css";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import CustomSpinner from "../Spinner/spinner";
 import {
   getCheckoutSessionID,
   getUserPlanStatus,
@@ -242,6 +243,11 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       </Modal.Header>
       <Modal.Body>
         <Row>
+          {pricingDetails.length === 0 &&
+            <Col className="d-flex align-items-center justify-content-center">
+              <CustomSpinner />
+            </Col>
+          }
           {pricingDetails.map((pricingDetail, index) => (
             <Col key={index}>
               <Card className="pricing">

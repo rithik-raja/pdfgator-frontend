@@ -12,7 +12,12 @@ import ErrorToast from "../../components/ErrorToast/ErrorToast";
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setpricingModalShow] = useState(false);
-  const [errorToastMessage, setErrorToastMessage] = useState(null);
+  const [errorToastMessage, setErrorToastMessage_] = useState(null);
+  const [errorToastColor, setErrorToastColor] = useState("danger");
+  const setErrorToastMessage = (msg, color = "danger") => {
+    setErrorToastMessage_(msg);
+    setErrorToastColor(color);
+  };
   const login = useLogin(setErrorToastMessage);
 
   const accountLinkClickFunction = () => {
@@ -56,6 +61,7 @@ const Footer = (props) => {
         <ErrorToast
           message={errorToastMessage}
           setMessage={setErrorToastMessage}
+          color={errorToastColor}
         />
 
         {pricingModalShow && (
