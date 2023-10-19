@@ -243,11 +243,11 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       </Modal.Header>
       <Modal.Body>
         <Row>
-          {pricingDetails.length === 0 &&
+          {pricingDetails.length === 0 && (
             <Col className="d-flex align-items-center justify-content-center">
               <CustomSpinner />
             </Col>
-          }
+          )}
           {pricingDetails.map((pricingDetail, index) => (
             <Col key={index}>
               <Card className="pricing">
@@ -269,7 +269,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
 
                     <span className="text-muted">/month</span>
                   </div>
-                  <ul className="plan-list">
+                  <ul className="plan-list m-0">
                     <li>
                       <div>
                         <span className="fw-bold">

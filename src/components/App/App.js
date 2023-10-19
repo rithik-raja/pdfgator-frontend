@@ -11,6 +11,7 @@ import Success from "../../pages/Stripe/Success";
 import { getAuthToken } from "../../services/userServices";
 import PrivacyPolicy from "../../pages/PrivacyPolicy/PrivacyPolicy";
 import Failed from "../../pages/Stripe/Failed";
+import NotFound from "../../pages/NotFound/NotFound";
 
 function App() {
   const [props, setProps] = useState({});
@@ -65,6 +66,7 @@ function App() {
             path="/privacy-policy"
             element={<PrivacyPolicy />}
           ></Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>
