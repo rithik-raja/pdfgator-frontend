@@ -15,7 +15,7 @@ import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
 import { getProducts } from "../../services/productsService";
 
-const AccountModal = ({ stripeDetails, ...props }) => {
+const AccountModal = ({ stripeDetails, setErrorToastMessage, ...props }) => {
   let prods = getProducts();
 
   let plan = stripeDetails?.find((ele) => ele.is_plan_canceled === false);
@@ -75,7 +75,7 @@ const AccountModal = ({ stripeDetails, ...props }) => {
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  logOut();
+                  logOut(setErrorToastMessage);
                   props.onHide();
                   navigate("/");
                 }}

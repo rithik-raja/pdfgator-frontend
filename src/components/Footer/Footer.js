@@ -56,6 +56,7 @@ const Footer = (props) => {
             onHide={() => setaccountModalShow(false)}
             email={props.email}
             stripeDetails={props.stripeDetails}
+            setErrorToastMessage={setErrorToastMessage}
           />
         )}
         <ErrorToast

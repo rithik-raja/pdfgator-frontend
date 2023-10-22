@@ -27,7 +27,12 @@ import {
 } from "../../constants/userConstants";
 import { useRef } from "react";
 const PricingModal = ({ stripeDetails, ...props }) => {
-  const [errorToastMessage, setErrorToastMessage] = useState(null);
+  const [errorToastMessage, setErrorToastMessage_] = useState(null);
+  const [errorToastColor, setErrorToastColor] = useState("danger");
+  const setErrorToastMessage = (msg, color = "danger") => {
+    setErrorToastMessage_(msg);
+    setErrorToastColor(color);
+  };
   const [pricingDetails, setPricingDetails] = useState([]);
   const [pricingDetails1, setPricingDetails1] = useState([]);
   const [loginCheck, setLoginCheck] = useState(false);
@@ -109,7 +114,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
     }
   }, [stripeDetails]);
 
-  async function createCheckout() {
+  const createCheckout = useCallback(async () => {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
     formData.append("product_id", product_id.current);
@@ -127,8 +132,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       );
     }
     product_id.current = null;
-  }
-
+  }, []);
   async function handleCheckout() {
     if (!product_id.current) return 0;
     let userPlan = getUserPlanStatus(stripeDetails, product_id.current);
@@ -214,6 +218,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       }
     }
   }, [
+    createCheckout,
     loginCheck,
     loginProId,
     product_id,
@@ -325,7 +330,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    logOut();
+                    logOut(setErrorToastMessage);
                     setLoginCheck(false);
                   }}
                 >
@@ -339,8 +344,6 @@ const PricingModal = ({ stripeDetails, ...props }) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    product_id.current =
-                      pricingDetails.length > 1 && pricingDetails[1]?.id;
                     login();
                   }}
                 >
@@ -354,7 +357,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       <ErrorToast
         message={errorToastMessage}
         setMessage={setErrorToastMessage}
-        color={"danger"}
+        color={errorToastColor}
       />
     </Modal>
   );

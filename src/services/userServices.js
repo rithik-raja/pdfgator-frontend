@@ -28,7 +28,8 @@ export const removeCheckoutSessionID = () => {
   Cookies.remove(CHECKOUT_SESSION_ID);
 };
 
-export const logOut = () => {
+export const logOut = (setError) => {
+  setError("Logged Out", "success");
   removeAuthToken();
   removeCheckoutSessionID();
   updateUser();
