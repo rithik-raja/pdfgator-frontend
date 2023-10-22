@@ -12,7 +12,7 @@ const useLogin = (setError, loginCallBack = () => {}) =>
       const config = { headers: { "Content-Type": "application/json" } };
       const response = await post(GOOGLE_OAUTH, data, config);
       if (response) {
-        setError("Successfully logged in", "primary");
+        setError("Successfully logged in", "success");
         setAuthToken(response.data?.token);
         updateUser();
         loginCallBack(true);

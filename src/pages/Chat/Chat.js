@@ -193,7 +193,7 @@ const Chat = (props) => {
     document.getElementById("search-bar-text-entry").value =
       searchMemory[currentActiveURL]?.query ?? "";
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentActiveURL])
+  }, [currentActiveURL]);
 
   const handlePdfLinkClick = (index) => {
     if (currentActiveURL === pdfLists[index].id) {
@@ -342,6 +342,7 @@ const Chat = (props) => {
           onHide={() => setaccountModalShow(false)}
           email={props.email}
           stripeDetails={props.stripeDetails}
+          setErrorToastMessage={setErrorToastMessage}
         />
       )}
       {pricingModalShow && (
