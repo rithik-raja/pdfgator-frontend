@@ -3,26 +3,27 @@ import { GOOGLE_OAUTH } from "../../constants/apiConstants";
 import { post } from "../../components/Api/api";
 import updateUser from "../../utils/updateUser";
 import { setAuthToken } from "../../services/userServices";
+import { displayToast } from "../CustomToast/CustomToast";
 
-const useLogin = (setError, loginCallBack = () => {}) =>
+const useLogin = (loginCallBack = () => {}) =>
   useGoogleLogin({
     onSuccess: async (codeResponse) => {
       let loginResponse = codeResponse;
       let data = { access_token: loginResponse.access_token };
       const config = { headers: { "Content-Type": "application/json" } };
-      const response = await post(GOOGLE_OAUTH, data, config);
-      if (response) {
-        setError("Successfully logged in", "success");
-        setAuthToken(response.data?.token);
+      const { error, response } = await post(GOOGLE_OAUTH, data, config, false);
+      if (!error) {
+        displayToast("Successfully logged in", "success");
+        setAuthToken(response.data.token);
         updateUser();
         loginCallBack(true);
       } else {
-        setError("Failed to log in");
+        displayToast("Failed to log in", "danger");
         loginCallBack(false);
       }
     },
     onError: () => {
-      setError("Failed to log in");
+      displayToast("Failed to log in", "danger");
       loginCallBack(false);
     },
   });

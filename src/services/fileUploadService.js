@@ -2,7 +2,7 @@ import { post } from "../components/Api/api";
 import { SET_FILES } from "../constants/apiConstants";
 import { getSessionId } from "./sessionService";
 
-export const uploadFileToApi = async (newuploadedFile, props, setErrorToastMessage=null) => {
+export const uploadFileToApi = async (newuploadedFile, props, displayDefaultError=true) => {
   const formData = new FormData();
   const session_id = getSessionId();
   if (!session_id) {
@@ -14,6 +14,5 @@ export const uploadFileToApi = async (newuploadedFile, props, setErrorToastMessa
   formData.append("type", newuploadedFile.type);
   formData.append("size", newuploadedFile.size);
   formData.append("session_id", session_id);
-  const response = await post(SET_FILES, formData, config, setErrorToastMessage);
-  return response;
+  return await post(SET_FILES, formData, config, displayDefaultError);
 };

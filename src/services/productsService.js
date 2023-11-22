@@ -15,14 +15,12 @@ export const setProducts = (value) => {
   localStorage.setItem(GET_PRODUCTS_STORAGE, JSON.stringify(value));
 };
 const getProductsFromApi = async () => {
-  let res = await get(GET_PRODUCTS);
+  const { error, response } = await get(GET_PRODUCTS);
   if (
-    res?.data &&
-    res?.data?.data &&
-    res?.data?.data?.data &&
-    res?.data?.data?.data.length
+    !error &&
+    response?.data?.data.length
   ) {
-    let priceData = res?.data?.data?.data;
+    let priceData = response?.data?.data;
     if (priceData.length)
       priceData = priceData.filter((ele) => ele.active === true);
     setProducts(priceData);

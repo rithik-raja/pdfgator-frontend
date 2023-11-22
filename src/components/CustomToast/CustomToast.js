@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Toast } from "react-bootstrap";
 
-const ErrorToast = ({ message, setMessage, color }) => {
+export const CustomToast = ({ initMessage, color }) => {
+
+  const [message, setMessage] = useState(initMessage);
+
   return (
     <Toast
       bg={color}
@@ -24,4 +28,12 @@ const ErrorToast = ({ message, setMessage, color }) => {
   );
 };
 
-export default ErrorToast;
+export const displayToast = (initMessage, color) => {
+  const event = new CustomEvent("setToast", {
+    detail: {
+      initMessage,
+      color
+    }
+  });
+  document.dispatchEvent(event);
+}

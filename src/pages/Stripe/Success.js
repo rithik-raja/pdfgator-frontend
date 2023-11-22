@@ -18,9 +18,9 @@ const Success = () => {
     const config = { headers: { "Content-Type": "multipart/form-data" } };
     const formData = new FormData();
     formData.append("checkout_session_id", currentSessionId);
-    const res = await post(VERIFY_CHECKOUT, formData, config);
-    let data = res?.data?.data;
-    if (data) {
+    const { error, response } = await post(VERIFY_CHECKOUT, formData, config, false);
+    const data = response.data;
+    if (!error) {
       setPaymentStatus(data.payment_status);
       setMessage(data.message);
     } else {

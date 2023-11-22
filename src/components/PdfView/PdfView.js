@@ -35,6 +35,7 @@ import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
+import { displayToast } from "../CustomToast/CustomToast";
 
 let jumpToPageFlag = 0;
 
@@ -45,7 +46,6 @@ const PdfView = ({
   currentActiveURL,
   setAreas,
   isProcessingDocument,
-  setErrorToastMessage,
   setpdfLists,
   setPricingModalShow
 }) => {
@@ -149,7 +149,7 @@ const PdfView = ({
     const query = overrideQuery
       ? overrideQuery
       : document.getElementById("search-bar-text-entry").value;
-    let res;
+    let error, response;
     document.body.style.pointerEvents = "none";
     try {
       const searchInputElement = document.getElementById(
@@ -163,17 +163,18 @@ const PdfView = ({
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        res = await get(
+        ({ error, response } = await get(
           SEARCH_QUERY_FROM_HISTORY +
             currentActiveURL +
             "/" +
             encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
             "/" +
             getSessionId() +
-            "/"
-        );
-        if (!res) {
-          res = await get(
+            "/",
+            false
+        ));
+        if (!error) {
+          ({ error, response } = await get(
             SEARCH_QUERY +
               currentActiveURL +
               "/" +
@@ -181,12 +182,15 @@ const PdfView = ({
               "/" +
               getSessionId() +
               "/",
-              setErrorToastMessage
-          );
+              false
+          ));
         }
-        if (res === 0) {
+        if (response.status === 429) {
           setPricingModalShow(true);
-          setErrorToastMessage("Search query limit exceeded");
+          displayToast("Search query limit exceeded", "danger");
+        } else {
+          displayToast("Failed to perform search", "danger");
+          console.error(response.data.detail);
         }
       }
       const data = res?.data?.data;
@@ -238,8 +242,8 @@ const PdfView = ({
 
   const deleteCurrentFile = async () => {
     if (fileUrl) {
-      const res = await post(DELETE_FILES, { target: currentActiveURL });
-      if (res) {
+      const { error, response } = await post(DELETE_FILES, { target: currentActiveURL });
+      if (!error) {
         if (pdfLists && pdfLists?.length !== 1) {
           const idx = pdfLists.findIndex((obj) => obj.id == currentActiveURL); // obj.id int and currentActiveUrl string, don't use ===
           navigate(
@@ -251,7 +255,8 @@ const PdfView = ({
           navigate(MAIN_APP_URL);
         }
       } else {
-        setErrorToastMessage("Failed to delete file");
+        displayToast("Failed to delete file", "danger");
+        console.error(response.data.detail);
       }
     }
   };
@@ -331,16 +336,15 @@ const PdfView = ({
                           <span
                             className="px-1 delete-search-query position-relative"
                             onClick={async () => {
-                              const res = await post(
+                              const { error } = await post(
                                 DELETE_SEARCH,
                                 {
                                   target_query: query,
                                   target_file: parseInt(currentActiveURL),
                                 },
-                                {},
-                                setErrorToastMessage
+                                {}
                               );
-                              if (res) {
+                              if (!error) {
                                 const pdfIdx = pdfLists.findIndex(
                                   (obj) => obj.id == currentActiveURL
                                 );
@@ -521,7 +525,7 @@ const PdfView = ({
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}
           setCopiedToClipboard={() => {
-            setErrorToastMessage("Copied to Clipboard", "primary");
+            displayToast("Copied to Clipboard", "success");
           }}
         />
         <DocumentInfoModal
@@ -529,7 +533,6 @@ const PdfView = ({
           pdflists={pdfLists}
           show={infoModalShow}
           onHide={() => setInfoModalShow(false)}
-          setErrorToastMessage={setErrorToastMessage}
         />
       </Worker>
     </>
