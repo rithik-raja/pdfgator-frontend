@@ -15,7 +15,7 @@ import { get } from "../Api/api";
 import PricingModal from "../PricingModal/PricingModal";
 import { getProducts } from "../../services/productsService";
 
-const AccountModal = ({ stripeDetails, setErrorToastMessage, ...props }) => {
+const AccountModal = ({ stripeDetails, ...props }) => {
   let prods = getProducts();
 
   let plan = stripeDetails?.find((ele) => ele.is_plan_canceled === false);
@@ -26,9 +26,9 @@ const AccountModal = ({ stripeDetails, setErrorToastMessage, ...props }) => {
   }
 
   const getUsage = async () => {
-    let res = await get(GET_USAGE);
-    if (res?.data && res?.data?.data) {
-      setUsage(res?.data?.data);
+    const { error, response } = await get(GET_USAGE);
+    if (!error) {
+      setUsage(response.data);
     }
   };
   useEffect(() => {
@@ -75,7 +75,7 @@ const AccountModal = ({ stripeDetails, setErrorToastMessage, ...props }) => {
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  logOut(setErrorToastMessage);
+                  logOut();
                   props.onHide();
                   navigate("/");
                 }}

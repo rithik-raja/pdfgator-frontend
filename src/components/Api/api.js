@@ -3,13 +3,14 @@ import { BASE_URL } from "../../constants/apiConstants";
 import { getAuthToken, removeAuthToken } from "../../services/userServices";
 import updateUser from "../../utils/updateUser";
 import { getSessionId } from "../../services/sessionService";
+import { displayToast } from "../CustomToast/CustomToast";
 const api = axios.create({
   baseURL: BASE_URL,
   //timeout: 5000,
   // withCredentials: "true",
 });
 
-export const get = async (url, setToastError = null) => {
+export const get = async (url, displayDefaultError=true) => {
   try {
     const authtok = getAuthToken();
     let headers;
@@ -26,23 +27,26 @@ export const get = async (url, setToastError = null) => {
     const response = await api.get(url, {
       headers: headers,
     });
-    return response;
+    return {
+      error: false,
+      response
+    };
   } catch (error) {
-    if (error?.response?.status === 429) {
-      return 0;
-    }
-    if (error?.response?.data?.detail === "Invalid token.") {
+    console.error(error);
+    if (error.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
       updateUser();
     }
-    console.error(error);
-    if (setToastError) {
-      setToastError(error.response?.data?.data ?? error.message);
+    if (displayDefaultError) {
+      displayToast(error.response?.data?.detail ?? error.message, "danger");
     }
-    return null;
+    return {
+      error: true,
+      response: error.response
+    };
   }
 };
-export const post = async (url, data, config = null, setToastError = null) => {
+export const post = async (url, data, config=null, displayDefaultError=true) => {
   try {
     const authtok = getAuthToken();
     if (config && config.headers) {
@@ -62,19 +66,22 @@ export const post = async (url, data, config = null, setToastError = null) => {
       data = { ...data, session_id: getSessionId() };
     }
     const response = await api.post(url, data, config);
-    return response;
+    return {
+      error: false,
+      response
+    };
   } catch (error) {
-    if (error?.response?.status === 429) {
-      return 0;
-    }
     console.error(error);
     if (error?.response?.data?.detail === "Invalid token.") {
       removeAuthToken();
       updateUser();
     }
-    if (setToastError) {
-      setToastError(error.response?.data?.data ?? error.message);
+    if (displayDefaultError) {
+      displayToast(error.response?.data?.detail ?? error.message, "danger");
     }
-    return null;
+    return {
+      error: true,
+      response: error.response
+    };
   }
 };

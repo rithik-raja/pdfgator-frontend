@@ -7,18 +7,13 @@ import { MAIN_APP_URL } from "../../constants/apiConstants";
 
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../PricingModal/PricingModal";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
+import { displayToast } from "../CustomToast/CustomToast";
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setpricingModalShow] = useState(false);
-  const [errorToastMessage, setErrorToastMessage_] = useState(null);
-  const [errorToastColor, setErrorToastColor] = useState("danger");
-  const setErrorToastMessage = (msg, color = "danger") => {
-    setErrorToastMessage_(msg);
-    setErrorToastColor(color);
-  };
-  const login = useLogin(setErrorToastMessage);
+
+  const login = useLogin();
 
   const accountLinkClickFunction = () => {
     if (props.email) {
@@ -56,14 +51,8 @@ const Footer = (props) => {
             onHide={() => setaccountModalShow(false)}
             email={props.email}
             stripeDetails={props.stripeDetails}
-            setErrorToastMessage={setErrorToastMessage}
           />
         )}
-        <ErrorToast
-          message={errorToastMessage}
-          setMessage={setErrorToastMessage}
-          color={errorToastColor}
-        />
 
         {pricingModalShow && (
           <PricingModal

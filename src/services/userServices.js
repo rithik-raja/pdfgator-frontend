@@ -7,6 +7,7 @@ import {
   CURRENT_PLAN_SUBSCRIPED,
   CURRENT_PLAN_SUBSCRIPTION_CANCELED,
 } from "../constants/userConstants";
+import { displayToast } from "../components/CustomToast/CustomToast";
 
 export const getAuthToken = () => {
   return Cookies.get(AUTH_TOKEN);
@@ -28,8 +29,8 @@ export const removeCheckoutSessionID = () => {
   Cookies.remove(CHECKOUT_SESSION_ID);
 };
 
-export const logOut = (setError) => {
-  setError("Logged Out", "success");
+export const logOut = () => {
+  displayToast("Logged Out", "success");
   removeAuthToken();
   removeCheckoutSessionID();
   updateUser();

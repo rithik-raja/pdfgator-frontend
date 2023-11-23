@@ -10,6 +10,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { post } from "../Api/api";
 import { UPDATECITATIONDATA } from "../../constants/apiConstants";
+import { displayToast } from "../CustomToast/CustomToast";
 
 const documentTypeOptions = [
   {
@@ -30,7 +31,7 @@ const documentTypeOptions = [
 ];
 const allowedKeys = ["id", "author_names", "doc_type", "publisher", "publication_year", "title", "url", "container_title"];
 
-const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorToastMessage }) => {
+const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
 
   const initDocumentData = () => {
     if (!pdflists?.length) return {}
@@ -85,9 +86,9 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide, setErrorT
         pdflists[idx][key] = newItem;
       }
     })
-    const res = await post(UPDATECITATIONDATA, {citation_data: tempDocumentData}, {}, setErrorToastMessage);
-    if (res) {
-      setErrorToastMessage("Successfully saved", "primary");
+    const { error } = await post(UPDATECITATIONDATA, {citation_data: tempDocumentData}, {});
+    if (!error) {
+      displayToast("Successfully saved", "success");
     }
   };
 

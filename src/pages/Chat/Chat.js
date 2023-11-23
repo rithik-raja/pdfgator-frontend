@@ -4,7 +4,7 @@ import "./Chat.css";
 import Dropzone from "react-dropzone";
 import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
+import { displayToast } from "../../components/CustomToast/CustomToast";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   BASE_URL,
@@ -33,18 +33,12 @@ const Chat = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setPricingModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
-  const [errorToastMessage, setErrorToastMessage_] = useState(null);
-  const [errorToastColor, setErrorToastColor] = useState("danger");
-  const setErrorToastMessage = (msg, color = "danger") => {
-    setErrorToastMessage_(msg);
-    setErrorToastColor(color);
-  };
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
   const [searchMemory, setSearchMemory] = useState({});
 
-  const login = useLogin(setErrorToastMessage);
+  const login = useLogin();
 
   const preserveOldSearch = () => {
     if (Object.keys(areas).length) {
@@ -71,9 +65,7 @@ const Chat = (props) => {
             ? PAID_PLAN_MAX_FILE_SIZE
             : FREE_PLAN_MAX_FILE_SIZE)
       ) {
-        setErrorToastMessage(
-          "The selected file is either too large or in an invalid format."
-        );
+        displayToast("The selected file is either too large or in an invalid format.", "danger");
         setPricingModalShow(true);
         return;
       }
@@ -82,12 +74,12 @@ const Chat = (props) => {
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
-        const response = await uploadFileToApi(
+        const { error, response } = await uploadFileToApi(
           newuploadedFile,
           props,
-          setErrorToastMessage
+          false
         );
-        if (response && response.data && response.data.id) {
+        if (!error && response.data.id) {
           const name = response.data.file_name.split("/").pop() ?? "undefined";
           const newurl = String(response.data.id);
           const newpdflist = [
@@ -111,9 +103,12 @@ const Chat = (props) => {
         } else {
           document.body.style.pointerEvents = "auto";
           setIsProcessingDocument(false);
-          if (response === 0) {
-            setErrorToastMessage("Usage limit exceeded");
+          if (response.status === 429) {
+            displayToast("Usage limit exceeded", "danger");
             setPricingModalShow(true);
+          } else {
+            displayToast("Failed to upload file", "danger");
+            console.error(response.data.detail);
           }
           setuploadedUrl("");
           navigate(MAIN_APP_URL);
@@ -130,26 +125,25 @@ const Chat = (props) => {
 
   const getPdfLists = useCallback(async () => {
     const sessionid = getSessionId();
-    let response1;
+    let error, response;
     if (props.email) {
-      response1 = await get(GET_FILES, setErrorToastMessage);
+      ({ error, response } = await get(GET_FILES));
     } else {
-      response1 = await get(GET_FILES + sessionid + "/", setErrorToastMessage);
+      ({ error, response } = await get(GET_FILES + sessionid + "/"));
     }
-    if (response1 === null) {
+    if (error) {
       return;
     }
-    response1 = response1.data;
 
-    if (response1 && response1.data && response1.data.length) {
-      let newlist = response1.data;
+    if (response.data.pdfData?.length) {
+      let newlist = response.data.pdfData;
       newlist = newlist.map((d, i) => ({
         ...d,
         name: d.file_name ?? "undefined",
         str_url: String(d.id),
         searchHistory:
-          response1.search_history && response1.search_history[d.id]
-            ? response1.search_history[d.id]
+          response.data.search_history && response.data.search_history[d.id]
+            ? response.data.search_history[d.id]
             : [],
       }));
 
@@ -229,7 +223,7 @@ const Chat = (props) => {
               }}
               onDrop={(acceptedFiles, fileRejections) => {
                 if (fileRejections?.length) {
-                  setErrorToastMessage("File type must be 'pdf' ");
+                  displayToast("File type must be 'pdf'", "danger");
                 }
                 fileInputOnChange(acceptedFiles);
               }}
@@ -332,7 +326,6 @@ const Chat = (props) => {
           currentActiveURL={currentActiveURL}
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
-          setErrorToastMessage={setErrorToastMessage}
           setPricingModalShow={setPricingModalShow}
         />
       </main>
@@ -342,7 +335,6 @@ const Chat = (props) => {
           onHide={() => setaccountModalShow(false)}
           email={props.email}
           stripeDetails={props.stripeDetails}
-          setErrorToastMessage={setErrorToastMessage}
         />
       )}
       {pricingModalShow && (
@@ -353,11 +345,6 @@ const Chat = (props) => {
           stripeDetails={props.stripeDetails}
         />
       )}
-      <ErrorToast
-        message={errorToastMessage}
-        setMessage={setErrorToastMessage}
-        color={errorToastColor}
-      />
     </>
   );
 };

@@ -11,7 +11,6 @@ import {
   getUserPlanStatus,
   logOut,
 } from "../../services/userServices";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import useLogin from "../../components/Login/Login";
 import { get, post } from "../Api/api";
 import {
@@ -26,19 +25,14 @@ import {
   CURRENT_PLAN_SUBSCRIPTION_CANCELED,
 } from "../../constants/userConstants";
 import { useRef } from "react";
+import { displayToast } from "../CustomToast/CustomToast";
 const PricingModal = ({ stripeDetails, ...props }) => {
-  const [errorToastMessage, setErrorToastMessage_] = useState(null);
-  const [errorToastColor, setErrorToastColor] = useState("danger");
-  const setErrorToastMessage = (msg, color = "danger") => {
-    setErrorToastMessage_(msg);
-    setErrorToastColor(color);
-  };
   const [pricingDetails, setPricingDetails] = useState([]);
   const [pricingDetails1, setPricingDetails1] = useState([]);
   const [loginCheck, setLoginCheck] = useState(false);
   const [loginProId, setloginProId] = useState(null);
 
-  const login = useLogin(setErrorToastMessage, loginCallBack);
+  const login = useLogin(loginCallBack);
   let product_id = useRef(null);
   function FooterButton({ details }) {
     let buttonVarient = "primary";
@@ -105,12 +99,12 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       result?.[product_id.current]?.stripe_checkout_session_id ||
       getCheckoutSessionID();
     formData.append("checkout_session_id", checkout_session_id);
-    const response = await post(CUSTOMER_PORTAL, formData, config);
-    if (response && response?.data && response.data?.session) {
-      let session = response.data?.session;
+    const { error, response } = await post(CUSTOMER_PORTAL, formData, config);
+    if (!error && response.data?.session) {
+      const session = response.data?.session;
       window.location.href = session;
     } else {
-      setErrorToastMessage("Something went wrong.");
+      displayToast("Something went wrong.", "danger");
     }
   }, [stripeDetails]);
 
@@ -122,14 +116,12 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       "stripe_price_id",
       process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
     );
-    const response = await post(CREATE_CHECKOUT, formData, config);
-    if (response && response?.data && response.data?.checkout_url) {
-      let checkout_url = response.data?.checkout_url;
+    const { error, response } = await post(CREATE_CHECKOUT, formData, config);
+    if (!error && response.data?.checkout_url) {
+      const checkout_url = response.data?.checkout_url;
       window.location.href = checkout_url;
     } else {
-      setErrorToastMessage(
-        "Something went wrong while creating the Stripe session."
-      );
+      displayToast("Something went wrong while creating the Stripe session.", "danger");
     }
     product_id.current = null;
   }, []);
@@ -147,17 +139,13 @@ const PricingModal = ({ stripeDetails, ...props }) => {
   }
 
   const getProducts = useCallback(async () => {
-    let res = await get(GET_PRODUCTS);
+    const { error, response } = await get(GET_PRODUCTS);
     if (
-      res?.data &&
-      res?.data?.data &&
-      res?.data?.data?.data &&
-      res?.data?.data?.data.length
+      !error &&
+      response?.data?.data.length
     ) {
-      let priceData = res?.data?.data?.data;
-      if (priceData.length)
-        priceData = priceData.filter((ele) => ele.active === true);
-
+      let priceData = response?.data?.data;
+      priceData = priceData.filter((ele) => ele.active === true);
       setPricingDetails1(priceData);
     }
   }, []);
@@ -330,7 +318,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
                   className="text-primary alert-link"
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    logOut(setErrorToastMessage);
+                    logOut();
                     setLoginCheck(false);
                   }}
                 >
@@ -354,11 +342,6 @@ const PricingModal = ({ stripeDetails, ...props }) => {
           </div>
         </Row>
       </Modal.Body>
-      <ErrorToast
-        message={errorToastMessage}
-        setMessage={setErrorToastMessage}
-        color={errorToastColor}
-      />
     </Modal>
   );
 };

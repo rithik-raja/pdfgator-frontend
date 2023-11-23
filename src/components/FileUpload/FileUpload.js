@@ -5,7 +5,6 @@ import "./FileUpload.css";
 
 import { useNavigate } from "react-router-dom";
 import { uploadFileToApi } from "../../services/fileUploadService";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
 import PricingModal from "../PricingModal/PricingModal";
 
 import Spinner from "../Spinner/spinner";
@@ -15,12 +14,12 @@ import {
   FREE_PLAN_MAX_FILE_SIZE,
   PAID_PLAN_MAX_FILE_SIZE,
 } from "../../constants/storageConstants";
+import { displayToast } from "../CustomToast/CustomToast";
 
 const FileUpload = (props) => {
   const navigate = useNavigate();
 
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
-  const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pricingModalShow, setPricingModalShow] = useState(false);
 
   const fileInputOnChange = async (acceptedFiles) => {
@@ -36,9 +35,7 @@ const FileUpload = (props) => {
             ? PAID_PLAN_MAX_FILE_SIZE
             : FREE_PLAN_MAX_FILE_SIZE)
       ) {
-        setErrorToastMessage(
-          "The selected file is either too large or in an invalid format."
-        );
+        displayToast("The selected file is either too large or in an invalid format.", "danger");
         setPricingModalShow(true);
         return;
       }
@@ -46,21 +43,24 @@ const FileUpload = (props) => {
       setIsProcessingDocument(true);
       document.body.style.pointerEvents = "none";
       try {
-        const response = await uploadFileToApi(
+        const { error, response } = await uploadFileToApi(
           newuploadedFile,
           props,
-          setErrorToastMessage
+          false
         );
-        if (response && response.data && response.data.id) {
+        if (!error) {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
           navigate(MAIN_APP_URL + "/" + String(response.data.id));
         } else {
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
-          if (response === 0) {
-            setErrorToastMessage("Usage limit exceeded");
+          if (response.status === 429) {
+            displayToast("Usage limit exceeded", "danger");
             setPricingModalShow(true);
+          } else {
+            displayToast("Failed to upload file", "danger");
+            console.error(response.data.detail)
           }
         }
       } catch (e) {
@@ -76,7 +76,7 @@ const FileUpload = (props) => {
       <Dropzone
         onDrop={(acceptedFiles, fileRejections) => {
           if (fileRejections.length) {
-            setErrorToastMessage("File type must be 'pdf' ");
+            displayToast("File type must be 'pdf'", "danger");
           }
           fileInputOnChange(acceptedFiles);
         }}
@@ -106,11 +106,6 @@ const FileUpload = (props) => {
           </section>
         )}
       </Dropzone>
-      <ErrorToast
-        message={errorToastMessage}
-        setMessage={setErrorToastMessage}
-        color={"danger"}
-      />
       {pricingModalShow && (
         <PricingModal
           show={pricingModalShow}
