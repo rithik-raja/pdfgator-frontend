@@ -1,21 +1,22 @@
-import { useState } from "react";
 import { Toast } from "react-bootstrap";
 
-export const CustomToast = ({ initMessage, color }) => {
-
-  const [message, setMessage] = useState(initMessage);
+export const CustomToast = ({ details, setDetails }) => {
 
   return (
     <Toast
-      bg={color}
-      show={Boolean(message)}
+      bg={details.color}
+      show={Boolean(details.initMessage)}
       delay={3000}
       autohide
       onClose={() => {
-        setMessage(null, color);
+        setDetails((prev) => ({
+          ...prev,
+          initMessage: null
+        }));
       }}
       className="text-white"
       style={{
+        textAlign: "center",
         position: "fixed",
         width: "200px",
         left: "calc(50vw - 100px)",
@@ -23,7 +24,7 @@ export const CustomToast = ({ initMessage, color }) => {
         zIndex: 5000,
       }}
     >
-      <Toast.Body>{message}</Toast.Body>
+      <Toast.Body>{details.initMessage}</Toast.Body>
     </Toast>
   );
 };

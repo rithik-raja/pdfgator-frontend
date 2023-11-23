@@ -12,15 +12,16 @@ import { getAuthToken } from "../../services/userServices";
 import PrivacyPolicy from "../../pages/PrivacyPolicy/PrivacyPolicy";
 import Failed from "../../pages/Stripe/Failed";
 import NotFound from "../../pages/NotFound/NotFound";
-import CustomToast from "../CustomToast/CustomToast";
+import { CustomToast } from "../CustomToast/CustomToast";
 
 function App() {
 
   const [props, setProps] = useState({});
   const [toastDetails, setToastDetails] = useState({
     initMessage: null,
-    color: "blue"
+    color: "danger"
   });
+
 
   useEffect(() => {
     const getUserDetails = async () => {
@@ -52,38 +53,40 @@ function App() {
     };
   }, []);
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route exact path="/" element={<Home {...props} />}></Route>
-          <Route
-            exact
-            path={MAIN_APP_URL}
-            element={<Chat {...props} />}
-          ></Route>
-          <Route path={`${MAIN_APP_URL}/*`}>
-            <Route path=":pdfid" element={<Chat {...props} />}></Route>
-          </Route>
-          <Route
-            exact
-            path="/checkout/success"
-            element={<Success {...props} />}
-          ></Route>
-          <Route
-            exact
-            path="/checkout/canceled"
-            element={<Failed {...props} />}
-          ></Route>
-          <Route
-            exact
-            path="/privacy-policy"
-            element={<PrivacyPolicy />}
-          ></Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <CustomToast {...toastDetails} />
-      </div>
-    </Router>
+    <>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route exact path="/" element={<Home {...props} />}></Route>
+            <Route
+              exact
+              path={MAIN_APP_URL}
+              element={<Chat {...props} />}
+            ></Route>
+            <Route path={`${MAIN_APP_URL}/*`}>
+              <Route path=":pdfid" element={<Chat {...props} />}></Route>
+            </Route>
+            <Route
+              exact
+              path="/checkout/success"
+              element={<Success {...props} />}
+            ></Route>
+            <Route
+              exact
+              path="/checkout/canceled"
+              element={<Failed {...props} />}
+            ></Route>
+            <Route
+              exact
+              path="/privacy-policy"
+              element={<PrivacyPolicy />}
+            ></Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </Router>
+      <CustomToast details={toastDetails} setDetails={setToastDetails} />
+    </>
   );
 }
 

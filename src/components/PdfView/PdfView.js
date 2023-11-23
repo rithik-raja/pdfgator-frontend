@@ -193,7 +193,7 @@ const PdfView = ({
           console.error(response.data.detail);
         }
       }
-      const data = res?.data?.data;
+      const data = response.data;
       if (data) {
         jumpToPageFlag = 1;
         setAreas(data);

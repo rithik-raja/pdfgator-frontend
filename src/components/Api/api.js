@@ -38,7 +38,7 @@ export const get = async (url, displayDefaultError=true) => {
       updateUser();
     }
     if (displayDefaultError) {
-      displayToast(error.response?.data?.detail ?? error.message);
+      displayToast(error.response?.data?.detail ?? error.message, "danger");
     }
     return {
       error: true,
@@ -77,7 +77,7 @@ export const post = async (url, data, config=null, displayDefaultError=true) => 
       updateUser();
     }
     if (displayDefaultError) {
-      displayToast(error.response?.data?.detail ?? error.message);
+      displayToast(error.response?.data?.detail ?? error.message, "danger");
     }
     return {
       error: true,
