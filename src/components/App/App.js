@@ -29,7 +29,7 @@ function App() {
       if (getAuthToken()) {
         ({ error, response } = await get(GET_USER));
       }
-      if (!error) {
+      if (!error && response) {
         setProps(response.data);
       } else {
         setProps({});

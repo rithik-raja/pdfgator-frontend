@@ -173,7 +173,7 @@ const PdfView = ({
             "/",
             false
         ));
-        if (!error) {
+        if (error && response.data.detail === "Not found") {
           ({ error, response } = await get(
             SEARCH_QUERY +
               currentActiveURL +
@@ -188,7 +188,7 @@ const PdfView = ({
         if (response.status === 429) {
           setPricingModalShow(true);
           displayToast("Search query limit exceeded", "danger");
-        } else {
+        } else if (error) {
           displayToast("Failed to perform search", "danger");
           console.error(response.data.detail);
         }
