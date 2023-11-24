@@ -37,8 +37,6 @@ import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 import { displayToast } from "../CustomToast/CustomToast";
 
-let jumpToPageFlag = 0;
-
 const PdfView = ({
   areas,
   fileUrl,
@@ -55,16 +53,7 @@ const PdfView = ({
   const [citationModalShow, setCitationModalShow] = useState(false);
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
-  const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] =
-    useState(false);
-
-  useEffect(() => {
-    if (areas?.bboxes?.length && jumpToPageFlag) {
-      jumpResult(0);
-      jumpToPageFlag = 0;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areas]);
+  const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] = useState(true);
 
   const renderHighlights = (props) => (
     <div
@@ -127,6 +116,7 @@ const PdfView = ({
   };
 
   const jumpResult = (ind) => {
+    if (!areas.indices?.length) return;
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
       setcurrentIndex(ind);
@@ -195,7 +185,6 @@ const PdfView = ({
       }
       const data = response.data;
       if (data) {
-        jumpToPageFlag = 1;
         setAreas(data);
       }
       const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
@@ -208,16 +197,17 @@ const PdfView = ({
             ...pdfLists[pdfIdx],
             searchHistory: [
               query,
+              data.llm_response,
               ...pdfLists[pdfIdx].searchHistory.slice(
                 0,
-                SEARCH_MEMORY_PER_FILE - 1
+                SEARCH_MEMORY_PER_FILE * 2 - 2
               ),
             ],
           };
         }
         return current;
       });
-      setRightSidebarIsHistoryMode(false);
+      setRightSidebarIsHistoryMode(true);
       setIsQueryLoading(false);
     } catch (e) {
       console.error(e);
@@ -233,7 +223,7 @@ const PdfView = ({
     );
     return (
       <OverlayTrigger overlay={renderPopover}>
-        <Button variant="light" onClick={onClickFunc}>
+        <Button size="sm" variant="light" onClick={onClickFunc}>
           <IconComponent color="black" />
         </Button>
       </OverlayTrigger>
@@ -266,7 +256,7 @@ const PdfView = ({
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
         <Container fluid>
           <Row>
-            <Col className="col-lg-9 pdf-viewer-container">
+            <Col className="d-none d-lg-block col-lg-6 pdf-viewer-container">
               {isProcessingDocument ? (
                 <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
                   <CustomSpinner />
@@ -294,12 +284,12 @@ const PdfView = ({
             </Col>
 
             <Col
-              className="d-none d-lg-block col-lg-3 py-2 right-sidebar"
+              className="col-lg-6 py-2 right-sidebar"
               style={{
                 boxShadow: !fileUrl
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none",
-                zIndex: 1000,
+                zIndex: 50,
               }}
             >
               {isQueryLoading ? (
@@ -307,64 +297,37 @@ const PdfView = ({
                   <CustomSpinner />
                   <span className="mt-2">Loading...</span>
                 </div>
-              ) : rightSidebarIsHistoryMode ? (
-                <ListGroup as="ol" numbered>
+              ) : (
+                <ListGroup as="ul" style={{width: "75%"}}>
                   {pdfLists?.find((obj) => obj.id == currentActiveURL)
                     ?.searchHistory?.length ? (
                     pdfLists
                       ?.find((obj) => obj.id == currentActiveURL)
                       ?.searchHistory?.map((query, ind) => (
                         <ListGroup.Item
+                          style={{
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
+                            left: `${ind % 2 === 1 ? 0 : 33.33}%`,
+                            textAlign: "left"
+                          }}
                           as="li"
                           key={ind}
-                          className="right-sidebar-button mx-2 my-1 d-flex justify-content-between align-items-start"
+                          className="right-sidebar-button mx-2 my-2"
                         >
                           <div
-                            className="d-flex"
                             style={{ width: "85%", marginLeft: "3px" }}
-                            onClick={(e) => {
-                              handleSearchQuery(e, query);
-                            }}
                           >
-                            <span
-                              className="me-auto"
-                              style={{ cursor: "pointer" }}
-                            >
-                              {query}
-                            </span>
+                            {
+                              (typeof query === "string") ?
+                              <span
+                                className="me-auto"
+                                style={{ cursor: "pointer" }}
+                              >
+                                {query}
+                              </span> :
+                              query.map((ele, idx) => idx % 2 === 0 ? <span>{ele}</span> : <strong>{ele}</strong>)
+                            }
                           </div>
-                          <span
-                            className="px-1 delete-search-query position-relative"
-                            onClick={async () => {
-                              const { error } = await post(
-                                DELETE_SEARCH,
-                                {
-                                  target_query: query,
-                                  target_file: parseInt(currentActiveURL),
-                                },
-                                {}
-                              );
-                              if (!error) {
-                                const pdfIdx = pdfLists.findIndex(
-                                  (obj) => obj.id == currentActiveURL
-                                );
-                                setpdfLists((current) => [
-                                  ...current.slice(0, pdfIdx),
-                                  {
-                                    ...current[pdfIdx],
-                                    searchHistory: current[
-                                      pdfIdx
-                                    ].searchHistory.filter((q) => {
-                                      return q !== query;
-                                    }),
-                                  },
-                                  ...current.slice(pdfIdx + 1),
-                                ]);
-                              }
-                            }}
-                          >
-                            ×
-                          </span>
                         </ListGroup.Item>
                       ))
                   ) : (
@@ -377,44 +340,17 @@ const PdfView = ({
                     </div>
                   )}
                 </ListGroup>
-              ) : areas?.bboxes?.length ? (
-                <ListGroup as="ol" numbered>
-                  {areas?.previews?.map((preview, ind) => (
-                    <ListGroup.Item
-                      onClick={() => jumpResult(ind)}
-                      style={{
-                        boxShadow:
-                          ind === currentIndex
-                            ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                            : "none",
-                      }}
-                      as="li"
-                      key={ind}
-                      className="right-sidebar-button mx-2 my-1"
-                    >
-                      {preview}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              ) : (
-                <div
-                  className="d-flex flex-column align-items-center justify-content-center mt-2"
-                  style={{ color: "rgb(108,117,124)" }}
-                >
-                  <Icon.Inbox size={"40px"} />
-                  <span>No Results</span>
-                </div>
               )}
             </Col>
           </Row>
         </Container>
 
-        <Container fluid className="searchbar-container position-relative">
+        <Container fluid className="searchbar-pdftools-container position-relative">
           <Row>
-            <Col className="col-lg-9 px-4">
-              <Container fluid className="searchbar-container-inner">
+            <Col className="d-none d-lg-block col-lg-6">
+              <Container fluid className="pdftools-container-inner">
                 <div
-                  className="d-flex mb-2 align-items-center "
+                  className="d-flex align-items-center"
                   style={{ width: "100%" }}
                 >
                   <div style={{ marginRight: "0.5rem" }}>
@@ -450,7 +386,7 @@ const PdfView = ({
                       />
                     )}
                   </div>
-                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                  {/* <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
                     <SearchBarButton
                       text={
                         rightSidebarIsHistoryMode
@@ -466,8 +402,8 @@ const PdfView = ({
                         setRightSidebarIsHistoryMode((cur) => !cur)
                       }
                     />
-                  </div>
-                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                  </div> */}
+                  <div className="d-none d-lg-block">
                     <SearchBarButton
                       text="Citations & References"
                       IconComponent={Icon.Book}
@@ -476,7 +412,7 @@ const PdfView = ({
                       }
                     />
                   </div>
-                  <div style={{ marginRight: "0.5rem" }}>
+                  {/* <div style={{ marginRight: "0.5rem" }}>
                     <SearchBarButton
                       text="Previous Result"
                       IconComponent={Icon.ArrowLeft}
@@ -487,8 +423,12 @@ const PdfView = ({
                     text="Next Result"
                     IconComponent={Icon.ArrowRight}
                     onClickFunc={() => moveResult(true)}
-                  />
+                  /> */}
                 </div>
+              </Container>
+            </Col>
+            <Col className="col-lg-6 px-2">
+              <Container fluid className="searchbar-container-inner">
                 <Form className="d-flex w-100" onSubmit={handleSearchQuery}>
                   <Form.Control
                     id="search-bar-text-entry"
@@ -505,7 +445,6 @@ const PdfView = ({
                 </Form>
               </Container>
             </Col>
-            <Col className="d-none d-lg-block col-lg-3" />
           </Row>
         </Container>
 
