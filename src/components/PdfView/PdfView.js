@@ -1,6 +1,6 @@
 /* eslint-disable eqeqeq */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { highlightPlugin, Trigger } from "@react-pdf-viewer/highlight";
@@ -54,6 +54,11 @@ const PdfView = ({
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
   const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] = useState(true);
+  const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
+
+  useEffect(() => {
+    jumpResult(jumpIndex.current[1]);
+  }, [areas])
 
   const renderHighlights = (props) => (
     <div
@@ -116,6 +121,8 @@ const PdfView = ({
   };
 
   const jumpResult = (ind) => {
+    console.log("jump")
+    console.log(areas)
     if (!areas.indices?.length) return;
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
@@ -196,14 +203,15 @@ const PdfView = ({
           current[pdfIdx] = {
             ...pdfLists[pdfIdx],
             searchHistory: [
-              query,
-              data.llm_response,
               ...pdfLists[pdfIdx].searchHistory.slice(
                 0,
                 SEARCH_MEMORY_PER_FILE * 2 - 2
               ),
+              query,
+              data
             ],
           };
+          jumpIndex.current = [pdfLists[pdfIdx].searchHistory.length - 1, -1];
         }
         return current;
       });
@@ -288,8 +296,7 @@ const PdfView = ({
               style={{
                 boxShadow: !fileUrl
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
-                  : "none",
-                zIndex: 50,
+                  : "none"
               }}
             >
               {isQueryLoading ? (
@@ -298,7 +305,7 @@ const PdfView = ({
                   <span className="mt-2">Loading...</span>
                 </div>
               ) : (
-                <ListGroup as="ul" style={{width: "75%"}}>
+                <ListGroup as="ul" style={{display: "flex"}}>
                   {pdfLists?.find((obj) => obj.id == currentActiveURL)
                     ?.searchHistory?.length ? (
                     pdfLists
@@ -306,13 +313,15 @@ const PdfView = ({
                       ?.searchHistory?.map((query, ind) => (
                         <ListGroup.Item
                           style={{
-                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
-                            left: `${ind % 2 === 1 ? 0 : 33.33}%`,
+                            borderRadius: "10px",
+                            maxWidth: "75%",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                            //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
                             textAlign: "left"
                           }}
                           as="li"
                           key={ind}
-                          className="right-sidebar-button mx-2 my-2"
+                          className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
                           onClick={(e) => ind % 2 === 0 && handleSearchQuery(e, query)}
                         >
                           <div
@@ -325,13 +334,28 @@ const PdfView = ({
                               >
                                 {query}
                               </span> :
-                              query.map((ele, idx) => idx % 2 === 0 ?
-                                <span>{ele}</span> :
+                              query.llm_response.map((ele, idx) => idx % 2 === 0 ?
+                                <span
+                                  key={idx}
+                                  style={{whiteSpace: "pre-wrap"}}>
+                                    {ele}
+                                </span> :
                                 <strong
-                                  onClick={() => jumpResult(ele[1])}
-                                  style={{cursor: "pointer"}}
+                                  className="jump-page-link"
+                                  key={idx}
+                                  onClick={() => {
+                                    if (ind === jumpIndex.current[0]) {
+                                      jumpResult(ele[1]);
+                                    }
+                                    jumpIndex.current = [ind, ele[1]];
+                                    setAreas(query);
+                                  }}
+                                  style={{
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap"
+                                  }}
                                 >
-                                    {`[page ${ele[0]}]`}
+                                    {`[page ${ele[0] + 1}]`}
                                 </strong>
                               )
                             }
