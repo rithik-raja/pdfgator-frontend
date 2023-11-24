@@ -36,21 +36,21 @@ const Chat = (props) => {
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
-  const [searchMemory, setSearchMemory] = useState({});
+  //const [searchMemory, setSearchMemory] = useState({});
 
   const login = useLogin();
 
-  const preserveOldSearch = () => {
-    if (Object.keys(areas).length) {
-      setSearchMemory({
-        ...searchMemory,
-        [currentActiveURL]: {
-          query: document.getElementById("search-bar-text-entry").value,
-          areas: areas,
-        },
-      });
-    }
-  };
+  // const preserveOldSearch = () => {
+  //   if (Object.keys(areas).length) {
+  //     setSearchMemory({
+  //       ...searchMemory,
+  //       [currentActiveURL]: {
+  //         query: document.getElementById("search-bar-text-entry").value,
+  //         areas: areas,
+  //       },
+  //     });
+  //   }
+  // };
 
   const fileInputOnChange = async (acceptedFiles) => {
     const plan = props?.stripeDetails?.find(
@@ -91,7 +91,7 @@ const Chat = (props) => {
               isActive: "true",
             },
           ];
-          preserveOldSearch();
+          //preserveOldSearch();
           currentActiveURL = newurl;
           setAreas({});
           document.getElementById("search-bar-text-entry").value = "";
@@ -182,24 +182,25 @@ const Chat = (props) => {
     };
   }, [getPdfLists]);
 
-  useEffect(() => {
-    setAreas(searchMemory[currentActiveURL]?.areas ?? {});
-    document.getElementById("search-bar-text-entry").value =
-      searchMemory[currentActiveURL]?.query ?? "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentActiveURL]);
+  // useEffect(() => {
+  //   setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+  //   document.getElementById("search-bar-text-entry").value =
+  //     searchMemory[currentActiveURL]?.query ?? "";
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [currentActiveURL]);
 
   const handlePdfLinkClick = (index) => {
     if (currentActiveURL === pdfLists[index].id) {
       return;
     }
-    preserveOldSearch();
+    //preserveOldSearch();
     currentActiveURL = pdfLists[index].id;
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
-    setAreas(searchMemory[currentActiveURL]?.areas ?? {});
-    document.getElementById("search-bar-text-entry").value =
-      searchMemory[currentActiveURL]?.query ?? "";
+    //setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+    setAreas({});
+    // document.getElementById("search-bar-text-entry").value =
+    //   searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
     setuploadedUrl(BASE_URL + pdflists[index].file_path);
   };

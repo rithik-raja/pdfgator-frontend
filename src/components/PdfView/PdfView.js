@@ -53,12 +53,18 @@ const PdfView = ({
   const [citationModalShow, setCitationModalShow] = useState(false);
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
-  const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] = useState(true);
+  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
+    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
   }, [areas])
+
+  useEffect(() => {
+    const sidebarEle = document.getElementById("right-sidebar");
+    sidebarEle.scrollTop = sidebarEle.scrollHeight;
+  }, [isQueryLoading])
 
   const renderHighlights = (props) => (
     <div
@@ -110,15 +116,15 @@ const PdfView = ({
   const jumpToPagePluginInstance = jumpToPagePlugin();
   const { jumpToPage } = jumpToPagePluginInstance;
 
-  const moveResult = (isNext) => {
-    if (areas?.indices?.length > 0) {
-      let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
-      if (currentVal >= 0 && currentVal < areas.indices.length) {
-        jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
-        setcurrentIndex(currentVal);
-      }
-    }
-  };
+  // const moveResult = (isNext) => {
+  //   if (areas?.indices?.length > 0) {
+  //     let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
+  //     if (currentVal >= 0 && currentVal < areas.indices.length) {
+  //       jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
+  //       setcurrentIndex(currentVal);
+  //     }
+  //   }
+  // };
 
   const jumpResult = (ind) => {
     console.log("jump")
@@ -161,7 +167,7 @@ const PdfView = ({
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
         ({ error, response } = await get(
-          SEARCH_QUERY_FROM_HISTORY +
+          SEARCH_QUERY +
             currentActiveURL +
             "/" +
             encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
@@ -170,18 +176,6 @@ const PdfView = ({
             "/",
             false
         ));
-        if (error && response.data.detail === "Not found") {
-          ({ error, response } = await get(
-            SEARCH_QUERY +
-              currentActiveURL +
-              "/" +
-              encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-              "/" +
-              getSessionId() +
-              "/",
-              false
-          ));
-        }
         if (response.status === 429) {
           setPricingModalShow(true);
           displayToast("Search query limit exceeded", "danger");
@@ -191,7 +185,7 @@ const PdfView = ({
         }
       }
       const data = response.data;
-      if (data) {
+      if (data && !error) {
         setAreas(data);
       }
       const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
@@ -215,7 +209,6 @@ const PdfView = ({
         }
         return current;
       });
-      setRightSidebarIsHistoryMode(true);
       setIsQueryLoading(false);
     } catch (e) {
       console.error(e);
@@ -278,11 +271,11 @@ const PdfView = ({
                     pageNavigationPluginInstance,
                     jumpToPagePluginInstance,
                   ]}
-                  onDocumentLoad={() => {
-                    if (areas?.bboxes?.length) {
-                      jumpResult(0);
-                    }
-                  }}
+                  // onDocumentLoad={() => {
+                  //   if (areas?.bboxes?.length) {
+                  //     jumpResult(0);
+                  //   }
+                  // }}
                 />
               ) : (
                 <div style={{ paddingTop: "30px" }}>
@@ -290,90 +283,131 @@ const PdfView = ({
                 </div>
               )}
             </Col>
-
             <Col
-              className="col-lg-6 py-2 right-sidebar"
+              className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
+              id="right-sidebar"
               style={{
                 boxShadow: !fileUrl
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none"
               }}
             >
-              {isQueryLoading ? (
+              <ListGroup as="ul" style={{display: "flex"}}>
+                {pdfLists?.find((obj) => obj.id == currentActiveURL)
+                  ?.searchHistory?.length ? (
+                  pdfLists
+                    ?.find((obj) => obj.id == currentActiveURL)
+                    ?.searchHistory?.map((query, ind) => (
+                      <ListGroup.Item
+                        style={{
+                          borderRadius: "10px",
+                          maxWidth: "75%",
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                          //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
+                          textAlign: "left"
+                        }}
+                        as="li"
+                        key={ind}
+                        className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
+                      >
+                        <div
+                          style={{ width: "85%", marginLeft: "3px" }}
+                        >
+                          {
+                            (typeof query === "string") ?
+                            <span
+                              className="me-auto"
+                            >
+                              {query}
+                            </span> :
+                            query.llm_response.map((ele, idx) => idx % 2 === 0 ?
+                              <span
+                                key={idx}
+                                style={{whiteSpace: "pre-wrap"}}>
+                                  {ele}
+                              </span> :
+                              <strong
+                                className="jump-page-link"
+                                key={idx}
+                                onClick={() => {
+                                  if (ind === jumpIndex.current[0]) {
+                                    jumpResult(ele[1]);
+                                  }
+                                  jumpIndex.current = [ind, ele[1]];
+                                  setAreas(query);
+                                  document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
+                                }}
+                                style={{
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                  {`[page ${ele[0] + 1}]`}
+                              </strong>
+                            )
+                          }
+                        </div>
+                      </ListGroup.Item>
+                    ))
+                ) : (
+                  !isQueryLoading &&
+                  <div
+                    className="d-flex flex-column align-items-center justify-content-center mt-2"
+                    style={{ color: "rgb(108,117,124)" }}
+                  >
+                    <Icon.Inbox size={"40px"} />
+                    <span>No Searches Yet</span>
+                  </div>
+                )}
+              </ListGroup>
+              {
+                isQueryLoading &&
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
                   <CustomSpinner />
                   <span className="mt-2">Loading...</span>
                 </div>
-              ) : (
-                <ListGroup as="ul" style={{display: "flex"}}>
-                  {pdfLists?.find((obj) => obj.id == currentActiveURL)
-                    ?.searchHistory?.length ? (
-                    pdfLists
-                      ?.find((obj) => obj.id == currentActiveURL)
-                      ?.searchHistory?.map((query, ind) => (
+              }
+            </Col>
+            {
+              rightSidebarShowEvidence &&
+              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
+                {
+                  areas?.bboxes?.length ? (
+                    <ListGroup as="ol" numbered>
+                      {areas?.previews?.map((preview, ind) => (
                         <ListGroup.Item
+                          onClick={() => jumpResult(ind)}
+                          id={`evidence-sidebar-button-${ind}`}
                           style={{
-                            borderRadius: "10px",
-                            maxWidth: "75%",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                            //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
-                            textAlign: "left"
+                            boxShadow:
+                              ind === currentIndex
+                                ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                : "none",
+                            backgroundColor:
+                              ind === currentIndex
+                                ? "rgba(230, 230, 230, 0.9)"
+                                : "white"
                           }}
                           as="li"
                           key={ind}
-                          className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
-                          onClick={(e) => ind % 2 === 0 && handleSearchQuery(e, query)}
+                          className="evidence-sidebar-button mx-2 my-1"
                         >
-                          <div
-                            style={{ width: "85%", marginLeft: "3px" }}
-                          >
-                            {
-                              (typeof query === "string") ?
-                              <span
-                                className="me-auto"
-                              >
-                                {query}
-                              </span> :
-                              query.llm_response.map((ele, idx) => idx % 2 === 0 ?
-                                <span
-                                  key={idx}
-                                  style={{whiteSpace: "pre-wrap"}}>
-                                    {ele}
-                                </span> :
-                                <strong
-                                  className="jump-page-link"
-                                  key={idx}
-                                  onClick={() => {
-                                    if (ind === jumpIndex.current[0]) {
-                                      jumpResult(ele[1]);
-                                    }
-                                    jumpIndex.current = [ind, ele[1]];
-                                    setAreas(query);
-                                  }}
-                                  style={{
-                                    cursor: "pointer",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                    {`[page ${ele[0] + 1}]`}
-                                </strong>
-                              )
-                            }
-                          </div>
+                          {preview}
                         </ListGroup.Item>
-                      ))
+                      ))}
+                    </ListGroup>
                   ) : (
                     <div
                       className="d-flex flex-column align-items-center justify-content-center mt-2"
                       style={{ color: "rgb(108,117,124)" }}
                     >
                       <Icon.Inbox size={"40px"} />
-                      <span>No Searches Yet</span>
+                      <span>No Evidence</span>
                     </div>
-                  )}
-                </ListGroup>
-              )}
-            </Col>
+                  )
+                }
+              </Col>
+            }
           </Row>
         </Container>
 
@@ -418,23 +452,26 @@ const PdfView = ({
                       />
                     )}
                   </div>
-                  {/* <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
-                    <SearchBarButton
-                      text={
-                        rightSidebarIsHistoryMode
-                          ? "Search Results"
-                          : "Search History"
-                      }
-                      IconComponent={
-                        rightSidebarIsHistoryMode
-                          ? Icon.CornerDownLeft
-                          : Icon.List
-                      }
-                      onClickFunc={() =>
-                        setRightSidebarIsHistoryMode((cur) => !cur)
-                      }
-                    />
-                  </div> */}
+                  {
+                    Object.keys(areas)?.length > 0 &&
+                    <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                      <SearchBarButton
+                        text={
+                          rightSidebarShowEvidence
+                            ? "Hide Evidence"
+                            : "List Evidence"
+                        }
+                        IconComponent={
+                          rightSidebarShowEvidence
+                            ? Icon.X
+                            : Icon.List
+                        }
+                        onClickFunc={() =>
+                          setRightSidebarShowEvidence((cur) => !cur)
+                        }
+                      />
+                    </div>
+                  }
                   <div className="d-none d-lg-block">
                     <SearchBarButton
                       text="Citations & References"
