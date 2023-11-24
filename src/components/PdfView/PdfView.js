@@ -313,6 +313,7 @@ const PdfView = ({
                           as="li"
                           key={ind}
                           className="right-sidebar-button mx-2 my-2"
+                          onClick={(e) => ind % 2 === 0 && handleSearchQuery(e, query)}
                         >
                           <div
                             style={{ width: "85%", marginLeft: "3px" }}
@@ -321,11 +322,18 @@ const PdfView = ({
                               (typeof query === "string") ?
                               <span
                                 className="me-auto"
-                                style={{ cursor: "pointer" }}
                               >
                                 {query}
                               </span> :
-                              query.map((ele, idx) => idx % 2 === 0 ? <span>{ele}</span> : <strong>{ele}</strong>)
+                              query.map((ele, idx) => idx % 2 === 0 ?
+                                <span>{ele}</span> :
+                                <strong
+                                  onClick={() => jumpResult(ele[1])}
+                                  style={{cursor: "pointer"}}
+                                >
+                                    {`[page ${ele[0]}]`}
+                                </strong>
+                              )
                             }
                           </div>
                         </ListGroup.Item>
