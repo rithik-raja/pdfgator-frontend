@@ -24,6 +24,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 import {
+  BASE_URL,
   DELETE_FILES,
   DELETE_SEARCH,
   MAIN_APP_URL,
@@ -36,6 +37,7 @@ import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 import { displayToast } from "../CustomToast/CustomToast";
+import { getAuthToken } from "../../services/userServices";
 
 const PdfView = ({
   areas,
@@ -53,12 +55,19 @@ const PdfView = ({
   const [citationModalShow, setCitationModalShow] = useState(false);
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
-  const [rightSidebarIsHistoryMode, setRightSidebarIsHistoryMode] = useState(true);
+  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
+  const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
+    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
   }, [areas])
+
+  useEffect(() => {
+    const sidebarEle = document.getElementById("right-sidebar");
+    sidebarEle.scrollTop = sidebarEle.scrollHeight;
+  }, [isQueryLoading])
 
   const renderHighlights = (props) => (
     <div
@@ -110,15 +119,15 @@ const PdfView = ({
   const jumpToPagePluginInstance = jumpToPagePlugin();
   const { jumpToPage } = jumpToPagePluginInstance;
 
-  const moveResult = (isNext) => {
-    if (areas?.indices?.length > 0) {
-      let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
-      if (currentVal >= 0 && currentVal < areas.indices.length) {
-        jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
-        setcurrentIndex(currentVal);
-      }
-    }
-  };
+  // const moveResult = (isNext) => {
+  //   if (areas?.indices?.length > 0) {
+  //     let currentVal = isNext ? currentIndex + 1 : currentIndex - 1;
+  //     if (currentVal >= 0 && currentVal < areas.indices.length) {
+  //       jumpToHighlightArea(areas.bboxes[areas.indices[currentVal]]);
+  //       setcurrentIndex(currentVal);
+  //     }
+  //   }
+  // };
 
   const jumpResult = (ind) => {
     console.log("jump")
@@ -140,6 +149,22 @@ const PdfView = ({
     }
   };
 
+  // const llmNewToken = (tok, pdfIdx) => {
+  //   setpdfLists((current) => {
+  //     current[pdfIdx] = {
+  //       ...current[pdfIdx],
+  //       searchHistory: [
+  //         ...current[pdfIdx].searchHistory.slice(0, -1),
+  //         {
+  //           llm_response: ["current[pdfIdx].searchHistory[current[pdfIdx].searchHistory.length - 1] + tok"]
+  //         }
+  //       ],
+  //     };
+  //     console.log(current)
+  //     return current;
+  //   });
+  // }
+
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
     if (currentActiveURL === undefined) return
@@ -155,67 +180,104 @@ const PdfView = ({
       const searchSubmitElement = document.getElementById(
         "search-bar-submit-button"
       );
+      const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+      let final_data;
       if (query?.trim() && currentActiveURL) {
         setIsQueryLoading(true);
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        ({ error, response } = await get(
-          SEARCH_QUERY_FROM_HISTORY +
-            currentActiveURL +
-            "/" +
-            encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-            "/" +
-            getSessionId() +
-            "/",
-            false
-        ));
-        if (error && response.data.detail === "Not found") {
-          ({ error, response } = await get(
-            SEARCH_QUERY +
-              currentActiveURL +
-              "/" +
-              encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-              "/" +
-              getSessionId() +
-              "/",
-              false
-          ));
+        const eventSource =  new EventSource(
+          BASE_URL +
+          "/" +
+          SEARCH_QUERY +
+          currentActiveURL +
+          "/" +
+          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
+          "/" +
+          getSessionId() +
+          "/" +
+          getAuthToken()
+        );
+        console.log("A")
+        setpdfLists((current) => {
+          console.log(current)
+          current[pdfIdx] = {
+            ...current[pdfIdx],
+            searchHistory: [
+              ...current[pdfIdx].searchHistory,
+              query,
+              {
+                llm_response: ["Loading..."]
+              }
+            ],
+          };
+          return current;
+        });
+        const sidebarEle = document.getElementById("right-sidebar");
+        eventSource.onmessage = (event) => {
+          const data = event.data;
+          console.log(data);
+          if (data.slice(0, 20) !== "<|endofllmresponse|>") {
+            setLlmTempContent((current) => current === null ? data : current + data);
+            sidebarEle.scrollTop = sidebarEle.scrollHeight;
+          } else {
+            final_data = JSON.parse(data.slice(20));
+            eventSource.close();
+          }
         }
-        if (response.status === 429) {
-          setPricingModalShow(true);
-          displayToast("Search query limit exceeded", "danger");
-        } else if (error) {
-          displayToast("Failed to perform search", "danger");
-          console.error(response.data.detail);
+        eventSource.onerror = (error) => {
+          if (error.status === 429) {
+            setPricingModalShow(true);
+            displayToast("Search query limit exceeded", "danger");
+          } else {
+            displayToast("Failed to perform search", "danger");
+            console.error(error);
+          }
+          eventSource.close();
+        }
+        setLlmTempContent(null);
+        while (eventSource.readyState !== EventSource.CLOSED) {
+          await new Promise((res) => setTimeout(res, 500));
         }
       }
-      const data = response.data;
-      if (data) {
-        setAreas(data);
+      console.log(final_data);
+      if (final_data) {
+        setAreas(final_data);
+        setpdfLists((current) => {
+          current[pdfIdx] = {
+            ...current[pdfIdx],
+            searchHistory: [
+              ...current[pdfIdx].searchHistory.slice(0, -1),
+              final_data
+            ],
+          };
+          jumpIndex.current = [current[pdfIdx].searchHistory.length - 1, -1];
+          return current;
+        });
       }
-      const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+      setLlmTempContent(null);
+      
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
       document.body.style.pointerEvents = "auto";
-      setpdfLists((current) => {
-        if (!pdfLists[pdfIdx].searchHistory.includes(query)) {
-          current[pdfIdx] = {
-            ...pdfLists[pdfIdx],
-            searchHistory: [
-              ...pdfLists[pdfIdx].searchHistory.slice(
-                0,
-                SEARCH_MEMORY_PER_FILE * 2 - 2
-              ),
-              query,
-              data
-            ],
-          };
-          jumpIndex.current = [pdfLists[pdfIdx].searchHistory.length - 1, -1];
-        }
-        return current;
-      });
-      setRightSidebarIsHistoryMode(true);
+      // setpdfLists((current) => {
+      //   if (!current[pdfIdx].searchHistory.includes(query)) {
+      //     current[pdfIdx] = {
+      //       ...current[pdfIdx],
+      //       searchHistory: [
+      //         ...current[pdfIdx].searchHistory.slice(
+      //           0,
+      //           SEARCH_MEMORY_PER_FILE * 2 - 2
+      //         ),
+      //         query,
+      //         final_data
+      //       ],
+      //     };
+      //     jumpIndex.current = [current[pdfIdx].searchHistory.length - 1, -1];
+      //   }
+      //   return current;
+      // });
       setIsQueryLoading(false);
     } catch (e) {
       console.error(e);
@@ -278,11 +340,11 @@ const PdfView = ({
                     pageNavigationPluginInstance,
                     jumpToPagePluginInstance,
                   ]}
-                  onDocumentLoad={() => {
-                    if (areas?.bboxes?.length) {
-                      jumpResult(0);
-                    }
-                  }}
+                  // onDocumentLoad={() => {
+                  //   if (areas?.bboxes?.length) {
+                  //     jumpResult(0);
+                  //   }
+                  // }}
                 />
               ) : (
                 <div style={{ paddingTop: "30px" }}>
@@ -290,90 +352,137 @@ const PdfView = ({
                 </div>
               )}
             </Col>
-
             <Col
-              className="col-lg-6 py-2 right-sidebar"
+              className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
+              id="right-sidebar"
               style={{
-                boxShadow: !fileUrl
+                boxShadow: !fileUrl || isProcessingDocument
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none"
               }}
             >
-              {isQueryLoading ? (
+              <ListGroup as="ul" style={{display: "flex"}}>
+                {pdfLists?.find((obj) => obj.id == currentActiveURL)
+                  ?.searchHistory?.length ? (
+                  pdfLists
+                    ?.find((obj) => obj.id == currentActiveURL)
+                    ?.searchHistory?.map((query, ind) => (
+                      <ListGroup.Item
+                        style={{
+                          borderRadius: "10px",
+                          maxWidth: "75%",
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                          //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
+                          textAlign: "left"
+                        }}
+                        as="li"
+                        key={ind}
+                        className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
+                      >
+                        <div
+                          style={{ width: "85%", marginLeft: "3px" }}
+                        >
+                          {
+                            llmTempContent !== null && pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory.length -1 === ind ?
+                            <span
+                              className="me-auto"
+                            >
+                              {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
+                            </span> :
+
+                            (typeof query === "string") ?
+                            <span
+                              className="me-auto"
+                            >
+                              {query}
+                            </span> :
+                            query.llm_response.map((ele, idx) => idx % 2 === 0 ?
+                              <span
+                                key={idx}
+                                style={{whiteSpace: "pre-wrap"}}>
+                                  {ele}
+                              </span> :
+                              <strong
+                                className="jump-page-link"
+                                key={idx}
+                                onClick={() => {
+                                  if (ind === jumpIndex.current[0]) {
+                                    jumpResult(ele[1]);
+                                  }
+                                  jumpIndex.current = [ind, ele[1]];
+                                  setAreas(query);
+                                  document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
+                                }}
+                                style={{
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                  {`[page ${ele[0] + 1}]`}
+                              </strong>
+                            )
+                          }
+                        </div>
+                      </ListGroup.Item>
+                    ))
+                ) : (
+                  !isQueryLoading &&
+                  <div
+                    className="d-flex flex-column align-items-center justify-content-center mt-2"
+                    style={{ color: "rgb(108,117,124)" }}
+                  >
+                    <Icon.Inbox size={"40px"} />
+                    <span>No Searches Yet</span>
+                  </div>
+                )}
+              </ListGroup>
+              {
+                isQueryLoading && llmTempContent === null &&
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
                   <CustomSpinner />
-                  <span className="mt-2">Loading...</span>
                 </div>
-              ) : (
-                <ListGroup as="ul" style={{display: "flex"}}>
-                  {pdfLists?.find((obj) => obj.id == currentActiveURL)
-                    ?.searchHistory?.length ? (
-                    pdfLists
-                      ?.find((obj) => obj.id == currentActiveURL)
-                      ?.searchHistory?.map((query, ind) => (
+              }
+            </Col>
+            {
+              rightSidebarShowEvidence &&
+              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
+                {
+                  areas?.bboxes?.length ? (
+                    <ListGroup as="ol" numbered>
+                      {areas?.previews?.map((preview, ind) => (
                         <ListGroup.Item
+                          onClick={() => jumpResult(ind)}
+                          id={`evidence-sidebar-button-${ind}`}
                           style={{
-                            borderRadius: "10px",
-                            maxWidth: "75%",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-                            //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
-                            textAlign: "left"
+                            boxShadow:
+                              ind === currentIndex
+                                ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                : "none",
+                            backgroundColor:
+                              ind === currentIndex
+                                ? "rgba(230, 230, 230, 0.9)"
+                                : "white"
                           }}
                           as="li"
                           key={ind}
-                          className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
-                          onClick={(e) => ind % 2 === 0 && handleSearchQuery(e, query)}
+                          className="evidence-sidebar-button mx-2 my-1"
                         >
-                          <div
-                            style={{ width: "85%", marginLeft: "3px" }}
-                          >
-                            {
-                              (typeof query === "string") ?
-                              <span
-                                className="me-auto"
-                              >
-                                {query}
-                              </span> :
-                              query.llm_response.map((ele, idx) => idx % 2 === 0 ?
-                                <span
-                                  key={idx}
-                                  style={{whiteSpace: "pre-wrap"}}>
-                                    {ele}
-                                </span> :
-                                <strong
-                                  className="jump-page-link"
-                                  key={idx}
-                                  onClick={() => {
-                                    if (ind === jumpIndex.current[0]) {
-                                      jumpResult(ele[1]);
-                                    }
-                                    jumpIndex.current = [ind, ele[1]];
-                                    setAreas(query);
-                                  }}
-                                  style={{
-                                    cursor: "pointer",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                    {`[page ${ele[0] + 1}]`}
-                                </strong>
-                              )
-                            }
-                          </div>
+                          {preview}
                         </ListGroup.Item>
-                      ))
+                      ))}
+                    </ListGroup>
                   ) : (
                     <div
                       className="d-flex flex-column align-items-center justify-content-center mt-2"
                       style={{ color: "rgb(108,117,124)" }}
                     >
                       <Icon.Inbox size={"40px"} />
-                      <span>No Searches Yet</span>
+                      <span>No Evidence</span>
                     </div>
-                  )}
-                </ListGroup>
-              )}
-            </Col>
+                  )
+                }
+              </Col>
+            }
           </Row>
         </Container>
 
@@ -418,23 +527,26 @@ const PdfView = ({
                       />
                     )}
                   </div>
-                  {/* <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
-                    <SearchBarButton
-                      text={
-                        rightSidebarIsHistoryMode
-                          ? "Search Results"
-                          : "Search History"
-                      }
-                      IconComponent={
-                        rightSidebarIsHistoryMode
-                          ? Icon.CornerDownLeft
-                          : Icon.List
-                      }
-                      onClickFunc={() =>
-                        setRightSidebarIsHistoryMode((cur) => !cur)
-                      }
-                    />
-                  </div> */}
+                  {
+                    Object.keys(areas)?.length > 0 &&
+                    <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                      <SearchBarButton
+                        text={
+                          rightSidebarShowEvidence
+                            ? "Hide Evidence"
+                            : "List Evidence"
+                        }
+                        IconComponent={
+                          rightSidebarShowEvidence
+                            ? Icon.X
+                            : Icon.List
+                        }
+                        onClickFunc={() =>
+                          setRightSidebarShowEvidence((cur) => !cur)
+                        }
+                      />
+                    </div>
+                  }
                   <div className="d-none d-lg-block">
                     <SearchBarButton
                       text="Citations & References"

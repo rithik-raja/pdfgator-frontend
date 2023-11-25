@@ -95,8 +95,22 @@ main {
   overflow: auto;
 }
 
+.evidence-sidebar {
+  height: calc(100vh - 55px);
+  overflow: auto;
+  background-color: rgba(175, 175, 175, 0.8);
+}
+
 .right-sidebar-button {
   overflow: hidden;
+}
+
+.evidence-sidebar-button {
+  overflow: hidden;
+  cursor: pointer;
+}
+.evidence-sidebar-button:hover {
+  opacity: 0.8;
 }
 
 .right-sidebar-item-margin-class-0 {
