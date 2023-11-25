@@ -24,6 +24,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 import {
+  BASE_URL,
   DELETE_FILES,
   DELETE_SEARCH,
   MAIN_APP_URL,
@@ -36,6 +37,7 @@ import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 import { displayToast } from "../CustomToast/CustomToast";
+import { getAuthToken } from "../../services/userServices";
 
 const PdfView = ({
   areas,
@@ -54,6 +56,7 @@ const PdfView = ({
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
   const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
+  const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
 
   useEffect(() => {
@@ -146,6 +149,22 @@ const PdfView = ({
     }
   };
 
+  // const llmNewToken = (tok, pdfIdx) => {
+  //   setpdfLists((current) => {
+  //     current[pdfIdx] = {
+  //       ...current[pdfIdx],
+  //       searchHistory: [
+  //         ...current[pdfIdx].searchHistory.slice(0, -1),
+  //         {
+  //           llm_response: ["current[pdfIdx].searchHistory[current[pdfIdx].searchHistory.length - 1] + tok"]
+  //         }
+  //       ],
+  //     };
+  //     console.log(current)
+  //     return current;
+  //   });
+  // }
+
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
     if (currentActiveURL === undefined) return
@@ -161,54 +180,104 @@ const PdfView = ({
       const searchSubmitElement = document.getElementById(
         "search-bar-submit-button"
       );
+      const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+      let final_data;
       if (query?.trim() && currentActiveURL) {
         setIsQueryLoading(true);
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        ({ error, response } = await get(
+        const eventSource =  new EventSource(
+          BASE_URL +
+          "/" +
           SEARCH_QUERY +
-            currentActiveURL +
-            "/" +
-            encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-            "/" +
-            getSessionId() +
-            "/",
-            false
-        ));
-        if (response.status === 429) {
-          setPricingModalShow(true);
-          displayToast("Search query limit exceeded", "danger");
-        } else if (error) {
-          displayToast("Failed to perform search", "danger");
-          console.error(response.data.detail);
+          currentActiveURL +
+          "/" +
+          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
+          "/" +
+          getSessionId() +
+          "/" +
+          getAuthToken()
+        );
+        console.log("A")
+        setpdfLists((current) => {
+          console.log(current)
+          current[pdfIdx] = {
+            ...current[pdfIdx],
+            searchHistory: [
+              ...current[pdfIdx].searchHistory,
+              query,
+              {
+                llm_response: ["Loading..."]
+              }
+            ],
+          };
+          return current;
+        });
+        const sidebarEle = document.getElementById("right-sidebar");
+        eventSource.onmessage = (event) => {
+          const data = event.data;
+          console.log(data);
+          if (data.slice(0, 20) !== "<|endofllmresponse|>") {
+            setLlmTempContent((current) => current === null ? data : current + data);
+            sidebarEle.scrollTop = sidebarEle.scrollHeight;
+          } else {
+            final_data = JSON.parse(data.slice(20));
+            eventSource.close();
+          }
+        }
+        eventSource.onerror = (error) => {
+          if (error.status === 429) {
+            setPricingModalShow(true);
+            displayToast("Search query limit exceeded", "danger");
+          } else {
+            displayToast("Failed to perform search", "danger");
+            console.error(error);
+          }
+          eventSource.close();
+        }
+        setLlmTempContent(null);
+        while (eventSource.readyState !== EventSource.CLOSED) {
+          await new Promise((res) => setTimeout(res, 500));
         }
       }
-      const data = response.data;
-      if (data && !error) {
-        setAreas(data);
+      console.log(final_data);
+      if (final_data) {
+        setAreas(final_data);
+        setpdfLists((current) => {
+          current[pdfIdx] = {
+            ...current[pdfIdx],
+            searchHistory: [
+              ...current[pdfIdx].searchHistory.slice(0, -1),
+              final_data
+            ],
+          };
+          jumpIndex.current = [current[pdfIdx].searchHistory.length - 1, -1];
+          return current;
+        });
       }
-      const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+      setLlmTempContent(null);
+      
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
       document.body.style.pointerEvents = "auto";
-      setpdfLists((current) => {
-        if (!pdfLists[pdfIdx].searchHistory.includes(query)) {
-          current[pdfIdx] = {
-            ...pdfLists[pdfIdx],
-            searchHistory: [
-              ...pdfLists[pdfIdx].searchHistory.slice(
-                0,
-                SEARCH_MEMORY_PER_FILE * 2 - 2
-              ),
-              query,
-              data
-            ],
-          };
-          jumpIndex.current = [pdfLists[pdfIdx].searchHistory.length - 1, -1];
-        }
-        return current;
-      });
+      // setpdfLists((current) => {
+      //   if (!current[pdfIdx].searchHistory.includes(query)) {
+      //     current[pdfIdx] = {
+      //       ...current[pdfIdx],
+      //       searchHistory: [
+      //         ...current[pdfIdx].searchHistory.slice(
+      //           0,
+      //           SEARCH_MEMORY_PER_FILE * 2 - 2
+      //         ),
+      //         query,
+      //         final_data
+      //       ],
+      //     };
+      //     jumpIndex.current = [current[pdfIdx].searchHistory.length - 1, -1];
+      //   }
+      //   return current;
+      // });
       setIsQueryLoading(false);
     } catch (e) {
       console.error(e);
@@ -287,7 +356,7 @@ const PdfView = ({
               className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
               id="right-sidebar"
               style={{
-                boxShadow: !fileUrl
+                boxShadow: !fileUrl || isProcessingDocument
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
                   : "none"
               }}
@@ -314,6 +383,13 @@ const PdfView = ({
                           style={{ width: "85%", marginLeft: "3px" }}
                         >
                           {
+                            llmTempContent !== null && pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory.length -1 === ind ?
+                            <span
+                              className="me-auto"
+                            >
+                              {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
+                            </span> :
+
                             (typeof query === "string") ?
                             <span
                               className="me-auto"
@@ -361,10 +437,9 @@ const PdfView = ({
                 )}
               </ListGroup>
               {
-                isQueryLoading &&
+                isQueryLoading && llmTempContent === null &&
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
                   <CustomSpinner />
-                  <span className="mt-2">Loading...</span>
                 </div>
               }
             </Col>
