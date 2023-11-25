@@ -26,16 +26,13 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 import {
   BASE_URL,
   DELETE_FILES,
-  DELETE_SEARCH,
   MAIN_APP_URL,
   SEARCH_QUERY,
-  SEARCH_QUERY_FROM_HISTORY
 } from "../../constants/apiConstants";
-import { get, post } from "../Api/api";
+import { post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
-import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 import { displayToast } from "../CustomToast/CustomToast";
 import { getAuthToken } from "../../services/userServices";
 
@@ -58,11 +55,12 @@ const PdfView = ({
   const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
   const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
+  const tokCount = useRef(0);
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
     document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-  }, [areas])
+  }, [areas]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const sidebarEle = document.getElementById("right-sidebar");
@@ -130,8 +128,6 @@ const PdfView = ({
   // };
 
   const jumpResult = (ind) => {
-    console.log("jump")
-    console.log(areas)
     if (!areas.indices?.length) return;
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
@@ -171,7 +167,6 @@ const PdfView = ({
     const query = overrideQuery
       ? overrideQuery
       : document.getElementById("search-bar-text-entry").value;
-    let error, response;
     document.body.style.pointerEvents = "none";
     try {
       const searchInputElement = document.getElementById(
@@ -188,38 +183,34 @@ const PdfView = ({
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
         const eventSource =  new EventSource(
-          BASE_URL +
-          "/" +
+          BASE_URL + "/" +
           SEARCH_QUERY +
-          currentActiveURL +
-          "/" +
-          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-          "/" +
-          getSessionId() +
-          "/" +
+          currentActiveURL + "/" +
+          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") + "/" +
+          getSessionId() + "/" +
           getAuthToken()
         );
-        console.log("A")
         setpdfLists((current) => {
-          console.log(current)
-          current[pdfIdx] = {
-            ...current[pdfIdx],
+          const current_ = [...current];
+          current_[pdfIdx] = {
+            ...current_[pdfIdx],
             searchHistory: [
-              ...current[pdfIdx].searchHistory,
+              ...current_[pdfIdx].searchHistory,
               query,
               {
                 llm_response: ["Loading..."]
               }
             ],
           };
-          return current;
+          return current_;
         });
         const sidebarEle = document.getElementById("right-sidebar");
+        tokCount.current = 0;
         eventSource.onmessage = (event) => {
           const data = event.data;
-          console.log(data);
           if (data.slice(0, 20) !== "<|endofllmresponse|>") {
             setLlmTempContent((current) => current === null ? data : current + data);
+            tokCount.current += 1;
             sidebarEle.scrollTop = sidebarEle.scrollHeight;
           } else {
             final_data = JSON.parse(data.slice(20));
@@ -241,7 +232,6 @@ const PdfView = ({
           await new Promise((res) => setTimeout(res, 500));
         }
       }
-      console.log(final_data);
       if (final_data) {
         setAreas(final_data);
         setpdfLists((current) => {
@@ -321,6 +311,8 @@ const PdfView = ({
     }
   };
 
+  const currentPdfData = pdfLists?.find((obj) => obj.id == currentActiveURL);
+
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
@@ -362,11 +354,8 @@ const PdfView = ({
               }}
             >
               <ListGroup as="ul" style={{display: "flex"}}>
-                {pdfLists?.find((obj) => obj.id == currentActiveURL)
-                  ?.searchHistory?.length ? (
-                  pdfLists
-                    ?.find((obj) => obj.id == currentActiveURL)
-                    ?.searchHistory?.map((query, ind) => (
+                {currentPdfData?.searchHistory?.length ? (
+                  currentPdfData?.searchHistory?.map((query, ind) => (
                       <ListGroup.Item
                         style={{
                           borderRadius: "10px",
@@ -383,9 +372,10 @@ const PdfView = ({
                           style={{ width: "85%", marginLeft: "3px" }}
                         >
                           {
-                            llmTempContent !== null && pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory.length -1 === ind ?
+                            llmTempContent !== null && currentPdfData.searchHistory.length -1 === ind ?
                             <span
                               className="me-auto"
+                              style={{whiteSpace: "pre-wrap"}}
                             >
                               {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
                             </span> :
@@ -437,7 +427,7 @@ const PdfView = ({
                 )}
               </ListGroup>
               {
-                isQueryLoading && llmTempContent === null &&
+                isQueryLoading && tokCount.current <= 1 &&
                 <div className="d-flex flex-column align-items-center justify-content-center mt-2">
                   <CustomSpinner />
                 </div>
@@ -518,8 +508,7 @@ const PdfView = ({
                     <span id="total-pages-span">of</span>
                   </div>
                   <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
-                    {!pdfLists.find((obj) => obj.id == currentActiveURL)
-                      ?.isbn && (
+                    {!currentPdfData?.isbn && (
                       <SearchBarButton
                         text="Document Info"
                         IconComponent={Icon.Info}
