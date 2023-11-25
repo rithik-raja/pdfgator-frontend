@@ -56,6 +56,7 @@ const PdfView = ({
   const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
   const tokCount = useRef(0);
+  const lastSearch = useRef("");
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
@@ -167,6 +168,7 @@ const PdfView = ({
     const query = overrideQuery
       ? overrideQuery
       : document.getElementById("search-bar-text-entry").value;
+    lastSearch.current = query;
     document.body.style.pointerEvents = "none";
     try {
       const searchInputElement = document.getElementById(
@@ -194,13 +196,22 @@ const PdfView = ({
           const current_ = [...current];
           current_[pdfIdx] = {
             ...current_[pdfIdx],
-            searchHistory: [
+            searchHistory:
+            (current_[pdfIdx].searchHistory[current_[pdfIdx].searchHistory.length - 1].llm_response[0] === "An error occured. ") ?
+            [
+              ...current_[pdfIdx].searchHistory.slice(0, -2),
+              query,
+              {
+                llm_response: ["Loading..."]
+              }
+            ] :
+            [
               ...current_[pdfIdx].searchHistory,
               query,
               {
                 llm_response: ["Loading..."]
               }
-            ],
+            ]
           };
           return current_;
         });
@@ -222,7 +233,14 @@ const PdfView = ({
             setPricingModalShow(true);
             displayToast("Search query limit exceeded", "danger");
           } else {
-            displayToast("Failed to perform search", "danger");
+            displayToast("Failed to generate response", "danger");
+            final_data = {
+              bboxes: [],
+              indices: null,
+              previews: null,
+              idx_to_page: null,
+              llm_response: ["An error occured. ", "Click to try again."]
+            }
             console.error(error);
           }
           eventSource.close();
@@ -233,6 +251,7 @@ const PdfView = ({
         }
       }
       if (final_data) {
+        console.log(final_data)
         setAreas(final_data);
         setpdfLists((current) => {
           current[pdfIdx] = {
@@ -386,10 +405,26 @@ const PdfView = ({
                             >
                               {query}
                             </span> :
-                            query.llm_response.map((ele, idx) => idx % 2 === 0 ?
+                            query.llm_response.map((ele, idx) => 
+                            ele === "Click to try again." ?
+                              <u
+                                key={idx}
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  color: "rgb(115, 115, 115)",
+                                  cursor: "pointer"
+                                }}
+                                onClick={(event) => handleSearchQuery(event, lastSearch.current)}
+                              >
+                                  {ele}
+                              </u> :
+                            typeof ele === "string" ?
                               <span
                                 key={idx}
-                                style={{whiteSpace: "pre-wrap"}}>
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  color: ele === "An error occured. " ? "rgb(220, 53, 69)" : "black"
+                                }}>
                                   {ele}
                               </span> :
                               <strong
