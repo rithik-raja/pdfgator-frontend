@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import FileUpload from "../../components/FileUpload/FileUpload";
 import LandingPageCard from "../../components/LandingPageCard/LandingPageCard";
 import Footer from "../../components/Footer/Footer";
+import { Image } from "react-bootstrap";
+import "./Home.css";
 
-const Home = () => {
+const Home = (props) => {
   return (
     <>
       <style>
@@ -28,42 +30,46 @@ const Home = () => {
                   pdfgator
                 </span>
               </Link>
-              <span className="medium mt-2">
+              <span className="small mt-2">
                 AI-Powered Semantic Search for Documents
               </span>
             </div>
-            <div className="col-6 d-flex justify-content-end">
-              <img src="/images/logo.svg" alt="Logo"></img>
+            <div className="col-6 d-flex justify-content-end align-items-end">
+              <Image
+                src="/images/logo.svg"
+                alt="Logo"
+                className="pdfgator-logo"
+              />
             </div>
           </div>
         </header>
         <div className="row mb-4"></div>
-        <FileUpload />
+        <FileUpload {...props}/>
 
         <div className="row mt-4">
-          <div className="col-lg-4">
+          <div className="col-lg-4 my-2">
             <LandingPageCard
               icon="Zap"
               heading="Accelerate Your Research"
-              text="Never spend hours flipping through 100-page documents again. With a simple search, Pdfgator finds evidence for you and automatically generates citations in the format of your choice."
+              text="Never spend hours flipping through large documents again. With a simple search, PdfGator finds evidence for you and automatically generates citations in the format of your choice."
             />
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-4 my-2">
             <LandingPageCard
               icon="Filter"
               heading="Filter Out the Fluff"
-              text="Pdfgator detects multiple lines of information and ranks them by relevance, giving you the most succint yet complete answer possible to your question."
+              text="PdfGator detects multiple lines of information and ranks them by relevance, giving you the most succint yet complete answer possible to your question."
             />
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-4 my-2">
             <LandingPageCard
               icon="Activity"
               heading="Boost Your Productivity"
-              text="Get the information you need, when you need it. Pdfgator is perfect for academic research, cramming for exams, answering open-book quizzes, or simply perusing documents in general."
+              text="Get the information you need, when you need it. PdfGator is perfect for academic research, cramming for exams, answering open-book quizzes, or simply going through documents in general."
             />
           </div>
         </div>
-        <Footer />
+        <Footer {...props} />
       </div>
     </>
   );

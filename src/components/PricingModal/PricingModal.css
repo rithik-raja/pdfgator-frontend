@@ -1,0 +1,14 @@
+.light-text {
+  color: #ddd;
+}
+
+.plan-list li {
+  padding: 0;
+}
+.pricing {
+ min-width: 220px;
+}
+
+.pricing .card-body {
+  padding: 20px !important;
+}

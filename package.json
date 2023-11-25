@@ -1,11 +1,12 @@
 {
   "name": "chat-frontend",
-  "proxy": "http://127.0.0.1:8000",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "-": "^0.0.1",
     "@citation-js/core": "^0.6.8",
+    "@citation-js/plugin-doi": "^0.6.8",
     "@citation-js/plugin-isbn": "^0.4.0",
     "@react-oauth/google": "^0.11.1",
     "@react-pdf-viewer/core": "^3.12.0",

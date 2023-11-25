@@ -1,30 +1,67 @@
-import getStripe from "../../lib/getStripe";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./Footer.css";
 
-const Footer = () => {
-  async function handleCheckout() {
-    const stripe = await getStripe();
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [
-        {
-          price: process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      successUrl: `http://localhost:3000/success`,
-      cancelUrl: `http://localhost:3000`,
-      customerEmail: "customer@email.com",
-    });
-    console.warn(error.message);
-  }
+import useLogin from "../../components/Login/Login";
+import { MAIN_APP_URL } from "../../constants/apiConstants";
+
+import AccountModal from "../../components/AccountModal/AccountModal";
+import PricingModal from "../PricingModal/PricingModal";
+import { displayToast } from "../CustomToast/CustomToast";
+
+const Footer = (props) => {
+  const [accountModalShow, setaccountModalShow] = useState(false);
+  const [pricingModalShow, setpricingModalShow] = useState(false);
+
+  const login = useLogin();
+
+  const accountLinkClickFunction = () => {
+    if (props.email) {
+      setaccountModalShow(true);
+    } else {
+      login();
+    }
+  };
+
+  const pricingLinkClickFunction = () => {
+    setpricingModalShow(true);
+  };
 
   return (
     <>
       <div className="footer">
-        <button className="footer-element" onClick={handleCheckout}>
+        <Link className="footer-element" to={MAIN_APP_URL}>
+          App
+        </Link>
+        <span className="footer-element">|</span>
+        <span className="footer-element" onClick={accountLinkClickFunction}>
+          My Account
+        </span>
+        <span className="footer-element">|</span>
+        <span className="footer-element" onClick={pricingLinkClickFunction}>
           Pricing
-        </button>
+        </span>
+        <span className="footer-element">|</span>
+        <Link className="footer-element" to="/privacy-policy" target="_blank">
+          Privacy Policy
+        </Link>
+        {accountModalShow && (
+          <AccountModal
+            show={accountModalShow}
+            onHide={() => setaccountModalShow(false)}
+            email={props.email}
+            stripeDetails={props.stripeDetails}
+          />
+        )}
+
+        {pricingModalShow && (
+          <PricingModal
+            show={pricingModalShow}
+            onHide={() => setpricingModalShow(false)}
+            email={props.email}
+            stripeDetails={props.stripeDetails}
+          />
+        )}
       </div>
     </>
   );

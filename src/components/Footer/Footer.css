@@ -1,12 +1,20 @@
-.footer{
+.footer {
     margin: 10px 0px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     gap: 8px
 }
-.footer-element{
+
+.footer-element {
     outline: none;
     border: none;
     color: #636060;
+    text-decoration: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.footer-element:hover {
+    opacity: 0.8;
 }

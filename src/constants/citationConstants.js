@@ -1,7 +1,7 @@
 export const CITATION_TEMPLATE_FORMATS = [
   {
     is_default: "true",
-    name: "American Psychological Association 7th Edition (APA)",
+    name: "APA - American Psychological Association 7th Edition",
     short_name: "APA",
     value: "apa",
     id: "1",
@@ -23,7 +23,7 @@ export const CITATION_TEMPLATE_FORMATS = [
 
   {
     is_default: "false",
-    name: "Modern Language Association 9th Edition (MLA)",
+    name: "MLA - Modern Language Association 9th Edition",
     short_name: "MLA",
     value: "modern-language-association",
     id: "4",
@@ -47,7 +47,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Medical Association 11th Edition (AMA)",
+    name: "AMA - American Medical Association 11th Edition",
     short_name: "AMA",
     value: "american-medical-association-alphabetical",
     id: "7",
@@ -55,7 +55,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "Institute of Electrical and Electronics Engineers (IEEE)",
+    name: "IEEE - Institute of Electrical and Electronics Engineers",
     short_name: "IEEE",
     value: "ieee",
     id: "8",
@@ -63,7 +63,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Chemical Society (ACS)",
+    name: "ACS - American Chemical Society",
     short_name: "ACS",
     value: "american-chemical-society",
     id: "9",
@@ -71,7 +71,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "Council of Science Editors (CSE)",
+    name: "CSE - Council of Science Editors",
     short_name: "CSE",
     value: "council-of-science-editors-author-date",
     id: "10",
@@ -79,7 +79,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Sociological Association 6th Edition (ASA)",
+    name: "ASA - American Sociological Association 6th Edition",
     short_name: "ASA",
     value: "american-sociological-association",
     id: "11",
@@ -87,7 +87,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Political Science Association (APSA)",
+    name: "APSA - American Political Science Association",
     short_name: "APSA",
     value: "american-political-science-association",
     id: "12",
@@ -95,7 +95,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Anthropological Association (AAA)",
+    name: "AAA - American Anthropological Association",
     short_name: "AAA",
     value: "american-anthropological-association",
     id: "13",
@@ -103,7 +103,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "American Institute of Physics 4th Edition (AIP)",
+    name: "AIP - American Institute of Physics 4th Edition",
     short_name: "AIP",
     value: "american-institute-of-physics",
     id: "14",
@@ -111,7 +111,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "Oxford Standard for the Citation of Legal Authorities (OSCOLA)",
+    name: "OSCOLA - Oxford Standard for the Citation of Legal Authorities",
     short_name: "OSCOLA",
     value: "oscola",
     id: "15",
@@ -119,7 +119,7 @@ export const CITATION_TEMPLATE_FORMATS = [
   },
   {
     is_default: "false",
-    name: "National Library of Medicine (NLM)",
+    name: "NLM - National Library of Medicine",
     short_name: "NLM",
     value: "national-library-of-medicine-grant-proposals",
     id: "16",

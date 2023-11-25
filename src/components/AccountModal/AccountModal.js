@@ -1,17 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import "./AccountModal.css";
-import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { getAuthToken, logOut } from "../../services/userServices";
+import { logOut } from "../../services/userServices";
+import { useNavigate } from "react-router-dom";
+import { GET_USAGE } from "../../constants/apiConstants";
+import { get } from "../Api/api";
+import PricingModal from "../PricingModal/PricingModal";
+import { getProducts } from "../../services/productsService";
 
-export default function AccountModal(props) {
+const AccountModal = ({ stripeDetails, ...props }) => {
+  let prods = getProducts();
+
+  let plan = stripeDetails?.find((ele) => ele.is_plan_canceled === false);
+  let plan_name = "Free";
+  if (prods && prods?.length && plan?.product_id) {
+    let prod = prods?.find((ele) => ele.id === plan?.product_id);
+    plan_name = prod?.metadata?.product_name;
+  }
+
+  const getUsage = async () => {
+    const { error, response } = await get(GET_USAGE);
+    if (!error) {
+      setUsage(response.data);
+    }
+  };
+  useEffect(() => {
+    getUsage();
+  }, [props.show]);
+
+  const getScopes = () =>
+    !props.email
+      ? {
+          search: "search_query_anon",
+          upload: "file_upload_anon",
+        }
+      : !plan?.product_id
+      ? {
+          search: "search_query_user_free",
+          upload: "file_upload_user_free",
+        }
+      : {
+          search: "search_query_user_paid",
+          upload: "file_upload_user_paid",
+        };
+
+  const navigate = useNavigate();
+  const [usage, setUsage] = useState({
+    usage_limits: {},
+  });
+  const [pricingModalShow, setPricingModalShow] = useState(false);
   return (
     <Modal
       {...props}
@@ -33,6 +77,7 @@ export default function AccountModal(props) {
                 onClick={() => {
                   logOut();
                   props.onHide();
+                  navigate("/");
                 }}
               >
                 Sign Out
@@ -43,41 +88,70 @@ export default function AccountModal(props) {
         <Card>
           <Card.Body>
             <Card.Subtitle className="mb-2 text-muted">
-              Free Usage Today
+              {plan?.product_id ? "Usage Today" : "Free Usage Today"}
             </Card.Subtitle>
-            <Card.Text>
-              <Container>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div class="progress-container">
-                      <ProgressBar now={2} min={0} max={3} />
-                    </div>
-                  </Col>
-                  <Col>0/3 PDFs</Col>
-                </Row>
-                <Row className="justify-content-md-center">
-                  <Col xs={8}>
-                    <div class="progress-container">
-                      <ProgressBar now={2} min={0} max={50} />
-                    </div>
-                  </Col>
-                  <Col>0/50 Questions</Col>
-                </Row>
-              </Container>
-            </Card.Text>
+            <Container>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar
+                      now={usage[getScopes().upload]}
+                      min={0}
+                      max={usage.usage_limits[getScopes().upload]}
+                    />
+                  </div>
+                </Col>
+                <Col>
+                  {usage[getScopes().upload]}/
+                  {usage.usage_limits[getScopes().upload]} PDFs
+                </Col>
+              </Row>
+              <Row className="justify-content-md-center">
+                <Col xs={8}>
+                  <div className="progress-container">
+                    <ProgressBar
+                      now={usage[getScopes().search]}
+                      min={0}
+                      max={usage.usage_limits[getScopes().search]}
+                    />
+                  </div>
+                </Col>
+                <Col>
+                  {usage[getScopes().search]}/
+                  {usage.usage_limits[getScopes().search]} Questions
+                </Col>
+              </Row>
+            </Container>
           </Card.Body>
           <Card.Footer>
             <Row className="justify-content-md-center">
               <Col xs={8}>
-                <div>Free Plan</div>
+                <div>Current Plan: {plan_name}</div>
               </Col>
               <Col>
-                <Button size="sm">Get plus</Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setPricingModalShow(true);
+                  }}
+                >
+                  View Plans
+                </Button>
               </Col>
             </Row>
           </Card.Footer>
         </Card>
       </Modal.Body>
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={stripeDetails}
+        />
+      )}
     </Modal>
   );
-}
+};
+
+export default AccountModal;

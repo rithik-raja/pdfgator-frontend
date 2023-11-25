@@ -1,47 +1,85 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import "./Chat.css";
 import Dropzone from "react-dropzone";
 import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
-import ErrorToast from "../../components/ErrorToast/ErrorToast";
+import { displayToast } from "../../components/CustomToast/CustomToast";
 import { useNavigate, useParams } from "react-router-dom";
-import { GET_FILES } from "../../constants/apiConstants";
+import {
+  BASE_URL,
+  GET_FILES,
+  MAIN_APP_URL,
+} from "../../constants/apiConstants";
 import { get } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
 
 import useLogin from "../../components/Login/Login";
-import { getAuthToken, logOut } from "../../services/userServices";
 import { getSessionId } from "../../services/sessionService";
 import AccountModal from "../../components/AccountModal/AccountModal";
+import PricingModal from "../../components/PricingModal/PricingModal";
+import {
+  FREE_PLAN_MAX_FILE_SIZE,
+  PAID_PLAN_MAX_FILE_SIZE,
+} from "../../constants/storageConstants";
+
+let currentActiveURL;
 
 const Chat = (props) => {
-  let currentActiveURL;
-
   const navigate = useNavigate();
   const params = useParams();
 
   const [accountModalShow, setaccountModalShow] = useState(false);
+  const [pricingModalShow, setPricingModalShow] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
-  const [errorToastMessage, setErrorToastMessage] = useState(null);
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
   const [areas, setAreas] = useState({});
+  //const [searchMemory, setSearchMemory] = useState({});
 
-  const login = useLogin(setErrorToastMessage);
+  const login = useLogin();
+
+  // const preserveOldSearch = () => {
+  //   if (Object.keys(areas).length) {
+  //     setSearchMemory({
+  //       ...searchMemory,
+  //       [currentActiveURL]: {
+  //         query: document.getElementById("search-bar-text-entry").value,
+  //         areas: areas,
+  //       },
+  //     });
+  //   }
+  // };
 
   const fileInputOnChange = async (acceptedFiles) => {
-    // const acceptedFiles = e.target.files;
+    const plan = props?.stripeDetails?.find(
+      (ele) => ele.is_plan_canceled === false
+    );
     if (acceptedFiles.length > 0) {
+      if (
+        acceptedFiles[0].size >
+        1024 *
+          1024 *
+          (plan?.is_plan_canceled === false
+            ? PAID_PLAN_MAX_FILE_SIZE
+            : FREE_PLAN_MAX_FILE_SIZE)
+      ) {
+        displayToast("The selected file is either too large or in an invalid format.", "danger");
+        setPricingModalShow(true);
+        return;
+      }
       const newuploadedFile = acceptedFiles[0];
       setuploadedUrl(URL.createObjectURL(newuploadedFile));
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
-        const response = await uploadFileToApi(newuploadedFile, props);
-        if (response && response.data && response.data.id) {
-          console.log(response);
+        const { error, response } = await uploadFileToApi(
+          newuploadedFile,
+          props,
+          false
+        );
+        if (!error && response.data.id) {
           const name = response.data.file_name.split("/").pop() ?? "undefined";
           const newurl = String(response.data.id);
           const newpdflist = [
@@ -49,20 +87,31 @@ const Chat = (props) => {
             {
               ...response.data,
               name: name,
-              url: newurl,
+              str_url: newurl,
               isActive: "true",
             },
           ];
+          //preserveOldSearch();
           currentActiveURL = newurl;
+          setAreas({});
+          document.getElementById("search-bar-text-entry").value = "";
           setpdfLists(newpdflist);
           setActivepdfList(newurl, newpdflist);
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
-          navigate("/chat/" + newurl);
+          navigate(MAIN_APP_URL + "/" + newurl);
         } else {
           document.body.style.pointerEvents = "auto";
-          setErrorToastMessage("Failed to upload to server");
           setIsProcessingDocument(false);
+          if (response.status === 429) {
+            displayToast("Usage limit exceeded", "danger");
+            setPricingModalShow(true);
+          } else {
+            displayToast("Failed to upload file", "danger");
+            console.error(response.data.detail);
+          }
+          setuploadedUrl("");
+          navigate(MAIN_APP_URL);
         }
       } catch (e) {
         console.error(e);
@@ -74,46 +123,48 @@ const Chat = (props) => {
   const { pdfid } = params;
   currentActiveURL = pdfid;
 
-  const getPdfLists = async () => {
-    console.log(getAuthToken());
+  const getPdfLists = useCallback(async () => {
     const sessionid = getSessionId();
-    let response1;
+    let error, response;
     if (props.email) {
-      response1 = await get(GET_FILES, setErrorToastMessage);
+      ({ error, response } = await get(GET_FILES));
     } else {
-      response1 = await get(GET_FILES + sessionid + "/", setErrorToastMessage);
+      ({ error, response } = await get(GET_FILES + sessionid + "/"));
     }
-    if (response1 === null) {
+    if (error) {
       return;
     }
-    console.log(response1.data);
-    response1 = response1.data;
 
-    if (response1 && response1.data && response1.data.length) {
-      let newlist = response1.data;
+    if (response.data.pdfData?.length) {
+      let newlist = response.data.pdfData;
       newlist = newlist.map((d, i) => ({
         ...d,
-        name: d.file_name.split("/").pop() ?? "undefined",
-        url: String(d.id),
+        name: d.file_name ?? "undefined",
+        str_url: String(d.id),
+        searchHistory:
+          response.data.search_history && response.data.search_history[d.id]
+            ? response.data.search_history[d.id]
+            : [],
       }));
 
       const index = newlist.findIndex((object) => {
-        return object.url === pdfid;
+        return object.str_url === pdfid;
       });
       if (index > -1) {
         newlist[index].isActive = "true";
-        setuploadedUrl(newlist[index].file_path);
+        setuploadedUrl(BASE_URL + newlist[index].file_path);
       }
       setpdfLists(newlist);
     } else {
       setpdfLists([]);
     }
-  };
+  }, [pdfid, props.email]);
+
   const setActivepdfList = (urlName, allpdflists) => {
     const currentUrl = urlName ?? pdfid;
     if (currentUrl.length) {
       const index = allpdflists.findIndex((object) => {
-        return object.url === currentUrl;
+        return object.str_url === currentUrl;
       });
       if (index > -1) {
         let pdflists = allpdflists.map((e) => ({ ...e, isActive: "false" }));
@@ -125,24 +176,40 @@ const Chat = (props) => {
 
   useEffect(() => {
     getPdfLists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props]);
+    document.addEventListener("userUpdate", getPdfLists);
+    return () => {
+      document.removeEventListener("userUpdate", getPdfLists);
+    };
+  }, [getPdfLists]);
+
+  // useEffect(() => {
+  //   setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+  //   document.getElementById("search-bar-text-entry").value =
+  //     searchMemory[currentActiveURL]?.query ?? "";
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [currentActiveURL]);
 
   const handlePdfLinkClick = (index) => {
-    currentActiveURL = index;
+    if (currentActiveURL === pdfLists[index].id) {
+      return;
+    }
+    //preserveOldSearch();
+    currentActiveURL = pdfLists[index].id;
     let pdflists = pdfLists.map((e) => ({ ...e, isActive: "false" }));
     pdflists[index].isActive = "true";
+    //setAreas(searchMemory[currentActiveURL]?.areas ?? {});
+    setAreas({});
+    // document.getElementById("search-bar-text-entry").value =
+    //   searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
-    setuploadedUrl(pdflists[index].file_path);
+    setuploadedUrl(BASE_URL + pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
-    // setaccountModalShow(true);
-    // return;
     if (props.email) {
       setaccountModalShow(true);
     } else {
       login();
-      navigate("/chat");
+      navigate(MAIN_APP_URL);
     }
   };
 
@@ -152,7 +219,15 @@ const Chat = (props) => {
         <nav id="sidebarMenu" className="collapse d-lg-block sidebar bg-dark">
           <div className="upload-section text-white my-3 mx-2">
             <Dropzone
-              onDrop={(acceptedFiles) => fileInputOnChange(acceptedFiles)}
+              accept={{
+                "application/pdf": [".pdf"],
+              }}
+              onDrop={(acceptedFiles, fileRejections) => {
+                if (fileRejections?.length) {
+                  displayToast("File type must be 'pdf'", "danger");
+                }
+                fileInputOnChange(acceptedFiles);
+              }}
             >
               {({ getRootProps, getInputProps }) => (
                 <section>
@@ -174,10 +249,8 @@ const Chat = (props) => {
                     (list.isActive === "true" ? "active" : "text-white")
                   }
                   onClick={(event) => handlePdfLinkClick(index)}
-                  // data-bs-toggle="collapse"
-                  // data-bs-target="#sidebarMenu"
                   aria-current="true"
-                  to={"/chat/" + list.url}
+                  to={MAIN_APP_URL + "/" + list.str_url}
                 >
                   <Icon.FileText />
                   {list.name}
@@ -190,22 +263,6 @@ const Chat = (props) => {
                 {props.email ? (
                   <></>
                 ) : (
-                  // <div
-                  //   className="alert alert-light nav-signin-prompt"
-                  //   role="alert"
-                  // >
-                  //   <span>{`${props.email} |`}</span>
-                  //   <span> </span>
-                  //   <span
-                  //     className="alert-link"
-                  //     style={{ cursor: "pointer" }}
-                  //     onClick={() => {
-                  //       logOut();
-                  //     }}
-                  //   >
-                  //     Log Out
-                  //   </span>
-                  // </div>
                   <div
                     className="alert alert-light nav-signin-prompt"
                     role="alert"
@@ -215,7 +272,7 @@ const Chat = (props) => {
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         login();
-                        navigate("/chat");
+                        navigate(MAIN_APP_URL);
                       }}
                     >
                       Sign in
@@ -223,10 +280,9 @@ const Chat = (props) => {
                     to save your files
                   </div>
                 )}
-                <div class="sidebar-footer">
+                <div className="sidebar-footer">
                   <Link to="/">Home</Link>
                   <Link onClick={accountLinkClickFunction}>Account</Link>
-                  {/* <Link onClick={accountLinkClickFunction}>Pricing</Link> */}
                 </div>
               </>
             </li>
@@ -267,22 +323,29 @@ const Chat = (props) => {
           fileUrl={uploadedUrl}
           areas={areas}
           pdfLists={pdfLists}
+          setpdfLists={setpdfLists}
           currentActiveURL={currentActiveURL}
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
-          setErrorToastMessage={setErrorToastMessage}
+          setPricingModalShow={setPricingModalShow}
         />
       </main>
-      <AccountModal
-        show={accountModalShow}
-        onHide={() => setaccountModalShow(false)}
-        email={props.email}
-      />
-
-      <ErrorToast
-        message={errorToastMessage}
-        setMessage={setErrorToastMessage}
-      />
+      {accountModalShow && (
+        <AccountModal
+          show={accountModalShow}
+          onHide={() => setaccountModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
+      {pricingModalShow && (
+        <PricingModal
+          show={pricingModalShow}
+          onHide={() => setPricingModalShow(false)}
+          email={props.email}
+          stripeDetails={props.stripeDetails}
+        />
+      )}
     </>
   );
 };

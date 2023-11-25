@@ -35,7 +35,7 @@ main {
 
 .navbar-toggler-container {
   z-index: 20;
-  background-color: rgb(33,37,41);
+  background-color: rgb(33, 37, 41);
 }
 
 .navbar-toggler-container.iscollapsed {
@@ -47,10 +47,10 @@ main {
   text-align: left;
 }
 
-.nav-item svg{
-  color:white;
-  margin-right:7px;
-  height:  18px;
+.nav-item svg {
+  color: white;
+  margin-right: 7px;
+  height: 18px;
 }
 
 .nav-link {
@@ -59,7 +59,8 @@ main {
   white-space: nowrap;
   overflow: hidden;
 }
-.nav-signin-prompt{
+
+.nav-signin-prompt {
   margin-bottom: 0.5rem;
 }
 
@@ -84,38 +85,85 @@ main {
 }
 
 .pdf-viewer-container {
-  height: 100vh;
+  height: calc(100vh - 55px);
   overflow: auto;
 }
 
-.right-sidebar{
-  text-align: left;
+.right-sidebar {
   padding-left: 0;
-  height: 100vh;
+  height: calc(100vh - 55px);
   overflow: auto;
 }
 
-.right-sidebar-button:hover {
-  opacity: 1;
+.evidence-sidebar {
+  height: calc(100vh - 55px);
+  overflow: auto;
+  background-color: rgba(175, 175, 175, 0.8);
 }
 
-.right-sidebar-button:hover {
+.right-sidebar-button {
+  overflow: hidden;
+}
+
+.evidence-sidebar-button {
+  overflow: hidden;
   cursor: pointer;
+}
+.evidence-sidebar-button:hover {
   opacity: 0.8;
 }
 
-.searchbar-container {
-  bottom: 110px;
+.right-sidebar-item-margin-class-0 {
+  margin-left: auto;
+}
+.right-sidebar-item-margin-class-1 {
+  margin-left: 0px;
+}
+
+.jump-page-link:hover {
+  opacity: 0.7;
+}
+
+.delete-search-query:hover::before {
+  content: "";
+  /* Create an invisible overlay */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.2);
+  /* Transparent background */
+  z-index: 2000;
+  /* Ensure the overlay is above the .clickable-div */
+  pointer-events: auto;
+  /* Allow the overlay to capture pointer events */
+}
+
+.searchbar-pdftools-container {
+  //bottom: 55px;
+  background-color: rgba(195, 195, 195, 0.8);
+  box-shadow: 0px -5px 10px rgba(0, 0, 0, 0.1);
 }
 
 .searchbar-container-inner {
-  background-color: rgba(205, 205, 205, 0.8);
-  height: 100px;
+  height: 55px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: 5px;
+}
+
+.pdftools-container-inner {
+  margin-top: auto;
+  
+  height: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .searchbar-buttons-container {
@@ -137,8 +185,14 @@ main {
     width: 100%;
     margin-top: 55px;
   }
-  .nav-link, .nav-signin-prompt {
+
+  .nav-link,
+  .nav-signin-prompt {
     width: calc(100vw - 10px);
+  }
+
+  .right-sidebar-item-margin-class-1 {
+    margin-left: 12px;
   }
 }
 
@@ -148,17 +202,19 @@ main {
   }
 }
 
-.sidebar-footer{
+.sidebar-footer {
   margin: 5px;
   font-size: 14px;
 }
-.sidebar-footer a{
+
+.sidebar-footer a {
   text-decoration: none;
   outline: none;
-  cursor: pointer;  
-  color:#cdcdcd;
+  cursor: pointer;
+  color: #cdcdcd;
   margin-right: 10px;
 }
-.sidebar-footer a:hover{
+
+.sidebar-footer a:hover {
   color: #0d6efd;
 }
