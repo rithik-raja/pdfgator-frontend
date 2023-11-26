@@ -197,7 +197,7 @@ const PdfView = ({
           current_[pdfIdx] = {
             ...current_[pdfIdx],
             searchHistory:
-            (current_[pdfIdx].searchHistory[current_[pdfIdx].searchHistory.length - 1].llm_response[0] === "An error occured. ") ?
+            (current_[pdfIdx].searchHistory[current_[pdfIdx].searchHistory.length - 1]?.llm_response[0] === "An error occured. ") ?
             [
               ...current_[pdfIdx].searchHistory.slice(0, -2),
               query,
@@ -219,7 +219,9 @@ const PdfView = ({
         tokCount.current = 0;
         eventSource.onmessage = (event) => {
           const data = event.data;
-          if (data.slice(0, 20) !== "<|endofllmresponse|>") {
+          if (data === "<|clearllmresponse|>") {
+            setLlmTempContent(null);
+          } else if (data.slice(0, 20) !== "<|endofllmresponse|>") {
             setLlmTempContent((current) => current === null ? data : current + data);
             tokCount.current += 1;
             sidebarEle.scrollTop = sidebarEle.scrollHeight;
@@ -393,8 +395,10 @@ const PdfView = ({
                           {
                             llmTempContent !== null && currentPdfData.searchHistory.length -1 === ind ?
                             <span
-                              className="me-auto"
-                              style={{whiteSpace: "pre-wrap"}}
+                              style={{
+                                whiteSpace: "pre-wrap",
+                                color: llmTempContent?.slice(0, 25) === "Generating response for: " ? "rgb(115, 115, 115)" : "black"
+                              }}
                             >
                               {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
                             </span> :
@@ -463,7 +467,7 @@ const PdfView = ({
               </ListGroup>
               {
                 isQueryLoading && tokCount.current <= 1 &&
-                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
+                <div className="d-flex flex-column align-items-center justify-content-center my-2">
                   <CustomSpinner />
                 </div>
               }
