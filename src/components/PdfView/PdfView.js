@@ -217,9 +217,12 @@ const PdfView = ({
         });
         const sidebarEle = document.getElementById("right-sidebar");
         tokCount.current = 0;
+        let isThrottled = false;
         eventSource.onmessage = (event) => {
           const data = event.data;
-          if (data === "<|clearllmresponse|>") {
+          if (data === "<|responsethrottled|>") {
+            isThrottled = true;
+          } else if (data === "<|clearllmresponse|>") {
             setLlmTempContent(null);
           } else if (data.slice(0, 20) !== "<|endofllmresponse|>") {
             setLlmTempContent((current) => current === null ? data : current + data);
@@ -231,20 +234,20 @@ const PdfView = ({
           }
         }
         eventSource.onerror = (error) => {
-          if (error.status === 429) {
+          if (isThrottled) {
             setPricingModalShow(true);
             displayToast("Search query limit exceeded", "danger");
           } else {
             displayToast("Failed to generate response", "danger");
-            final_data = {
-              bboxes: [],
-              indices: null,
-              previews: null,
-              idx_to_page: null,
-              llm_response: ["An error occured. ", "Click to try again."]
-            }
             console.error(error);
           }
+          final_data = {
+            bboxes: [],
+            indices: null,
+            previews: null,
+            idx_to_page: null,
+            llm_response: ["An error occured. ", "Click to try again."]
+          };
           eventSource.close();
         }
         setLlmTempContent(null);
@@ -479,25 +482,35 @@ const PdfView = ({
                   areas?.bboxes?.length ? (
                     <ListGroup as="ol" numbered>
                       {areas?.previews?.map((preview, ind) => (
-                        <ListGroup.Item
-                          onClick={() => jumpResult(ind)}
-                          id={`evidence-sidebar-button-${ind}`}
-                          style={{
-                            boxShadow:
-                              ind === currentIndex
-                                ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                                : "none",
-                            backgroundColor:
-                              ind === currentIndex
-                                ? "rgba(230, 230, 230, 0.9)"
-                                : "white"
-                          }}
-                          as="li"
-                          key={ind}
-                          className="evidence-sidebar-button mx-2 my-1"
-                        >
-                          {preview}
-                        </ListGroup.Item>
+                        <OverlayTrigger key={areas.previews.length + ind} trigger={["hover", "click"]} show={ind === currentIndex ? undefined : false} placement="left" overlay={
+                          (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Copy</Tooltip>
+                        }>
+                          <ListGroup.Item
+                            onClick={() => {
+                              if (ind === currentIndex) {
+                                displayToast("Copied to Clipboard", "success");
+                                navigator.clipboard.writeText(preview)
+                              }
+                              jumpResult(ind);
+                            }}
+                            id={`evidence-sidebar-button-${ind}`}
+                            style={{
+                              boxShadow:
+                                ind === currentIndex
+                                  ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                  : "none",
+                              backgroundColor:
+                                ind === currentIndex
+                                  ? "rgba(230, 230, 230, 0.9)"
+                                  : "white",
+                            }}
+                            as="li"
+                            key={ind}
+                            className="evidence-sidebar-button mx-2 my-1"
+                          >
+                            {preview?.length > 200 ? preview.slice(0, 200) + "..." : preview}
+                          </ListGroup.Item>
+                        </OverlayTrigger>
                       ))}
                     </ListGroup>
                   ) : (
