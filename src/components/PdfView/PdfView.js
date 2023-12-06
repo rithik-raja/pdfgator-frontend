@@ -36,6 +36,12 @@ import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
 import { displayToast } from "../CustomToast/CustomToast";
 import { getAuthToken } from "../../services/userServices";
 
+// import axios from "axios";
+// import Cite from "citation-js";
+// import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
+// import { generateCiteJSON } from "../../services/citationService";
+
+
 const PdfView = ({
   areas,
   fileUrl,
@@ -44,15 +50,18 @@ const PdfView = ({
   setAreas,
   isProcessingDocument,
   setpdfLists,
-  setPricingModalShow
+  setPricingModalShow,
+  rightSidebarShowEvidence,
+  setRightSidebarShowEvidence
 }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
   const [citationModalShow, setCitationModalShow] = useState(false);
+  const [templateFormat, settemplateFormat] = useState("apa");
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
-  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
+  // const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
   const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
   const tokCount = useRef(0);
@@ -146,28 +155,14 @@ const PdfView = ({
     }
   };
 
-  // const llmNewToken = (tok, pdfIdx) => {
-  //   setpdfLists((current) => {
-  //     current[pdfIdx] = {
-  //       ...current[pdfIdx],
-  //       searchHistory: [
-  //         ...current[pdfIdx].searchHistory.slice(0, -1),
-  //         {
-  //           llm_response: ["current[pdfIdx].searchHistory[current[pdfIdx].searchHistory.length - 1] + tok"]
-  //         }
-  //       ],
-  //     };
-  //     console.log(current)
-  //     return current;
-  //   });
-  // }
-
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
     if (currentActiveURL === undefined) return
+    const searchBarEle = document.getElementById("search-bar-text-entry");
     const query = overrideQuery
       ? overrideQuery
-      : document.getElementById("search-bar-text-entry").value;
+      : searchBarEle.value;
+    searchBarEle.value = "";
     lastSearch.current = query;
     document.body.style.pointerEvents = "none";
     try {
@@ -335,7 +330,9 @@ const PdfView = ({
     }
   };
 
-  const currentPdfData = pdfLists?.find((obj) => obj.id == currentActiveURL);
+  const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+  const currentPdfData = pdfLists[pdfIdx];
+  console.log(currentPdfData)
 
   return (
     <>
@@ -363,18 +360,69 @@ const PdfView = ({
                   // }}
                 />
               ) : (
-                <div style={{ paddingTop: "30px" }}>
-                  Select or Upload a File
+                <div className="d-flex flex-column align-items-center" style={{ height: "100%", paddingTop: "20px", color: "rgb(108,117,124)" }}>
+                  <Icon.File size={"40px"} />
+                  <span>Select or Upload a File</span>
                 </div>
               )}
             </Col>
+            {
+              rightSidebarShowEvidence &&
+              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
+                {
+                  areas?.bboxes?.length ? (
+                    <ListGroup as="ol" numbered>
+                      {areas?.previews?.map((preview, ind) => (
+                        <OverlayTrigger key={ind} trigger={["hover", "click"]} show={ind === currentIndex ? undefined : false} placement="left" overlay={
+                          (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Copy</Tooltip>
+                        }>
+                          <ListGroup.Item
+                            onClick={() => {
+                              if (ind === currentIndex) {
+                                displayToast("Copied to Clipboard", "success");
+                                navigator.clipboard.writeText(preview)
+                              }
+                              jumpResult(ind);
+                            }}
+                            id={`evidence-sidebar-button-${ind}`}
+                            style={{
+                              boxShadow:
+                                ind === currentIndex
+                                  ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                  : "none",
+                              backgroundColor:
+                                ind === currentIndex
+                                  ? "rgba(230, 230, 230, 0.9)"
+                                  : "white",
+                            }}
+                            as="li"
+                            className="evidence-sidebar-button mx-2 my-1"
+                          >
+                            {preview?.length > 200 ? preview.slice(0, 200) + "..." : preview}
+                          </ListGroup.Item>
+                        </OverlayTrigger>
+                      ))}
+                    </ListGroup>
+                  ) : (
+                    <div
+                      className="d-flex flex-column align-items-center justify-content-center mt-2"
+                      style={{ color: "rgb(108,117,124)" }}
+                    >
+                      <Icon.Inbox size={"40px"} />
+                      <span>No Evidence</span>
+                    </div>
+                  )
+                }
+              </Col>
+            }
             <Col
               className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
               id="right-sidebar"
               style={{
                 boxShadow: !fileUrl || isProcessingDocument
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
-                  : "none"
+                  : "none",
+                  paddingLeft: rightSidebarShowEvidence ? undefined : 0
               }}
             >
               <ListGroup as="ul" style={{display: "flex"}}>
@@ -434,24 +482,65 @@ const PdfView = ({
                                 }}>
                                   {ele}
                               </span> :
-                              <strong
-                                className="jump-page-link"
-                                key={idx}
-                                onClick={() => {
-                                  if (ind === jumpIndex.current[0]) {
-                                    jumpResult(ele[1]);
-                                  }
-                                  jumpIndex.current = [ind, ele[1]];
-                                  setAreas(query);
-                                  document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-                                }}
-                                style={{
-                                  cursor: "pointer",
-                                  whiteSpace: "nowrap"
-                                }}
-                              >
-                                  {`[page ${ele[0] + 1}]`}
-                              </strong>
+                              // <OverlayTrigger key={idx} trigger={["hover", "click"]} show={jumpIndex.current[1] === ele[1] ? undefined : false} overlay={
+                              //   (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Cite</Tooltip>
+                              // }>
+                                <strong
+                                  key={idx}
+                                  className="jump-page-link"
+                                  onClick={() => {
+                                    // removed intext citation code since page numbers don't work
+                                    // if (jumpIndex.current[1] === ele[1]) {
+                                    //   const setCite = () => {
+                                    //     const cite = new Cite(generateCiteJSON(pdfLists, pdfIdx, ele[0] + 1));
+                                    //     const citeText = cite.format("citation", {
+                                    //       template: templateFormat,
+                                    //       format: "text",
+                                    //       lang: "en-US",
+                                    //     });
+                                    //     setpdfLists((current) => {
+                                    //       const current_ = [...current];
+                                    //       current_[pdfIdx].searchHistory[ind].llm_response.splice(idx, 0, citeText);
+                                    //       return current_;
+                                    //     });
+                                    //   }
+                                    //   const result = CITATION_TEMPLATE_FORMATS.find(
+                                    //     (item) => item.value === templateFormat
+                                    //   );
+                                    //   if (result.is_default === "true") {
+                                    //     setCite();
+                                    //   } else {
+                                    //     let data;
+                                    //     let cslPath = result?.file_path
+                                    //       ? result.file_path
+                                    //       : "american-anthropological-association";
+                                    //     axios
+                                    //       .get("/csl-files/" + cslPath + ".csl")
+                                    //       .then((res) => {
+                                    //         data = res.data;
+                                    //         let templateName = result.value;
+                                    //         let config = Cite.plugins.config.get("@csl");
+                                    //         config.templates.add(templateName, data);
+                                    //         setCite();
+                                    //       })
+                                    //       .catch((err) => console.log(err));
+                                    //   }
+                                    // }
+                                    if (ind === jumpIndex.current[0]) {
+                                      jumpResult(ele[1]);
+                                    }
+                                    jumpIndex.current = [ind, ele[1]];
+                                    setAreas(query);
+                                    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
+                                  }}
+                                  style={{
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                >
+                                    {ele !== null && `[page ${ele[0] + 1}]`}
+                                </strong>
+                              // </OverlayTrigger>
                             )
                           }
                         </div>
@@ -475,56 +564,6 @@ const PdfView = ({
                 </div>
               }
             </Col>
-            {
-              rightSidebarShowEvidence &&
-              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
-                {
-                  areas?.bboxes?.length ? (
-                    <ListGroup as="ol" numbered>
-                      {areas?.previews?.map((preview, ind) => (
-                        <OverlayTrigger key={areas.previews.length + ind} trigger={["hover", "click"]} show={ind === currentIndex ? undefined : false} placement="left" overlay={
-                          (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Copy</Tooltip>
-                        }>
-                          <ListGroup.Item
-                            onClick={() => {
-                              if (ind === currentIndex) {
-                                displayToast("Copied to Clipboard", "success");
-                                navigator.clipboard.writeText(preview)
-                              }
-                              jumpResult(ind);
-                            }}
-                            id={`evidence-sidebar-button-${ind}`}
-                            style={{
-                              boxShadow:
-                                ind === currentIndex
-                                  ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                                  : "none",
-                              backgroundColor:
-                                ind === currentIndex
-                                  ? "rgba(230, 230, 230, 0.9)"
-                                  : "white",
-                            }}
-                            as="li"
-                            key={ind}
-                            className="evidence-sidebar-button mx-2 my-1"
-                          >
-                            {preview?.length > 200 ? preview.slice(0, 200) + "..." : preview}
-                          </ListGroup.Item>
-                        </OverlayTrigger>
-                      ))}
-                    </ListGroup>
-                  ) : (
-                    <div
-                      className="d-flex flex-column align-items-center justify-content-center mt-2"
-                      style={{ color: "rgb(108,117,124)" }}
-                    >
-                      <Icon.Inbox size={"40px"} />
-                      <span>No Evidence</span>
-                    </div>
-                  )
-                }
-              </Col>
-            }
           </Row>
         </Container>
 
@@ -645,6 +684,8 @@ const PdfView = ({
         </CurrentPageLabel>
 
         <CitationModal
+          templateFormat={templateFormat}
+          settemplateFormat={settemplateFormat}
           pdflists={pdfLists}
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}

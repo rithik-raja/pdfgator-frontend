@@ -4,6 +4,7 @@ import "./CitationModal.css";
 import Cite from "citation-js";
 import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
 import axios from "axios";
+import { generateCiteJSON } from "../../services/citationService";
 
 require("@citation-js/plugin-isbn");
 require("@citation-js/plugin-doi");
@@ -13,7 +14,7 @@ let copyToClipboard = {
   bibliography: ""
 }
 
-const CitationModal = ({setCopiedToClipboard, ...props}) => {
+const CitationModal = ({setCopiedToClipboard, templateFormat, settemplateFormat, ...props}) => {
 
   const renderPopover = (props) => (
     <Tooltip id="button-tooltip" {...props}>
@@ -48,7 +49,7 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
     setcitationResult(citation);
   }
 
-  const [templateFormat, settemplateFormat] = useState("apa");
+  //const [templateFormat, settemplateFormat] = useState("apa");
   const [checkedState, setCheckedState] = useState(
     new Array(props.pdflists.length).fill(false)
   );
@@ -57,36 +58,17 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
 
   const generateCitation = () => {
     const citationList = [];
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
     checkedState.forEach((isChecked, idx) => {
       if (isChecked) {
         citationList.push(
-          !props.pdflists[idx].isbn
-            ? {
-                type: null,
-                title: props.pdflists[idx].title,
-                author: JSON.parse(props.pdflists[idx].author_names),
-                publisher: props.pdflists[idx].publisher,
-                issued: {
-                  "date-parts": [[props.pdflists[idx].publication_year]],
-                },
-                accessed: {
-                  "date-parts": [[yyyy, mm, dd]],
-                },
-                "container-title": null, // journal name for article
-                URL: null,
-              }
-            : props.pdflists[idx].isbn
+          generateCiteJSON(props.pdflists, idx)
         );
       }
     });
 
     setcitationResult("");
     setbibliographyResult("");
-    var result = CITATION_TEMPLATE_FORMATS.find(
+    const result = CITATION_TEMPLATE_FORMATS.find(
       (item) => item.value === templateFormat
     );
 
@@ -125,9 +107,9 @@ const CitationModal = ({setCopiedToClipboard, ...props}) => {
   };
 
   const handleClose = () => {
-    settemplateFormat("apa");
-    setcitationResult("");
-    setbibliographyResult("");
+    // settemplateFormat("apa");
+    // setcitationResult("");
+    // setbibliographyResult("");
     setCheckedState(new Array(props.pdflists.length).fill(false));
     props.onHide();
   };

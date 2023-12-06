@@ -1,9 +1,69 @@
-.pdfgator-logo {
-    height: 80px;
+.home-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
-@media (min-width: 991.98px) {
+.pdfgator-logo {
+    height: 80px;
+    margin-right: 1rem;
+}
+
+.pdfgator-details {
+    min-height: 100px;
+    border: 1.5px solid rgba(33, 47, 73, 0.7);
+    border-radius: 5px;
+    opacity: 0.8;
+}
+
+.landing-page-card {
+    max-width: 90%;
+}
+
+.landing-page-button {
+    height: 40px;
+    border: 1.5px solid #212f49;
+    border-radius: 5px;
+    background-color: transparent;
+    color: #212f49;
+    transition: background-color 0.2s linear;
+}
+.landing-page-button:hover {
+    background-color: rgba(33, 47, 73, 0.1);
+}
+
+.landing-page-card-text {
+    font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+    .home-container {
+        padding-left: 4rem;
+        padding-right: 4rem;
+    }
+}
+
+@media (min-width: 992px) {
     .pdfgator-logo {
         height: 100px;
+    }
+    .landing-page-card {
+        max-width: 40%;
+    }
+    .landing-page-button {
+        height: 50px;
+    }
+    .landing-page-card-text {
+        font-size: 1rem;
+    }
+    .home-container {
+        padding-left: 8rem;
+        padding-right: 8rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .home-container {
+        padding-left: 12rem;
+        padding-right: 12rem;
     }
 }

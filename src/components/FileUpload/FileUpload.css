@@ -16,7 +16,7 @@
 }
 
 .file-upload-box {
-    border: 2px dashed rgba(13, 110, 253, 0.5);
+    border: 2px dashed #212f49;
     border-radius: 4px;
     padding: 20px;
     text-align: center;
