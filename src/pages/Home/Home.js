@@ -78,7 +78,7 @@ const Home = (props) => {
             text2="Easily manage your PDFs and chats. Your files are securely stored on our servers."
           />
         </div>
-        <Footer />
+        <Footer {...props}/>
       </div>
     </>
   );
