@@ -264,11 +264,11 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
               <>
                 <Col>
                   <Form.Group controlId="url">
-                    <Form.Label>Url</Form.Label>
+                    <Form.Label>URL</Form.Label>
 
                     <Form.Control
                       type="text"
-                      placeholder="url"
+                      placeholder="URL"
                       onChange={(e) => setDocumentData({...documentData, url: e.target.value})}
                       value={documentData.url ?? ""}
                       name="url"

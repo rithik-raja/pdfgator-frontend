@@ -32,6 +32,7 @@ const Chat = (props) => {
 
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setPricingModalShow] = useState(false);
+  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
@@ -96,6 +97,7 @@ const Chat = (props) => {
           setAreas({});
           document.getElementById("search-bar-text-entry").value = "";
           setpdfLists(newpdflist);
+          setRightSidebarShowEvidence(false);
           setActivepdfList(newurl, newpdflist);
           setIsProcessingDocument(false);
           document.body.style.pointerEvents = "auto";
@@ -127,7 +129,7 @@ const Chat = (props) => {
     const sessionid = getSessionId();
     let error, response;
     if (props.email) {
-      ({ error, response } = await get(GET_FILES));
+      ({ error, response } = await get(GET_FILES, false));
     } else {
       ({ error, response } = await get(GET_FILES + sessionid + "/"));
     }
@@ -202,6 +204,7 @@ const Chat = (props) => {
     // document.getElementById("search-bar-text-entry").value =
     //   searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
+    setRightSidebarShowEvidence(false);
     setuploadedUrl(BASE_URL + pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
@@ -257,32 +260,33 @@ const Chat = (props) => {
                 </Link>
               </li>
             ))}
-            <div style={{ height: props.email ? "0px" : "50px" }}></div>
-            <li className="nav-item footer-nav">
+            <div style={{ height: props.email ? "30px" : "65px" }}></div>
+            <li className="nav-item footer-nav alert alert-light" style={{padding: "10px"}}>
               <>
                 {props.email ? (
                   <></>
                 ) : (
                   <div
-                    className="alert alert-light nav-signin-prompt"
+                    className="nav-signin-prompt"
                     role="alert"
                   >
-                    <span
-                      className="alert-link"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        login();
-                        navigate(MAIN_APP_URL);
-                      }}
-                    >
-                      Sign in
-                    </span>{" "}
-                    to save your files
+                    <b>
+                      <u
+                        className="nav-signin-prompt-link"
+                        onClick={() => {
+                          login();
+                          navigate(MAIN_APP_URL);
+                        }}
+                      >
+                        Sign in
+                      </u>{" "}
+                      to save your files
+                    </b>
                   </div>
                 )}
-                <div className="sidebar-footer">
-                  <Link to="/">Home</Link>
-                  <Link onClick={accountLinkClickFunction}>Account</Link>
+                <div className="sidebar-footer d-flex align-items-center justify-content-center">
+                  <Link className="mx-3" to="/">Home</Link>
+                  <Link className="mx-3" onClick={accountLinkClickFunction}>Account</Link>
                 </div>
               </>
             </li>
@@ -318,7 +322,7 @@ const Chat = (props) => {
         </nav>
       </header>
 
-      <main>
+      <main className="main-pdfview">
         <PdfView
           fileUrl={uploadedUrl}
           areas={areas}
@@ -328,6 +332,8 @@ const Chat = (props) => {
           setAreas={setAreas}
           isProcessingDocument={isProcessingDocument}
           setPricingModalShow={setPricingModalShow}
+          rightSidebarShowEvidence={rightSidebarShowEvidence}
+          setRightSidebarShowEvidence={setRightSidebarShowEvidence}
         />
       </main>
       {accountModalShow && (
