@@ -1,5 +1,6 @@
 .footer {
-    margin: 10px 0px;
+    margin-top: 20px;
+    margin-bottom: 30px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -9,12 +10,12 @@
 .footer-element {
     outline: none;
     border: none;
-    color: #636060;
+    color: rgb(70, 70, 70);
     text-decoration: none;
     background-color: transparent;
     cursor: pointer;
 }
 
 .footer-element:hover {
-    opacity: 0.8;
+    opacity: 0.7;
 }

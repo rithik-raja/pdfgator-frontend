@@ -95,7 +95,7 @@ const FileUpload = (props) => {
               ) : (
                 <>
                   <input {...getInputProps()} />
-                  <Icon.Upload color="rgb(85, 85, 85)" />
+                  <Icon.Upload color="rgb(70, 70, 70)" />
                   <p className="d-none d-sm-block small pt-2">
                     Drag and drop PDF here, or click to select
                   </p>

@@ -1,18 +1,16 @@
 import React from "react";
 
-import "bootstrap/dist/css/bootstrap.min.css";
 import "./LandingPageCard.css";
 
-import * as Icon from "react-feather";
+import { Image } from "react-bootstrap";
 
-const LandingPageCard = ({ heading, text, icon }) => {
-  const CustomIcon = Icon[icon];
+const LandingPageCard = ({ imgSrc, text1, text2 }) => {
   return (
-    <div className="card">
-      <CustomIcon className="card-img-top" color="rgb(1, 103, 255)" />
-      <div className="card-body">
-        <h4 className="card-title">{heading}</h4>
-        <p className="card-text">{text}</p>
+    <div className="landing-page-card d-flex flex-column align-items-start" style={{borderRadius: "20px"}}>
+      <Image src={`/images/${imgSrc}.png`} fluid style={{borderRadius: "20px", objectFit: "cover"}}/>
+      <div className="py-1 px-2 mb-4 d-flex flex-column align-items-start">
+        <h5 className="mt-2" style={{color: "#212f49", marginBottom: 0}}>{text1}</h5>
+        <span className="landing-page-card-text" style={{color: "rgb(70, 70, 70)", textAlign: "left"}}><i>{text2}</i></span>
       </div>
     </div>
   );

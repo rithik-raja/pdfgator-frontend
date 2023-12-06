@@ -26,18 +26,21 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 import {
   BASE_URL,
   DELETE_FILES,
-  DELETE_SEARCH,
   MAIN_APP_URL,
   SEARCH_QUERY,
-  SEARCH_QUERY_FROM_HISTORY
 } from "../../constants/apiConstants";
-import { get, post } from "../Api/api";
+import { post } from "../Api/api";
 import CustomSpinner from "../Spinner/spinner";
 import { getSessionId } from "../../services/sessionService";
 import DocumentInfoModal from "../DocumentInfoModal/DocumentInfoModal";
-import { SEARCH_MEMORY_PER_FILE } from "../../constants/storageConstants";
 import { displayToast } from "../CustomToast/CustomToast";
 import { getAuthToken } from "../../services/userServices";
+
+// import axios from "axios";
+// import Cite from "citation-js";
+// import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
+// import { generateCiteJSON } from "../../services/citationService";
+
 
 const PdfView = ({
   areas,
@@ -47,22 +50,27 @@ const PdfView = ({
   setAreas,
   isProcessingDocument,
   setpdfLists,
-  setPricingModalShow
+  setPricingModalShow,
+  rightSidebarShowEvidence,
+  setRightSidebarShowEvidence
 }) => {
   const navigate = useNavigate();
   let totalPages;
   const [currentIndex, setcurrentIndex] = useState(-1);
   const [citationModalShow, setCitationModalShow] = useState(false);
+  const [templateFormat, settemplateFormat] = useState("apa");
   const [infoModalShow, setInfoModalShow] = useState(false);
   const [isQueryLoading, setIsQueryLoading] = useState(false);
-  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
+  // const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
   const [llmTempContent, setLlmTempContent] = useState(null);
   const jumpIndex = useRef([-1, -1]); // jump after new areas are set from history
+  const tokCount = useRef(0);
+  const lastSearch = useRef("");
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
     document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-  }, [areas])
+  }, [areas]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const sidebarEle = document.getElementById("right-sidebar");
@@ -130,8 +138,6 @@ const PdfView = ({
   // };
 
   const jumpResult = (ind) => {
-    console.log("jump")
-    console.log(areas)
     if (!areas.indices?.length) return;
     if (ind >= 0 && ind < areas.indices.length) {
       jumpToHighlightArea(areas.bboxes[areas.indices[ind]]);
@@ -149,29 +155,15 @@ const PdfView = ({
     }
   };
 
-  // const llmNewToken = (tok, pdfIdx) => {
-  //   setpdfLists((current) => {
-  //     current[pdfIdx] = {
-  //       ...current[pdfIdx],
-  //       searchHistory: [
-  //         ...current[pdfIdx].searchHistory.slice(0, -1),
-  //         {
-  //           llm_response: ["current[pdfIdx].searchHistory[current[pdfIdx].searchHistory.length - 1] + tok"]
-  //         }
-  //       ],
-  //     };
-  //     console.log(current)
-  //     return current;
-  //   });
-  // }
-
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
     if (currentActiveURL === undefined) return
+    const searchBarEle = document.getElementById("search-bar-text-entry");
     const query = overrideQuery
       ? overrideQuery
-      : document.getElementById("search-bar-text-entry").value;
-    let error, response;
+      : searchBarEle.value;
+    searchBarEle.value = "";
+    lastSearch.current = query;
     document.body.style.pointerEvents = "none";
     try {
       const searchInputElement = document.getElementById(
@@ -188,38 +180,48 @@ const PdfView = ({
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
         const eventSource =  new EventSource(
-          BASE_URL +
-          "/" +
+          BASE_URL + "/" +
           SEARCH_QUERY +
-          currentActiveURL +
-          "/" +
-          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
-          "/" +
-          getSessionId() +
-          "/" +
+          currentActiveURL + "/" +
+          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") + "/" +
+          getSessionId() + "/" +
           getAuthToken()
         );
-        console.log("A")
         setpdfLists((current) => {
-          console.log(current)
-          current[pdfIdx] = {
-            ...current[pdfIdx],
-            searchHistory: [
-              ...current[pdfIdx].searchHistory,
+          const current_ = [...current];
+          current_[pdfIdx] = {
+            ...current_[pdfIdx],
+            searchHistory:
+            (current_[pdfIdx].searchHistory[current_[pdfIdx].searchHistory.length - 1]?.llm_response[0] === "An error occured. ") ?
+            [
+              ...current_[pdfIdx].searchHistory.slice(0, -2),
               query,
               {
                 llm_response: ["Loading..."]
               }
-            ],
+            ] :
+            [
+              ...current_[pdfIdx].searchHistory,
+              query,
+              {
+                llm_response: ["Loading..."]
+              }
+            ]
           };
-          return current;
+          return current_;
         });
         const sidebarEle = document.getElementById("right-sidebar");
+        tokCount.current = 0;
+        let isThrottled = false;
         eventSource.onmessage = (event) => {
           const data = event.data;
-          console.log(data);
-          if (data.slice(0, 20) !== "<|endofllmresponse|>") {
+          if (data === "<|responsethrottled|>") {
+            isThrottled = true;
+          } else if (data === "<|clearllmresponse|>") {
+            setLlmTempContent(null);
+          } else if (data.slice(0, 20) !== "<|endofllmresponse|>") {
             setLlmTempContent((current) => current === null ? data : current + data);
+            tokCount.current += 1;
             sidebarEle.scrollTop = sidebarEle.scrollHeight;
           } else {
             final_data = JSON.parse(data.slice(20));
@@ -227,13 +229,20 @@ const PdfView = ({
           }
         }
         eventSource.onerror = (error) => {
-          if (error.status === 429) {
+          if (isThrottled) {
             setPricingModalShow(true);
             displayToast("Search query limit exceeded", "danger");
           } else {
-            displayToast("Failed to perform search", "danger");
+            displayToast("Failed to generate response", "danger");
             console.error(error);
           }
+          final_data = {
+            bboxes: [],
+            indices: null,
+            previews: null,
+            idx_to_page: null,
+            llm_response: ["An error occured. ", "Click to try again."]
+          };
           eventSource.close();
         }
         setLlmTempContent(null);
@@ -241,8 +250,8 @@ const PdfView = ({
           await new Promise((res) => setTimeout(res, 500));
         }
       }
-      console.log(final_data);
       if (final_data) {
+        console.log(final_data)
         setAreas(final_data);
         setpdfLists((current) => {
           current[pdfIdx] = {
@@ -321,6 +330,10 @@ const PdfView = ({
     }
   };
 
+  const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+  const currentPdfData = pdfLists[pdfIdx];
+  console.log(currentPdfData)
+
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
@@ -347,26 +360,74 @@ const PdfView = ({
                   // }}
                 />
               ) : (
-                <div style={{ paddingTop: "30px" }}>
-                  Select or Upload a File
+                <div className="d-flex flex-column align-items-center" style={{ height: "100%", paddingTop: "20px", color: "rgb(108,117,124)" }}>
+                  <Icon.File size={"40px"} />
+                  <span>Select or Upload a File</span>
                 </div>
               )}
             </Col>
+            {
+              rightSidebarShowEvidence &&
+              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
+                {
+                  areas?.bboxes?.length ? (
+                    <ListGroup as="ol" numbered>
+                      {areas?.previews?.map((preview, ind) => (
+                        <OverlayTrigger key={ind} trigger={["hover", "click"]} show={ind === currentIndex ? undefined : false} placement="left" overlay={
+                          (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Copy</Tooltip>
+                        }>
+                          <ListGroup.Item
+                            onClick={() => {
+                              if (ind === currentIndex) {
+                                displayToast("Copied to Clipboard", "success");
+                                navigator.clipboard.writeText(preview)
+                              }
+                              jumpResult(ind);
+                            }}
+                            id={`evidence-sidebar-button-${ind}`}
+                            style={{
+                              boxShadow:
+                                ind === currentIndex
+                                  ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                  : "none",
+                              backgroundColor:
+                                ind === currentIndex
+                                  ? "rgba(230, 230, 230, 0.9)"
+                                  : "white",
+                            }}
+                            as="li"
+                            className="evidence-sidebar-button mx-2 my-1"
+                          >
+                            {preview?.length > 200 ? preview.slice(0, 200) + "..." : preview}
+                          </ListGroup.Item>
+                        </OverlayTrigger>
+                      ))}
+                    </ListGroup>
+                  ) : (
+                    <div
+                      className="d-flex flex-column align-items-center justify-content-center mt-2"
+                      style={{ color: "rgb(108,117,124)" }}
+                    >
+                      <Icon.Inbox size={"40px"} />
+                      <span>No Evidence</span>
+                    </div>
+                  )
+                }
+              </Col>
+            }
             <Col
               className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
               id="right-sidebar"
               style={{
                 boxShadow: !fileUrl || isProcessingDocument
                   ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
-                  : "none"
+                  : "none",
+                  paddingLeft: rightSidebarShowEvidence ? undefined : 0
               }}
             >
               <ListGroup as="ul" style={{display: "flex"}}>
-                {pdfLists?.find((obj) => obj.id == currentActiveURL)
-                  ?.searchHistory?.length ? (
-                  pdfLists
-                    ?.find((obj) => obj.id == currentActiveURL)
-                    ?.searchHistory?.map((query, ind) => (
+                {currentPdfData?.searchHistory?.length ? (
+                  currentPdfData?.searchHistory?.map((query, ind) => (
                       <ListGroup.Item
                         style={{
                           borderRadius: "10px",
@@ -383,9 +444,12 @@ const PdfView = ({
                           style={{ width: "85%", marginLeft: "3px" }}
                         >
                           {
-                            llmTempContent !== null && pdfLists?.find((obj) => obj.id == currentActiveURL)?.searchHistory.length -1 === ind ?
+                            llmTempContent !== null && currentPdfData.searchHistory.length -1 === ind ?
                             <span
-                              className="me-auto"
+                              style={{
+                                whiteSpace: "pre-wrap",
+                                color: llmTempContent?.slice(0, 25) === "Generating response for: " ? "rgb(115, 115, 115)" : "black"
+                              }}
                             >
                               {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
                             </span> :
@@ -396,30 +460,87 @@ const PdfView = ({
                             >
                               {query}
                             </span> :
-                            query.llm_response.map((ele, idx) => idx % 2 === 0 ?
+                            query.llm_response.map((ele, idx) => 
+                            ele === "Click to try again." ?
+                              <u
+                                key={idx}
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  color: "rgb(115, 115, 115)",
+                                  cursor: "pointer"
+                                }}
+                                onClick={(event) => handleSearchQuery(event, lastSearch.current)}
+                              >
+                                  {ele}
+                              </u> :
+                            typeof ele === "string" ?
                               <span
                                 key={idx}
-                                style={{whiteSpace: "pre-wrap"}}>
+                                style={{
+                                  whiteSpace: "pre-wrap",
+                                  color: ele === "An error occured. " ? "rgb(220, 53, 69)" : "black"
+                                }}>
                                   {ele}
                               </span> :
-                              <strong
-                                className="jump-page-link"
-                                key={idx}
-                                onClick={() => {
-                                  if (ind === jumpIndex.current[0]) {
-                                    jumpResult(ele[1]);
-                                  }
-                                  jumpIndex.current = [ind, ele[1]];
-                                  setAreas(query);
-                                  document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-                                }}
-                                style={{
-                                  cursor: "pointer",
-                                  whiteSpace: "nowrap"
-                                }}
-                              >
-                                  {`[page ${ele[0] + 1}]`}
-                              </strong>
+                              // <OverlayTrigger key={idx} trigger={["hover", "click"]} show={jumpIndex.current[1] === ele[1] ? undefined : false} overlay={
+                              //   (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Cite</Tooltip>
+                              // }>
+                                <strong
+                                  key={idx}
+                                  className="jump-page-link"
+                                  onClick={() => {
+                                    // removed intext citation code since page numbers don't work
+                                    // if (jumpIndex.current[1] === ele[1]) {
+                                    //   const setCite = () => {
+                                    //     const cite = new Cite(generateCiteJSON(pdfLists, pdfIdx, ele[0] + 1));
+                                    //     const citeText = cite.format("citation", {
+                                    //       template: templateFormat,
+                                    //       format: "text",
+                                    //       lang: "en-US",
+                                    //     });
+                                    //     setpdfLists((current) => {
+                                    //       const current_ = [...current];
+                                    //       current_[pdfIdx].searchHistory[ind].llm_response.splice(idx, 0, citeText);
+                                    //       return current_;
+                                    //     });
+                                    //   }
+                                    //   const result = CITATION_TEMPLATE_FORMATS.find(
+                                    //     (item) => item.value === templateFormat
+                                    //   );
+                                    //   if (result.is_default === "true") {
+                                    //     setCite();
+                                    //   } else {
+                                    //     let data;
+                                    //     let cslPath = result?.file_path
+                                    //       ? result.file_path
+                                    //       : "american-anthropological-association";
+                                    //     axios
+                                    //       .get("/csl-files/" + cslPath + ".csl")
+                                    //       .then((res) => {
+                                    //         data = res.data;
+                                    //         let templateName = result.value;
+                                    //         let config = Cite.plugins.config.get("@csl");
+                                    //         config.templates.add(templateName, data);
+                                    //         setCite();
+                                    //       })
+                                    //       .catch((err) => console.log(err));
+                                    //   }
+                                    // }
+                                    if (ind === jumpIndex.current[0]) {
+                                      jumpResult(ele[1]);
+                                    }
+                                    jumpIndex.current = [ind, ele[1]];
+                                    setAreas(query);
+                                    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
+                                  }}
+                                  style={{
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                >
+                                    {ele !== null && `[page ${ele[0] + 1}]`}
+                                </strong>
+                              // </OverlayTrigger>
                             )
                           }
                         </div>
@@ -437,52 +558,12 @@ const PdfView = ({
                 )}
               </ListGroup>
               {
-                isQueryLoading && llmTempContent === null &&
-                <div className="d-flex flex-column align-items-center justify-content-center mt-2">
+                isQueryLoading && tokCount.current <= 1 &&
+                <div className="d-flex flex-column align-items-center justify-content-center my-2">
                   <CustomSpinner />
                 </div>
               }
             </Col>
-            {
-              rightSidebarShowEvidence &&
-              <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
-                {
-                  areas?.bboxes?.length ? (
-                    <ListGroup as="ol" numbered>
-                      {areas?.previews?.map((preview, ind) => (
-                        <ListGroup.Item
-                          onClick={() => jumpResult(ind)}
-                          id={`evidence-sidebar-button-${ind}`}
-                          style={{
-                            boxShadow:
-                              ind === currentIndex
-                                ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                                : "none",
-                            backgroundColor:
-                              ind === currentIndex
-                                ? "rgba(230, 230, 230, 0.9)"
-                                : "white"
-                          }}
-                          as="li"
-                          key={ind}
-                          className="evidence-sidebar-button mx-2 my-1"
-                        >
-                          {preview}
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  ) : (
-                    <div
-                      className="d-flex flex-column align-items-center justify-content-center mt-2"
-                      style={{ color: "rgb(108,117,124)" }}
-                    >
-                      <Icon.Inbox size={"40px"} />
-                      <span>No Evidence</span>
-                    </div>
-                  )
-                }
-              </Col>
-            }
           </Row>
         </Container>
 
@@ -518,8 +599,7 @@ const PdfView = ({
                     <span id="total-pages-span">of</span>
                   </div>
                   <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
-                    {!pdfLists.find((obj) => obj.id == currentActiveURL)
-                      ?.isbn && (
+                    {!currentPdfData?.isbn && (
                       <SearchBarButton
                         text="Document Info"
                         IconComponent={Icon.Info}
@@ -604,6 +684,8 @@ const PdfView = ({
         </CurrentPageLabel>
 
         <CitationModal
+          templateFormat={templateFormat}
+          settemplateFormat={settemplateFormat}
           pdflists={pdfLists}
           show={citationModalShow}
           onHide={() => setCitationModalShow(false)}
