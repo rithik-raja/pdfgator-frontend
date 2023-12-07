@@ -1,5 +1,5 @@
 body {
-  background-color: #cdcdcd;
+  background-color: rgb(53,58,64);
 }
 
 .main-pdfview {
@@ -97,7 +97,7 @@ body {
 .evidence-sidebar {
   height: calc(100vh - 55px);
   overflow: auto;
-  background-color: rgba(175, 175, 175, 0.8);
+  background-color: rgb(65, 70, 75);
 }
 
 .right-sidebar-button {
@@ -142,7 +142,7 @@ body {
 
 .searchbar-pdftools-container {
   //bottom: 55px;
-  background-color: rgba(195, 195, 195, 0.8);
+  background-color: rgb(65, 70, 75);
   box-shadow: 0px -5px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -174,7 +174,8 @@ body {
 
 .plain-input {
   all: unset;
-  border: 1px solid black;
+  border: 1px solid rgb(252, 253, 252);
+  color: rgb(252, 253, 252);
   border-radius: 5px;
   width: 50px;
 }

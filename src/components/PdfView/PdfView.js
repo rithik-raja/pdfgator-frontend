@@ -342,8 +342,8 @@ const PdfView = ({
             <Col className="d-none d-lg-block col-lg-6 pdf-viewer-container">
               {isProcessingDocument ? (
                 <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
-                  <CustomSpinner />
-                  <span className="mt-2">Processing Document...</span>
+                  <CustomSpinner color="rgb(180,180,180)"/>
+                  <span className="mt-2" style={{color: "rgb(180,180,180)"}}>Processing Document...</span>
                 </div>
               ) : fileUrl ? (
                 <Viewer
@@ -360,7 +360,7 @@ const PdfView = ({
                   // }}
                 />
               ) : (
-                <div className="d-flex flex-column align-items-center" style={{ height: "100%", paddingTop: "20px", color: "rgb(108,117,124)" }}>
+                <div className="d-flex flex-column align-items-center" style={{ height: "100%", paddingTop: "20px", color: "rgb(180,180,180)" }}>
                   <Icon.File size={"40px"} />
                   <span>Select or Upload a File</span>
                 </div>
@@ -550,7 +550,7 @@ const PdfView = ({
                   !isQueryLoading &&
                   <div
                     className="d-flex flex-column align-items-center justify-content-center mt-2"
-                    style={{ color: "rgb(108,117,124)" }}
+                    style={{ color: "rgb(180,180,180)" }}
                   >
                     <Icon.Inbox size={"40px"} />
                     <span>No Searches Yet</span>
@@ -560,7 +560,7 @@ const PdfView = ({
               {
                 isQueryLoading && tokCount.current <= 1 &&
                 <div className="d-flex flex-column align-items-center justify-content-center my-2">
-                  <CustomSpinner />
+                  <CustomSpinner color="rgb(180,180,180)"/>
                 </div>
               }
             </Col>
@@ -596,7 +596,7 @@ const PdfView = ({
                       id="page-number-input"
                       className="plain-input"
                     />
-                    <span id="total-pages-span">of</span>
+                    <span id="total-pages-span" style={{color: "rgb(252, 253, 252)"}}>of</span>
                   </div>
                   <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
                     {!currentPdfData?.isbn && (
