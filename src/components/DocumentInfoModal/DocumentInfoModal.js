@@ -66,7 +66,15 @@ const DocumentInfoModal = ({ currentActiveURL, pdflists, show, onHide }) => {
   // const [url, seturl] = useState("");
 
   const ondocumentTypeSelectChange = (e) => {
-    setDocumentData({...documentData, doc_type: e.target.value});
+    const newDocType = e.target.value;
+    const newDocData = {...documentData, doc_type: newDocType};
+    if (newDocType === "book") {
+      newDocData.container_title = null;
+      newDocData.url = null;
+    } else if (newDocType === "webpage") {
+      newDocData.container_title = null;
+    }
+    setDocumentData(newDocData);
   };
 
   const saveDocumentInfo = async (event) => {
