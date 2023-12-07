@@ -1,8 +1,8 @@
 import { Spinner } from "react-bootstrap";
 
-const CustomSpinner = () => (
-  <Spinner animation="border" role="status">
-    <span className="visually-hidden">Loading...</span>
+const CustomSpinner = ({ color }) => (
+  <Spinner style={{color: color}} animation="border" role="status">
+    <span style={{color: color}} className="visually-hidden">Loading...</span>
   </Spinner>
 );
 
