@@ -71,7 +71,7 @@ const Chat = (props) => {
         return;
       }
       const newuploadedFile = acceptedFiles[0];
-      setuploadedUrl(URL.createObjectURL(newuploadedFile));
+      // setuploadedUrl(URL.createObjectURL(newuploadedFile)); // TODO
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
@@ -154,7 +154,7 @@ const Chat = (props) => {
       });
       if (index > -1) {
         newlist[index].isActive = "true";
-        setuploadedUrl(BASE_URL + newlist[index].file_path);
+        setuploadedUrl(newlist[index].file_path);
       }
       setpdfLists(newlist);
     } else {
@@ -205,7 +205,7 @@ const Chat = (props) => {
     //   searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
     setRightSidebarShowEvidence(false);
-    setuploadedUrl(BASE_URL + pdflists[index].file_path);
+    setuploadedUrl(pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
     if (props.email) {

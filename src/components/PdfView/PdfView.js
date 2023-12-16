@@ -334,6 +334,7 @@ const PdfView = ({
   const currentPdfData = pdfLists[pdfIdx];
   console.log(currentPdfData)
 
+  console.log(fileUrl)
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">
