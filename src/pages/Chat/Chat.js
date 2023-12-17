@@ -7,7 +7,6 @@ import PdfView from "../../components/PdfView/PdfView";
 import { displayToast } from "../../components/CustomToast/CustomToast";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  BASE_URL,
   GET_FILES,
   MAIN_APP_URL,
 } from "../../constants/apiConstants";

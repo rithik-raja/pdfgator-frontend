@@ -251,7 +251,6 @@ const PdfView = ({
         }
       }
       if (final_data) {
-        console.log(final_data)
         setAreas(final_data);
         setpdfLists((current) => {
           current[pdfIdx] = {
@@ -332,9 +331,7 @@ const PdfView = ({
 
   const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
   const currentPdfData = pdfLists[pdfIdx];
-  console.log(currentPdfData)
 
-  console.log(fileUrl)
   return (
     <>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/legacy/build/pdf.worker.js">

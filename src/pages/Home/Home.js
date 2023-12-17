@@ -70,7 +70,7 @@ const Home = (props) => {
           <LandingPageCard
             imgSrc="landing_page_3"
             text1="Zero-Input Citations and References"
-            text2="Pdfgator automatically detects cites in the format of your choice."
+            text2="Pdfgator automatically cites in the format of your choice."
           />
           <LandingPageCard
             imgSrc="landing_page_4"
