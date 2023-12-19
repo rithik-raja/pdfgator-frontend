@@ -104,8 +104,8 @@ const Chat = (props) => {
         } else {
           document.body.style.pointerEvents = "auto";
           setIsProcessingDocument(false);
-          if (response.status === 429) {
-            displayToast("Usage limit exceeded", "danger");
+          if (response.status === 429 || response.status === 413) {
+            displayToast(response.status === 429 ? "Usage limit exceeded" : response.data.detail, "danger");
             setPricingModalShow(true);
           } else {
             displayToast("Failed to upload file", "danger");

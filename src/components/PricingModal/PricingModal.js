@@ -243,7 +243,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
           )}
           {pricingDetails.map((pricingDetail, index) => (
             <Col key={index}>
-              <Card className="pricing">
+              <Card className="pricing" style={{height: "100%"}}>
                 <Card.Header>
                   <span className="fw-bold">
                     {pricingDetail.metadata?.product_name}
