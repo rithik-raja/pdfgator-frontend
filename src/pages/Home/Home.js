@@ -60,7 +60,7 @@ const Home = (props) => {
           <LandingPageCard
             imgSrc="landing_page_1"
             text1="Ask Questions, Get Answers"
-            text2="Ask Pdfgator to explain, describe, or list anything in your document."
+            text2="Ask PdfGator to explain, describe, or list anything in your document."
           />
           <LandingPageCard
             imgSrc="landing_page_2"
@@ -70,7 +70,7 @@ const Home = (props) => {
           <LandingPageCard
             imgSrc="landing_page_3"
             text1="Zero-Input Citations and References"
-            text2="Pdfgator automatically cites in the format of your choice."
+            text2="PdfGator automatically cites in the format of your choice."
           />
           <LandingPageCard
             imgSrc="landing_page_4"
