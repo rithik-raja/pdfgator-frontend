@@ -34,6 +34,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
 
   const login = useLogin(loginCallBack);
   let product_id = useRef(null);
+  let product_default_price_id = useRef(null);
   function FooterButton({ details }) {
     let buttonVarient = "primary";
     let buttonText = "Get Plus";
@@ -52,6 +53,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
 
     function pricingButtonFunction() {
       product_id.current = details?.id;
+      product_default_price_id.current = details?.default_price;
       if (props.email) {
         if (
           userPlan === CURRENT_PLAN_FREE ||
@@ -114,7 +116,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
     formData.append("product_id", product_id.current);
     formData.append(
       "stripe_price_id",
-      process.env.REACT_APP_PUBLIC_STRIPE_PRICE_ID
+      product_default_price_id.current
     );
     const { error, response } = await post(CREATE_CHECKOUT, formData, config);
     if (!error && response.data?.checkout_url) {
@@ -124,6 +126,7 @@ const PricingModal = ({ stripeDetails, ...props }) => {
       displayToast("Something went wrong while creating the Stripe session.", "danger");
     }
     product_id.current = null;
+    product_default_price_id.current = null;
   }, []);
   async function handleCheckout() {
     if (!product_id.current) return 0;
