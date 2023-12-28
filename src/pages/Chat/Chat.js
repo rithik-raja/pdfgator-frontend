@@ -7,7 +7,6 @@ import PdfView from "../../components/PdfView/PdfView";
 import { displayToast } from "../../components/CustomToast/CustomToast";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  BASE_URL,
   GET_FILES,
   MAIN_APP_URL,
 } from "../../constants/apiConstants";
@@ -71,7 +70,7 @@ const Chat = (props) => {
         return;
       }
       const newuploadedFile = acceptedFiles[0];
-      setuploadedUrl(URL.createObjectURL(newuploadedFile));
+      // setuploadedUrl(URL.createObjectURL(newuploadedFile)); // TODO
       document.body.style.pointerEvents = "none";
       try {
         setIsProcessingDocument(true);
@@ -105,8 +104,8 @@ const Chat = (props) => {
         } else {
           document.body.style.pointerEvents = "auto";
           setIsProcessingDocument(false);
-          if (response.status === 429) {
-            displayToast("Usage limit exceeded", "danger");
+          if (response.status === 429 || response.status === 413) {
+            displayToast(response.status === 429 ? "Usage limit exceeded" : response.data.detail, "danger");
             setPricingModalShow(true);
           } else {
             displayToast("Failed to upload file", "danger");
@@ -154,7 +153,7 @@ const Chat = (props) => {
       });
       if (index > -1) {
         newlist[index].isActive = "true";
-        setuploadedUrl(BASE_URL + newlist[index].file_path);
+        setuploadedUrl(newlist[index].file_path);
       }
       setpdfLists(newlist);
     } else {
@@ -205,7 +204,7 @@ const Chat = (props) => {
     //   searchMemory[currentActiveURL]?.query ?? "";
     setpdfLists(pdflists);
     setRightSidebarShowEvidence(false);
-    setuploadedUrl(BASE_URL + pdflists[index].file_path);
+    setuploadedUrl(pdflists[index].file_path);
   };
   const accountLinkClickFunction = () => {
     if (props.email) {

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const Cancelled = () => {
   const navigate = useNavigate();
-  const [seconds, setseconds] = useState(10);
+  const [seconds, setseconds] = useState(5);
 
   useEffect(() => {
     if (seconds === 0) {
@@ -37,7 +37,7 @@ const Cancelled = () => {
                 plan
               </h3>
               <div className="mt-4 " style={{ paddingTop: "30px" }}>
-                <p style={{ color: "#3f51b5" }}>
+                <p style={{ color: "whitesmoke" }}>
                   Redirects to home page in {seconds} seconds
                 </p>
                 {/* <Button

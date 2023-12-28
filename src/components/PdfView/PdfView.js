@@ -251,7 +251,6 @@ const PdfView = ({
         }
       }
       if (final_data) {
-        console.log(final_data)
         setAreas(final_data);
         setpdfLists((current) => {
           current[pdfIdx] = {
@@ -332,7 +331,6 @@ const PdfView = ({
 
   const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
   const currentPdfData = pdfLists[pdfIdx];
-  console.log(currentPdfData)
 
   return (
     <>
