@@ -34,7 +34,7 @@ const Success = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId]);
 
-  const [seconds, setseconds] = useState(10);
+  const [seconds, setseconds] = useState(5);
 
   useEffect(() => {
     if (seconds === 0) {
@@ -113,7 +113,7 @@ const Success = () => {
             <TopContainer paymentStatus={paymentStatus} />
 
             <div className="mt-5 bottom-container">
-              <p style={{ color: "#3f51b5" }}>
+              <p style={{ color: "whitesmoke" }}>
                 You will be redirected to the home page in {seconds} seconds
               </p>
               <Button

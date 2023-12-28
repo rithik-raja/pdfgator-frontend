@@ -7,7 +7,6 @@ import { MAIN_APP_URL } from "../../constants/apiConstants";
 
 import AccountModal from "../../components/AccountModal/AccountModal";
 import PricingModal from "../PricingModal/PricingModal";
-import { displayToast } from "../CustomToast/CustomToast";
 
 const Footer = (props) => {
   const [accountModalShow, setaccountModalShow] = useState(false);
