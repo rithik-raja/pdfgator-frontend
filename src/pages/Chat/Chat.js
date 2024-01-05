@@ -6,10 +6,7 @@ import * as Icon from "react-feather";
 import PdfView from "../../components/PdfView/PdfView";
 import { displayToast } from "../../components/CustomToast/CustomToast";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  GET_FILES,
-  MAIN_APP_URL,
-} from "../../constants/apiConstants";
+import { GET_FILES, MAIN_APP_URL } from "../../constants/apiConstants";
 import { get } from "../../components/Api/api";
 import { uploadFileToApi } from "../../services/fileUploadService";
 import { Container } from "react-bootstrap";
@@ -31,7 +28,8 @@ const Chat = (props) => {
 
   const [accountModalShow, setaccountModalShow] = useState(false);
   const [pricingModalShow, setPricingModalShow] = useState(false);
-  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] = useState(false);
+  const [rightSidebarShowEvidence, setRightSidebarShowEvidence] =
+    useState(false);
   const [uploadedUrl, setuploadedUrl] = useState("");
   const [pdfLists, setpdfLists] = useState([]);
   const [isProcessingDocument, setIsProcessingDocument] = useState(false);
@@ -65,7 +63,10 @@ const Chat = (props) => {
             ? PAID_PLAN_MAX_FILE_SIZE
             : FREE_PLAN_MAX_FILE_SIZE)
       ) {
-        displayToast("The selected file is either too large or in an invalid format.", "danger");
+        displayToast(
+          "The selected file is either too large or in an invalid format.",
+          "danger"
+        );
         setPricingModalShow(true);
         return;
       }
@@ -105,14 +106,23 @@ const Chat = (props) => {
           document.body.style.pointerEvents = "auto";
           setIsProcessingDocument(false);
           if (response.status === 429 || response.status === 413) {
-            displayToast(response.status === 429 ? "Usage limit exceeded" : response.data.detail, "danger");
+            displayToast(
+              response.status === 429
+                ? "Usage limit exceeded"
+                : response.data.detail,
+              "danger"
+            );
             setPricingModalShow(true);
+            // setuploadedUrl("");
+            // setTimeout(() => {
+            //   navigate(MAIN_APP_URL);
+            // }, 1000);
           } else {
             displayToast("Failed to upload file", "danger");
             console.error(response.data.detail);
           }
-          setuploadedUrl("");
-          navigate(MAIN_APP_URL);
+          // setuploadedUrl("");
+          // navigate(MAIN_APP_URL);
         }
       } catch (e) {
         console.error(e);
@@ -260,15 +270,15 @@ const Chat = (props) => {
               </li>
             ))}
             <div style={{ height: props.email ? "30px" : "65px" }}></div>
-            <li className="nav-item footer-nav alert alert-light" style={{padding: "10px"}}>
+            <li
+              className="nav-item footer-nav alert alert-light"
+              style={{ padding: "10px" }}
+            >
               <>
                 {props.email ? (
                   <></>
                 ) : (
-                  <div
-                    className="nav-signin-prompt"
-                    role="alert"
-                  >
+                  <div className="nav-signin-prompt" role="alert">
                     <b>
                       <u
                         className="nav-signin-prompt-link"
@@ -284,8 +294,12 @@ const Chat = (props) => {
                   </div>
                 )}
                 <div className="sidebar-footer d-flex align-items-center justify-content-center">
-                  <Link className="mx-3" to="/">Home</Link>
-                  <Link className="mx-3" onClick={accountLinkClickFunction}>Account</Link>
+                  <Link className="mx-3" to="/">
+                    Home
+                  </Link>
+                  <Link className="mx-3" onClick={accountLinkClickFunction}>
+                    Account
+                  </Link>
                 </div>
               </>
             </li>
