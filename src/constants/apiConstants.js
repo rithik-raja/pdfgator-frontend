@@ -17,6 +17,6 @@ export const VERIFY_CHECKOUT = "payments/verify-checkout-session/";
 export const CUSTOMER_PORTAL = "payments/customer-portal/";
 export const UPDATECITATIONDATA = "api/data/updatecitationdata/";
 export const DELETE_SEARCH = "api/data/deletesearch/";
-export const CLEAR_CHAT = "api/data/clearchat";
+export const CLEAR_CHAT = "api/data/clearchat/";
 export const GET_USAGE = "api/getusage/";
 export const MAIN_APP_URL = "/app";

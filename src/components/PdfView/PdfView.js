@@ -345,13 +345,23 @@ const PdfView = ({
   };
 
   const clearChat = async () => {
-    if (currentPdfData && currentPdfData?.id) {
-      if (currentPdfData?.searchHistory?.length) {
+    const pdfIdx_ = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+    const currentPdfData_ = pdfLists[pdfIdx_];
+    if (currentPdfData_ && currentPdfData_?.id) {
+      if (currentPdfData_?.searchHistory?.length) {
         const { error, response } = await post(CLEAR_CHAT, {
-          fileId: currentPdfData?.id,
+          fileId: currentPdfData_?.id,
+          sessionId: getSessionId()
         });
         if (!error) {
-          // TODO 'Clear chat' api integration logics need to implement
+          setpdfLists((current) => {
+            const current_ = [...current];
+            current_[pdfIdx_] = {
+              ...current_[pdfIdx_],
+              searchHistory: []
+            };
+            return current_;
+          });
           displayToast("Chat cleared", "success");
         } else {
           displayToast("Failed to clear chat", "danger");
