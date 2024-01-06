@@ -1,4 +1,7 @@
-export const BASE_URL = process.env.NODE_ENV === "production" ? "https://api.pdfgator.ai" : "http://127.0.0.1:8000";
+export const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.pdfgator.ai"
+    : "http://127.0.0.1:8000";
 export const GET_FILES = "api/data/filelist/";
 export const SET_FILES = "api/data/files/";
 export const GOOGLE_OAUTH =
@@ -14,5 +17,6 @@ export const VERIFY_CHECKOUT = "payments/verify-checkout-session/";
 export const CUSTOMER_PORTAL = "payments/customer-portal/";
 export const UPDATECITATIONDATA = "api/data/updatecitationdata/";
 export const DELETE_SEARCH = "api/data/deletesearch/";
+export const CLEAR_CHAT = "api/data/clearchat/";
 export const GET_USAGE = "api/getusage/";
 export const MAIN_APP_URL = "/app";

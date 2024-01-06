@@ -25,6 +25,7 @@ import "@react-pdf-viewer/highlight/lib/styles/index.css";
 
 import {
   BASE_URL,
+  CLEAR_CHAT,
   DELETE_FILES,
   MAIN_APP_URL,
   SEARCH_QUERY,
@@ -41,7 +42,6 @@ import { getAuthToken } from "../../services/userServices";
 // import { CITATION_TEMPLATE_FORMATS } from "../../constants/citationConstants";
 // import { generateCiteJSON } from "../../services/citationService";
 
-
 const PdfView = ({
   areas,
   fileUrl,
@@ -52,7 +52,7 @@ const PdfView = ({
   setpdfLists,
   setPricingModalShow,
   rightSidebarShowEvidence,
-  setRightSidebarShowEvidence
+  setRightSidebarShowEvidence,
 }) => {
   const navigate = useNavigate();
   let totalPages;
@@ -69,13 +69,15 @@ const PdfView = ({
 
   useEffect(() => {
     jumpResult(jumpIndex.current[1]);
-    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-  }, [areas]) // eslint-disable-line react-hooks/exhaustive-deps
+    document
+      .getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)
+      ?.scrollIntoView();
+  }, [areas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const sidebarEle = document.getElementById("right-sidebar");
     sidebarEle.scrollTop = sidebarEle.scrollHeight;
-  }, [isQueryLoading])
+  }, [isQueryLoading]);
 
   const renderHighlights = (props) => (
     <div
@@ -157,11 +159,9 @@ const PdfView = ({
 
   const handleSearchQuery = async (event, overrideQuery = null) => {
     event.preventDefault();
-    if (currentActiveURL === undefined) return
+    if (currentActiveURL === undefined) return;
     const searchBarEle = document.getElementById("search-bar-text-entry");
-    const query = overrideQuery
-      ? overrideQuery
-      : searchBarEle.value;
+    const query = overrideQuery ? overrideQuery : searchBarEle.value;
     searchBarEle.value = "";
     lastSearch.current = query;
     document.body.style.pointerEvents = "none";
@@ -179,34 +179,40 @@ const PdfView = ({
         setAreas({});
         searchInputElement.disabled = true;
         searchSubmitElement.disabled = true;
-        const eventSource =  new EventSource(
-          BASE_URL + "/" +
-          SEARCH_QUERY +
-          currentActiveURL + "/" +
-          encodeURIComponent(query).replace("%2F", "<|escapeslash|>") + "/" +
-          getSessionId() + "/" +
-          getAuthToken()
+        const eventSource = new EventSource(
+          BASE_URL +
+            "/" +
+            SEARCH_QUERY +
+            currentActiveURL +
+            "/" +
+            encodeURIComponent(query).replace("%2F", "<|escapeslash|>") +
+            "/" +
+            getSessionId() +
+            "/" +
+            getAuthToken()
         );
         setpdfLists((current) => {
           const current_ = [...current];
           current_[pdfIdx] = {
             ...current_[pdfIdx],
             searchHistory:
-            (current_[pdfIdx].searchHistory[current_[pdfIdx].searchHistory.length - 1]?.llm_response[0] === "An error occured. ") ?
-            [
-              ...current_[pdfIdx].searchHistory.slice(0, -2),
-              query,
-              {
-                llm_response: ["Loading..."]
-              }
-            ] :
-            [
-              ...current_[pdfIdx].searchHistory,
-              query,
-              {
-                llm_response: ["Loading..."]
-              }
-            ]
+              current_[pdfIdx].searchHistory[
+                current_[pdfIdx].searchHistory.length - 1
+              ]?.llm_response[0] === "An error occured. "
+                ? [
+                    ...current_[pdfIdx].searchHistory.slice(0, -2),
+                    query,
+                    {
+                      llm_response: ["Loading..."],
+                    },
+                  ]
+                : [
+                    ...current_[pdfIdx].searchHistory,
+                    query,
+                    {
+                      llm_response: ["Loading..."],
+                    },
+                  ],
           };
           return current_;
         });
@@ -220,14 +226,16 @@ const PdfView = ({
           } else if (data === "<|clearllmresponse|>") {
             setLlmTempContent(null);
           } else if (data.slice(0, 20) !== "<|endofllmresponse|>") {
-            setLlmTempContent((current) => current === null ? data : current + data);
+            setLlmTempContent((current) =>
+              current === null ? data : current + data
+            );
             tokCount.current += 1;
             sidebarEle.scrollTop = sidebarEle.scrollHeight;
           } else {
             final_data = JSON.parse(data.slice(20));
             eventSource.close();
           }
-        }
+        };
         eventSource.onerror = (error) => {
           if (isThrottled) {
             setPricingModalShow(true);
@@ -241,10 +249,10 @@ const PdfView = ({
             indices: null,
             previews: null,
             idx_to_page: null,
-            llm_response: ["An error occured. ", "Click to try again."]
+            llm_response: ["An error occured. ", "Click to try again."],
           };
           eventSource.close();
-        }
+        };
         setLlmTempContent(null);
         while (eventSource.readyState !== EventSource.CLOSED) {
           await new Promise((res) => setTimeout(res, 500));
@@ -257,7 +265,7 @@ const PdfView = ({
             ...current[pdfIdx],
             searchHistory: [
               ...current[pdfIdx].searchHistory.slice(0, -1),
-              final_data
+              final_data,
             ],
           };
           jumpIndex.current = [current[pdfIdx].searchHistory.length - 1, -1];
@@ -265,7 +273,7 @@ const PdfView = ({
         });
       }
       setLlmTempContent(null);
-      
+
       searchInputElement.disabled = false;
       searchSubmitElement.disabled = false;
       document.body.style.pointerEvents = "auto";
@@ -293,7 +301,12 @@ const PdfView = ({
     }
   };
 
-  const SearchBarButton = ({ text, IconComponent, onClickFunc }) => {
+  const SearchBarButton = ({
+    text,
+    IconComponent,
+    onClickFunc,
+    btnSize = "sm",
+  }) => {
     const renderPopover = (props) => (
       <Tooltip id="button-tooltip" {...props}>
         {text}
@@ -301,7 +314,7 @@ const PdfView = ({
     );
     return (
       <OverlayTrigger overlay={renderPopover}>
-        <Button size="sm" variant="light" onClick={onClickFunc}>
+        <Button size={btnSize} variant="light" onClick={onClickFunc}>
           <IconComponent color="black" />
         </Button>
       </OverlayTrigger>
@@ -310,7 +323,9 @@ const PdfView = ({
 
   const deleteCurrentFile = async () => {
     if (fileUrl) {
-      const { error, response } = await post(DELETE_FILES, { target: currentActiveURL });
+      const { error, response } = await post(DELETE_FILES, {
+        target: currentActiveURL,
+      });
       if (!error) {
         if (pdfLists && pdfLists?.length !== 1) {
           const idx = pdfLists.findIndex((obj) => obj.id == currentActiveURL); // obj.id int and currentActiveUrl string, don't use ===
@@ -329,6 +344,33 @@ const PdfView = ({
     }
   };
 
+  const clearChat = async () => {
+    const pdfIdx_ = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
+    const currentPdfData_ = pdfLists[pdfIdx_];
+    if (currentPdfData_ && currentPdfData_?.id) {
+      if (currentPdfData_?.searchHistory?.length) {
+        const { error, response } = await post(CLEAR_CHAT, {
+          fileId: currentPdfData_?.id,
+          sessionId: getSessionId()
+        });
+        if (!error) {
+          setpdfLists((current) => {
+            const current_ = [...current];
+            current_[pdfIdx_] = {
+              ...current_[pdfIdx_],
+              searchHistory: []
+            };
+            return current_;
+          });
+          displayToast("Chat cleared", "success");
+        } else {
+          displayToast("Failed to clear chat", "danger");
+          console.error(response.data.detail);
+        }
+      }
+    }
+  };
+
   const pdfIdx = pdfLists.findIndex((obj) => obj.id == currentActiveURL);
   const currentPdfData = pdfLists[pdfIdx];
 
@@ -340,8 +382,10 @@ const PdfView = ({
             <Col className="d-none d-lg-block col-lg-6 pdf-viewer-container">
               {isProcessingDocument ? (
                 <div className="mt-5 d-flex flex-column align-items-center justify-content-center">
-                  <CustomSpinner color="rgb(180,180,180)"/>
-                  <span className="mt-2" style={{color: "rgb(180,180,180)"}}>Processing Document...</span>
+                  <CustomSpinner color="rgb(180,180,180)" />
+                  <span className="mt-2" style={{ color: "rgb(180,180,180)" }}>
+                    Processing Document...
+                  </span>
                 </div>
               ) : fileUrl ? (
                 <Viewer
@@ -358,214 +402,250 @@ const PdfView = ({
                   // }}
                 />
               ) : (
-                <div className="d-flex flex-column align-items-center" style={{ height: "100%", paddingTop: "20px", color: "rgb(180,180,180)" }}>
+                <div
+                  className="d-flex flex-column align-items-center"
+                  style={{
+                    height: "100%",
+                    paddingTop: "20px",
+                    color: "rgb(180,180,180)",
+                  }}
+                >
                   <Icon.File size={"40px"} />
                   <span>Select or Upload a File</span>
                 </div>
               )}
             </Col>
-            {
-              rightSidebarShowEvidence &&
+            {rightSidebarShowEvidence && (
               <Col className="d-none d-lg-block evidence-sidebar col-lg-2">
-                {
-                  areas?.bboxes?.length ? (
-                    <ListGroup as="ol" numbered>
-                      {areas?.previews?.map((preview, ind) => (
-                        <OverlayTrigger key={ind} trigger={["hover", "click"]} show={ind === currentIndex ? undefined : false} placement="left" overlay={
-                          (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Copy</Tooltip>
-                        }>
-                          <ListGroup.Item
-                            onClick={() => {
-                              if (ind === currentIndex) {
-                                displayToast("Copied to Clipboard", "success");
-                                navigator.clipboard.writeText(preview)
-                              }
-                              jumpResult(ind);
-                            }}
-                            id={`evidence-sidebar-button-${ind}`}
-                            style={{
-                              boxShadow:
-                                ind === currentIndex
-                                  ? "0 4px 8px rgba(0, 0, 0, 0.4)"
-                                  : "none",
-                              backgroundColor:
-                                ind === currentIndex
-                                  ? "rgba(230, 230, 230, 0.9)"
-                                  : "white",
-                            }}
-                            as="li"
-                            className="evidence-sidebar-button mx-2 my-1"
-                          >
-                            {preview?.length > 200 ? preview.slice(0, 200) + "..." : preview}
-                          </ListGroup.Item>
-                        </OverlayTrigger>
-                      ))}
-                    </ListGroup>
-                  ) : (
-                    <div
-                      className="d-flex flex-column align-items-center justify-content-center mt-2"
-                      style={{ color: "rgb(108,117,124)" }}
-                    >
-                      <Icon.Inbox size={"40px"} />
-                      <span>No Evidence</span>
-                    </div>
-                  )
-                }
+                {areas?.bboxes?.length ? (
+                  <ListGroup as="ol" numbered>
+                    {areas?.previews?.map((preview, ind) => (
+                      <OverlayTrigger
+                        key={ind}
+                        trigger={["hover", "click"]}
+                        show={ind === currentIndex ? undefined : false}
+                        placement="left"
+                        overlay={(props) => (
+                          <Tooltip id="button-tooltip" {...props}>
+                            Click Again to Copy
+                          </Tooltip>
+                        )}
+                      >
+                        <ListGroup.Item
+                          onClick={() => {
+                            if (ind === currentIndex) {
+                              displayToast("Copied to Clipboard", "success");
+                              navigator.clipboard.writeText(preview);
+                            }
+                            jumpResult(ind);
+                          }}
+                          id={`evidence-sidebar-button-${ind}`}
+                          style={{
+                            boxShadow:
+                              ind === currentIndex
+                                ? "0 4px 8px rgba(0, 0, 0, 0.4)"
+                                : "none",
+                            backgroundColor:
+                              ind === currentIndex
+                                ? "rgba(230, 230, 230, 0.9)"
+                                : "white",
+                          }}
+                          as="li"
+                          className="evidence-sidebar-button mx-2 my-1"
+                        >
+                          {preview?.length > 200
+                            ? preview.slice(0, 200) + "..."
+                            : preview}
+                        </ListGroup.Item>
+                      </OverlayTrigger>
+                    ))}
+                  </ListGroup>
+                ) : (
+                  <div
+                    className="d-flex flex-column align-items-center justify-content-center mt-2"
+                    style={{ color: "rgb(108,117,124)" }}
+                  >
+                    <Icon.Inbox size={"40px"} />
+                    <span>No Evidence</span>
+                  </div>
+                )}
               </Col>
-            }
+            )}
             <Col
-              className={`col-lg-${rightSidebarShowEvidence ? 4 : 6} py-2 right-sidebar`}
+              className={`col-lg-${
+                rightSidebarShowEvidence ? 4 : 6
+              } py-2 right-sidebar`}
               id="right-sidebar"
               style={{
-                boxShadow: !fileUrl || isProcessingDocument
-                  ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
-                  : "none",
-                  paddingLeft: rightSidebarShowEvidence ? undefined : 0
+                boxShadow:
+                  !fileUrl || isProcessingDocument
+                    ? "-10px 0px 10px 1px rgb(0 0 0 / 6%)"
+                    : "none",
+                paddingLeft: rightSidebarShowEvidence ? undefined : 0,
               }}
             >
-              <ListGroup as="ul" style={{display: "flex"}}>
-                {currentPdfData?.searchHistory?.length ? (
-                  currentPdfData?.searchHistory?.map((query, ind) => (
+              <ListGroup as="ul" style={{ display: "flex" }}>
+                {currentPdfData?.searchHistory?.length
+                  ? currentPdfData?.searchHistory?.map((query, ind) => (
                       <ListGroup.Item
                         style={{
                           borderRadius: "10px",
                           maxWidth: "75%",
                           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
                           //left: `${ind % 2 === 1 ? 0 : 33.33}%`,
-                          textAlign: "left"
+                          textAlign: "left",
                         }}
                         as="li"
                         key={ind}
-                        className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(ind % 2 === 1)}`}
+                        className={`right-sidebar-button my-2 right-sidebar-item-margin-class-${Number(
+                          ind % 2 === 1
+                        )}`}
                       >
-                        <div
-                          style={{ width: "85%", marginLeft: "3px" }}
-                        >
-                          {
-                            llmTempContent !== null && currentPdfData.searchHistory.length -1 === ind ?
+                        <div style={{ width: "85%", marginLeft: "3px" }}>
+                          {llmTempContent !== null &&
+                          currentPdfData.searchHistory.length - 1 === ind ? (
                             <span
                               style={{
                                 whiteSpace: "pre-wrap",
-                                color: llmTempContent?.slice(0, 25) === "Generating response for: " ? "rgb(115, 115, 115)" : "black"
+                                color:
+                                  llmTempContent?.slice(0, 25) ===
+                                  "Generating response for: "
+                                    ? "rgb(115, 115, 115)"
+                                    : "black",
                               }}
                             >
-                              {llmTempContent.trim() === "" ? "Loading..." : llmTempContent}
-                            </span> :
-
-                            (typeof query === "string") ?
-                            <span
-                              className="me-auto"
-                            >
-                              {query}
-                            </span> :
-                            query.llm_response.map((ele, idx) => 
-                            ele === "Click to try again." ?
-                              <u
-                                key={idx}
-                                style={{
-                                  whiteSpace: "pre-wrap",
-                                  color: "rgb(115, 115, 115)",
-                                  cursor: "pointer"
-                                }}
-                                onClick={(event) => handleSearchQuery(event, lastSearch.current)}
-                              >
-                                  {ele}
-                              </u> :
-                            typeof ele === "string" ?
-                              <span
-                                key={idx}
-                                style={{
-                                  whiteSpace: "pre-wrap",
-                                  color: ele === "An error occured. " ? "rgb(220, 53, 69)" : "black"
-                                }}>
-                                  {ele}
-                              </span> :
-                              // <OverlayTrigger key={idx} trigger={["hover", "click"]} show={jumpIndex.current[1] === ele[1] ? undefined : false} overlay={
-                              //   (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Cite</Tooltip>
-                              // }>
-                                <strong
-                                  key={idx}
-                                  className="jump-page-link"
-                                  onClick={() => {
-                                    // removed intext citation code since page numbers don't work
-                                    // if (jumpIndex.current[1] === ele[1]) {
-                                    //   const setCite = () => {
-                                    //     const cite = new Cite(generateCiteJSON(pdfLists, pdfIdx, ele[0] + 1));
-                                    //     const citeText = cite.format("citation", {
-                                    //       template: templateFormat,
-                                    //       format: "text",
-                                    //       lang: "en-US",
-                                    //     });
-                                    //     setpdfLists((current) => {
-                                    //       const current_ = [...current];
-                                    //       current_[pdfIdx].searchHistory[ind].llm_response.splice(idx, 0, citeText);
-                                    //       return current_;
-                                    //     });
-                                    //   }
-                                    //   const result = CITATION_TEMPLATE_FORMATS.find(
-                                    //     (item) => item.value === templateFormat
-                                    //   );
-                                    //   if (result.is_default === "true") {
-                                    //     setCite();
-                                    //   } else {
-                                    //     let data;
-                                    //     let cslPath = result?.file_path
-                                    //       ? result.file_path
-                                    //       : "american-anthropological-association";
-                                    //     axios
-                                    //       .get("/csl-files/" + cslPath + ".csl")
-                                    //       .then((res) => {
-                                    //         data = res.data;
-                                    //         let templateName = result.value;
-                                    //         let config = Cite.plugins.config.get("@csl");
-                                    //         config.templates.add(templateName, data);
-                                    //         setCite();
-                                    //       })
-                                    //       .catch((err) => console.log(err));
-                                    //   }
-                                    // }
-                                    if (ind === jumpIndex.current[0]) {
-                                      jumpResult(ele[1]);
+                              {llmTempContent.trim() === ""
+                                ? "Loading..."
+                                : llmTempContent}
+                            </span>
+                          ) : typeof query === "string" ? (
+                            <span className="me-auto">{query}</span>
+                          ) : (
+                            query.llm_response.map(
+                              (ele, idx) =>
+                                ele === "Click to try again." ? (
+                                  <u
+                                    key={idx}
+                                    style={{
+                                      whiteSpace: "pre-wrap",
+                                      color: "rgb(115, 115, 115)",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={(event) =>
+                                      handleSearchQuery(
+                                        event,
+                                        lastSearch.current
+                                      )
                                     }
-                                    jumpIndex.current = [ind, ele[1]];
-                                    setAreas(query);
-                                    document.getElementById(`evidence-sidebar-button-${jumpIndex.current[1]}`)?.scrollIntoView();
-                                  }}
-                                  style={{
-                                    cursor: "pointer",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
+                                  >
+                                    {ele}
+                                  </u>
+                                ) : typeof ele === "string" ? (
+                                  <span
+                                    key={idx}
+                                    style={{
+                                      whiteSpace: "pre-wrap",
+                                      color:
+                                        ele === "An error occured. "
+                                          ? "rgb(220, 53, 69)"
+                                          : "black",
+                                    }}
+                                  >
+                                    {ele}
+                                  </span>
+                                ) : (
+                                  // <OverlayTrigger key={idx} trigger={["hover", "click"]} show={jumpIndex.current[1] === ele[1] ? undefined : false} overlay={
+                                  //   (props) => <Tooltip id="button-tooltip" {...props}>Click Again to Cite</Tooltip>
+                                  // }>
+                                  <strong
+                                    key={idx}
+                                    className="jump-page-link"
+                                    onClick={() => {
+                                      // removed intext citation code since page numbers don't work
+                                      // if (jumpIndex.current[1] === ele[1]) {
+                                      //   const setCite = () => {
+                                      //     const cite = new Cite(generateCiteJSON(pdfLists, pdfIdx, ele[0] + 1));
+                                      //     const citeText = cite.format("citation", {
+                                      //       template: templateFormat,
+                                      //       format: "text",
+                                      //       lang: "en-US",
+                                      //     });
+                                      //     setpdfLists((current) => {
+                                      //       const current_ = [...current];
+                                      //       current_[pdfIdx].searchHistory[ind].llm_response.splice(idx, 0, citeText);
+                                      //       return current_;
+                                      //     });
+                                      //   }
+                                      //   const result = CITATION_TEMPLATE_FORMATS.find(
+                                      //     (item) => item.value === templateFormat
+                                      //   );
+                                      //   if (result.is_default === "true") {
+                                      //     setCite();
+                                      //   } else {
+                                      //     let data;
+                                      //     let cslPath = result?.file_path
+                                      //       ? result.file_path
+                                      //       : "american-anthropological-association";
+                                      //     axios
+                                      //       .get("/csl-files/" + cslPath + ".csl")
+                                      //       .then((res) => {
+                                      //         data = res.data;
+                                      //         let templateName = result.value;
+                                      //         let config = Cite.plugins.config.get("@csl");
+                                      //         config.templates.add(templateName, data);
+                                      //         setCite();
+                                      //       })
+                                      //       .catch((err) => console.log(err));
+                                      //   }
+                                      // }
+                                      if (ind === jumpIndex.current[0]) {
+                                        jumpResult(ele[1]);
+                                      }
+                                      jumpIndex.current = [ind, ele[1]];
+                                      setAreas(query);
+                                      document
+                                        .getElementById(
+                                          `evidence-sidebar-button-${jumpIndex.current[1]}`
+                                        )
+                                        ?.scrollIntoView();
+                                    }}
+                                    style={{
+                                      cursor: "pointer",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
                                     {ele !== null && `[page ${ele[0] + 1}]`}
-                                </strong>
+                                  </strong>
+                                )
                               // </OverlayTrigger>
                             )
-                          }
+                          )}
                         </div>
                       </ListGroup.Item>
                     ))
-                ) : (
-                  !isQueryLoading &&
-                  <div
-                    className="d-flex flex-column align-items-center justify-content-center mt-2"
-                    style={{ color: "rgb(180,180,180)" }}
-                  >
-                    <Icon.Inbox size={"40px"} />
-                    <span>No Searches Yet</span>
-                  </div>
-                )}
+                  : !isQueryLoading && (
+                      <div
+                        className="d-flex flex-column align-items-center justify-content-center mt-2"
+                        style={{ color: "rgb(180,180,180)" }}
+                      >
+                        <Icon.Inbox size={"40px"} />
+                        <span>No Searches Yet</span>
+                      </div>
+                    )}
               </ListGroup>
-              {
-                isQueryLoading && tokCount.current <= 1 &&
+              {isQueryLoading && tokCount.current <= 1 && (
                 <div className="d-flex flex-column align-items-center justify-content-center my-2">
-                  <CustomSpinner color="rgb(180,180,180)"/>
+                  <CustomSpinner color="rgb(180,180,180)" />
                 </div>
-              }
+              )}
             </Col>
           </Row>
         </Container>
 
-        <Container fluid className="searchbar-pdftools-container position-relative">
+        <Container
+          fluid
+          className="searchbar-pdftools-container position-relative"
+        >
           <Row>
             <Col className="d-none d-lg-block col-lg-6">
               <Container fluid className="pdftools-container-inner">
@@ -594,9 +674,17 @@ const PdfView = ({
                       id="page-number-input"
                       className="plain-input"
                     />
-                    <span id="total-pages-span" style={{color: "rgb(252, 253, 252)"}}>of</span>
+                    <span
+                      id="total-pages-span"
+                      style={{ color: "rgb(252, 253, 252)" }}
+                    >
+                      of
+                    </span>
                   </div>
-                  <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                  <div
+                    style={{ marginRight: "0.5rem" }}
+                    className="d-none d-lg-block"
+                  >
                     {!currentPdfData?.isbn && (
                       <SearchBarButton
                         text="Document Info"
@@ -605,9 +693,11 @@ const PdfView = ({
                       />
                     )}
                   </div>
-                  {
-                    Object.keys(areas)?.length > 0 &&
-                    <div style={{ marginRight: "0.5rem" }} className="d-none d-lg-block">
+                  {Object.keys(areas)?.length > 0 && (
+                    <div
+                      style={{ marginRight: "0.5rem" }}
+                      className="d-none d-lg-block"
+                    >
                       <SearchBarButton
                         text={
                           rightSidebarShowEvidence
@@ -615,16 +705,14 @@ const PdfView = ({
                             : "List Evidence"
                         }
                         IconComponent={
-                          rightSidebarShowEvidence
-                            ? Icon.X
-                            : Icon.List
+                          rightSidebarShowEvidence ? Icon.X : Icon.List
                         }
                         onClickFunc={() =>
                           setRightSidebarShowEvidence((cur) => !cur)
                         }
                       />
                     </div>
-                  }
+                  )}
                   <div className="d-none d-lg-block">
                     <SearchBarButton
                       text="Citations & References"
@@ -652,6 +740,14 @@ const PdfView = ({
             <Col className="col-lg-6 px-2">
               <Container fluid className="searchbar-container-inner">
                 <Form className="d-flex w-100" onSubmit={handleSearchQuery}>
+                  <div style={{ marginRight: "0.5rem" }}>
+                    <SearchBarButton
+                      text="Clear Chat"
+                      IconComponent={Icon.RotateCcw}
+                      onClickFunc={() => clearChat()}
+                      btnSize="md"
+                    />
+                  </div>
                   <Form.Control
                     id="search-bar-text-entry"
                     type="search"
