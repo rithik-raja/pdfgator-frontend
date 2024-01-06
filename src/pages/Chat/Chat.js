@@ -118,7 +118,7 @@ const Chat = (props) => {
             //   navigate(MAIN_APP_URL);
             // }, 1000);
           } else {
-            displayToast("Failed to upload file", "danger");
+            displayToast(response.data.detail ?? "Failed to upload file", "danger");
             console.error(response.data.detail);
           }
           // setuploadedUrl("");

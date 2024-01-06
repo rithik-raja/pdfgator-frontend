@@ -59,7 +59,7 @@ const FileUpload = (props) => {
             displayToast("Usage limit exceeded", "danger");
             setPricingModalShow(true);
           } else {
-            displayToast("Failed to upload file", "danger");
+            displayToast(response.data.detail ?? "Failed to upload file", "danger");
             console.error(response.data.detail)
           }
         }
