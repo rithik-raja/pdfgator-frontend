@@ -1,6 +1,24 @@
+body {
+    min-height: 100vh;
+    background-color: unset;
+    background-image: linear-gradient(to left bottom, #96befa, #b9ccfb, #d6dcfc, #ededfd, #ffffff);
+    padding-top: 2rem;
+}
+
 .home-container {
     padding-left: 2rem;
     padding-right: 2rem;
+}
+
+.pdfgator-title {
+    color: #212f49;
+    font-weight: 800;
+    font-family: "Open Sans";
+}
+
+.pdfgator-heading {
+    color: #212f49;
+    font-size: 15px;
 }
 
 .pdfgator-logo {
@@ -15,46 +33,19 @@
     opacity: 0.8;
 }
 
-.landing-page-card {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 90%;
-}
-
-.landing-page-button {
-    height: 40px;
-    border: 1.5px solid #212f49;
-    border-radius: 5px;
-    background-color: transparent;
-    color: #212f49;
-    transition: background-color 0.2s linear;
-}
-.landing-page-button:hover {
-    background-color: rgba(33, 47, 73, 0.1);
-}
-
-.landing-page-card-text {
-    font-size: 0.9rem;
-}
-
 @media (min-width: 768px) {
     .home-container {
         padding-left: 4rem;
         padding-right: 4rem;
+    }
+    .pdfgator-heading {
+        font-size: 25px;
     }
 }
 
 @media (min-width: 992px) {
     .pdfgator-logo {
         height: 100px;
-    }
-    .landing-page-card {
-        max-width: 40%;
-    }
-    .landing-page-button {
-        height: 50px;
-    }
-    .landing-page-card-text {
-        font-size: 1rem;
     }
     .home-container {
         padding-left: 8rem;

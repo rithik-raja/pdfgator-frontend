@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import FileUpload from "../../components/FileUpload/FileUpload";
 import LandingPageCard from "../../components/LandingPageCard/LandingPageCard";
@@ -13,17 +13,16 @@ import "./Home.css";
 // background-image: linear-gradient(to left bottom, #96befa, #b9ccfb, #d6dcfc, #ededfd, #ffffff);
 
 const Home = (props) => {
+
+  useEffect(() => {
+    document.body.style.backgroundColor = "unset";
+    document.body.style.backgroundImage = "linear-gradient(to left bottom, #96befa, #b9ccfb, #d6dcfc, #ededfd, #ffffff)";
+    document.body.style.minHeight = "100vh";
+    document.body.style.paddingTop = "2rem";
+  }, []);
+
   return (
     <>
-      <style>
-        {`
-          body {
-            min-height: 100vh;
-            background-image: linear-gradient(to left bottom, #96befa, #b9ccfb, #d6dcfc, #ededfd, #ffffff);
-            padding-top: 2rem;
-          }
-        `}
-      </style>
       <div className="home-container">
         <header className="d-flex align-items-center">
           <Image
@@ -34,8 +33,7 @@ const Home = (props) => {
           <div className="d-flex flex-column justify-content-center">
             <Link to="/" className="text-dark text-decoration-none">
               <span
-                className="display-4"
-                style={{ fontFamily: "Open Sans", fontWeight: 800, color: "#212f49" }}
+                className="display-4 pdfgator-title"
               >
                 pdfgator
               </span>
@@ -44,15 +42,19 @@ const Home = (props) => {
               AI-powered Search for Documents
             </span> */}
           </div>
-          <Link to="/app" style={{marginLeft: "auto"}}>
+          <Link to="/app" className="landing-page-button-link">
             <button className="landing-page-button">
               Go to App
             </button>
           </Link>
         </header>
         <br />
-        <h4 className="d-none d-md-block mb-4" style={{color: "#212f49"}}>Chat with Your PDFs. Never Ctrl+F Again.</h4>
-        <h6 className="d-block d-md-none mb-4" style={{color: "#212f49"}}>Chat with Your PDFs. Never Ctrl+F Again.</h6>
+        <div className="d-flex align-items-center justify-content-center">
+          <h1 className="mb-3 pdfgator-heading">Chat with Your PDFs.&nbsp;</h1>
+          <h2 className="mb-3 pdfgator-heading">Never Ctrl+F Again.</h2>
+        </div>
+        {/* <h4 className="d-none d-md-block mb-4" style={{color: "#212f49"}}>Chat with Your PDFs. Never Ctrl+F Again.</h4>
+        <h6 className="d-block d-md-none mb-4" style={{color: "#212f49"}}>Chat with Your PDFs. Never Ctrl+F Again.</h6> */}
         <FileUpload {...props}/>
         <br />
         <br />

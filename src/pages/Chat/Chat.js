@@ -186,6 +186,13 @@ const Chat = (props) => {
   };
 
   useEffect(() => {
+    document.body.style.backgroundImage = "unset";
+    document.body.style.minHeight = "unset";
+    document.body.style.paddingTop = "unset";
+    document.body.style.backgroundColor = "rgb(53,58,64)";
+  }, []);
+
+  useEffect(() => {
     getPdfLists();
     document.addEventListener("userUpdate", getPdfLists);
     return () => {

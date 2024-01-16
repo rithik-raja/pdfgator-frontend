@@ -44,6 +44,18 @@ const Footer = (props) => {
         <Link className="footer-element" to="/privacy-policy" target="_blank">
           Privacy Policy
         </Link>
+        <span className="footer-element">|</span>
+        <a className="footer-element" target="_blank" rel="noreferrer noopener" href="https://twitter.com/pdfgator">
+          Twitter
+        </a>
+        <span className="footer-element">|</span>
+        <a className="footer-element" target="_blank" rel="noreferrer noopener" href="https://instagram.com/pdfgator">
+          Instagram
+        </a>
+        <span className="footer-element">|</span>
+        <a className="footer-element" target="_blank" rel="noreferrer noopener" href="mailto:admin@marchforth.us">
+          Contact
+        </a>
         {accountModalShow && (
           <AccountModal
             show={accountModalShow}

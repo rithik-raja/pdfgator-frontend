@@ -26,6 +26,7 @@ import {
 } from "../../constants/userConstants";
 import { useRef } from "react";
 import { displayToast } from "../CustomToast/CustomToast";
+import { Alert } from "react-bootstrap";
 const PricingModal = ({ stripeDetails, ...props }) => {
   const [pricingDetails, setPricingDetails] = useState([]);
   const [pricingDetails1, setPricingDetails1] = useState([]);
@@ -238,6 +239,16 @@ const PricingModal = ({ stripeDetails, ...props }) => {
         <Modal.Title>Upgrade to Pdfgator Plus</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {
+          pricingDetails.length !== 0 && pricingDetails[0]?.metadata?.promo_prompt && ([CURRENT_PLAN_FREE, CURRENT_PLAN_EXPIRED]).includes(getUserPlanStatus(stripeDetails, product_id.current)) &&
+          <Row>
+            <div style={{paddingLeft: "12px", paddingRight: "12px"}}>
+              <Alert className="">
+                <div dangerouslySetInnerHTML={{__html: pricingDetails[0]?.metadata?.promo_prompt}} />
+              </Alert>
+            </div>
+          </Row>
+        }
         <Row>
           {pricingDetails.length === 0 && (
             <Col className="d-flex align-items-center justify-content-center">
@@ -245,26 +256,42 @@ const PricingModal = ({ stripeDetails, ...props }) => {
             </Col>
           )}
           {pricingDetails.map((pricingDetail, index) => (
-            <Col key={index}>
+            <Col key={index} className="mt-2 mt-md-0">
               <Card className="pricing" style={{height: "100%"}}>
                 <Card.Header>
                   <span className="fw-bold">
                     {pricingDetail.metadata?.product_name}
                   </span>
                   {pricingDetail.isCurrent === true ? (
-                    <span className="float-end text-muted">current</span>
+                    <span className="float-end text-muted strike">current</span>
                   ) : (
                     <></>
                   )}
                 </Card.Header>
                 <Card.Body>
-                  <div className="p-3">
-                    <span className="fw-bold fs-4">
-                      ${pricingDetail.metadata?.price}
-                    </span>
-
-                    <span className="text-muted">/month</span>
-                  </div>
+                  {
+                    pricingDetail.metadata?.promo_new_price ?
+                    <div className="px-3 pt-1 pb-3 flex flex-column">
+                      <div>
+                        <del className="text-muted fs-5">
+                          ${pricingDetail.metadata?.price}
+                        </del>
+                        <del className="text-muted" style={{"fontSize": "12px"}}>/month</del>
+                      </div>
+                      <div>
+                        <span className="fw-bold fs-4">
+                          ${pricingDetail.metadata?.promo_new_price}
+                        </span>
+                        <span className="text-muted">/month</span>
+                      </div>
+                    </div> :
+                    <div className="p-3">
+                      <span className="fw-bold fs-4">
+                        ${pricingDetail.metadata?.price}
+                      </span>
+                      <span className="text-muted">/month</span>
+                    </div>
+                  }
                   <ul className="plan-list m-0">
                     <li>
                       <div>

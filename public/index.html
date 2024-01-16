@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-G83GH4JRPE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-G83GH4JRPE');
+    </script>
+
     <meta charset="utf-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,8 +21,15 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="PdfGator is the easiest way to find any information in your PDF documents! With a simple search, PdfGator finds evidence and answers ordered by relevance, saving you time and effort."
+      content="PdfGator is an AI-powered tool allows you to chat with your PDF documents! PdfGator finds evidence and answers for you along with formal citations, saving you time and effort."
     />
+
+    <meta property="og:title" content="PdfGator" />
+    <meta property="og:description" content="PdfGator is an AI-powered tool allows you to chat with your PDF documents! PdfGator finds evidence and answers for you along with formal citations, saving you time and effort." />
+    <meta name="twitter:title" content="PdfGator" />
+    <meta name="twitter:description" content="PdfGator is an AI-powered tool allows you to chat with your PDF documents! PdfGator finds evidence and answers for you along with formal citations, saving you time and effort." />
+    <meta name="twitter:site" content="@pdfgator" />
+
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -27,8 +45,57 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>PdfGator</title>
+    <title>PdfGator AI - Chat With Any PDF</title>
     <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="application/ld+json">
+      {
+        "@context": "http://schema.org",
+        "@type": "WebApplication",
+        "@id": "product_name",
+        "applicationCategory": "BusinessApplication",
+        "name": "PdfGator",
+        "operatingSystem": "all",
+        "browserRequirements": "Requires Javascript and HTML5 support",
+        "url": "https://pdfgator.ai",
+        "screenshot": "https://pdfgator.ai/images/landing_page_4.webp",
+        "offers": {
+          "@type": "AggregateOffer",
+          "offeredBy": {
+            "@type": "Organization",
+            "name":"Marchforth Corporation"
+          },
+          "highPrice": "4.99",
+          "lowPrice": "0",
+          "offerCount": "1",
+          "priceCurrency": "USD",
+          "priceSpecification": [
+            {
+              "@type": "UnitPriceSpecification",
+              "price": "0.00",
+              "priceCurrency": "USD",
+              "name": "Free"
+            },
+            {
+              "@type": "UnitPriceSpecification",
+              "price": "4.99",
+              "priceCurrency": "USD",
+              "name": "Plus",
+              "referenceQuantity": {
+                "@type": "QuantitativeValue",
+                "value": "1",
+                "unitCode": "MON"
+              }
+            }
+          ]
+        },
+        "creator": {
+          "@type":"Organization",
+          "@id":"#organization",
+          "url":"https://marchforth.us",
+          "name":"Marchforth Corporation",
+        } 
+      }
+      </script>
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
       // MIT License
