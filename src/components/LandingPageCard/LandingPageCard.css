@@ -29,7 +29,7 @@
 .landing-page-card {
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 90%;
+    width: 90%;
 }
 
 .landing-page-button-link {
